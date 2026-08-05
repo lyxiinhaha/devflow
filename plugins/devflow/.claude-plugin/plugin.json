@@ -1,0 +1,19 @@
+{
+  "name": "devflow",
+  "displayName": "DevFlow — AI-Native 研发工作流 v3",
+  "description": "从需求到交付的全流程 AI 辅助研发工作流。深度集成 CodeGraph 知识图谱 + Meegle 项目管理，内置状态机、安全分级、强制复盘和 Context Checkpoint，构建自我进化的研发闭环。",
+  "version": "3.0.0",
+  "author": {
+    "name": "DevFlow Team"
+  },
+  "license": "MIT",
+  "mcp": {
+    "required": ["codegraph"],
+    "optional": ["meegle", "figma", "apifox", "github"],
+    "notes": {
+      "figma": "Framelink MCP for Figma（figma-developer-mcp），需在项目 .mcp.json 配置",
+      "apifox": "MCP 名「API 文档」（apifox-mcp-server），已在 ~/.mcp.json 全局配置，project-id=7937524",
+      "meegle": "meegle-cli，需 meegle auth login 授权"
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "version": "3.0.0",
+  "project": {
+    "name": "",
+    "type": "frontend|backend|fullstack|mobile",
+    "language": "",
+    "framework": ""
+  },
+  "stateMachine": {
+    "transitions": {
+      "created":    ["analyzing"],
+      "analyzing":  ["designing", "created"],
+      "designing":  ["planning", "estimating", "analyzing"],
+      "planning":   ["coding", "designing"],
+      "estimating": ["coding", "planning"],
+      "coding":     ["reviewing", "planning"],
+      "reviewing":  ["done", "coding"],
+      "done":       []
+    },
+    "requiredSections": {
+      "spec/requirement.md": ["背景与目标", "用户故事", "功能需求", "验收标准", "待确认问题"],
+      "spec/design.md":      ["方案概述", "涉及模块", "CodeGraph爆炸半径评估", "风险与约束", "回滚方案"],
+      "tasks.md":            ["执行清单", "Bug经验编码禁令"]
+    }
+  },
+  "codegraph": {
+    "enabled": true,
+    "watchMode": true,
+    "syncOnStart": true,
+    "fallback": "warn",
+    "impactThresholds": {
+      "medium": 3,
+      "high": 11,
+      "critical": 30
+    },
+    "checkpointInterval": "per-stage"
+  },
+  "meegle": {
+    "enabled": true,
+    "optional": true,
+    "syncEvents": ["start", "analyze", "code", "fix", "review", "retrospect"],
+    "autoTransitionState": true
+  },
+  "retrospect": {
+    "mandatory": true,
+    "triggerAfter": ["fix", "review", "refactor"]
+  },
+  "integrations": {
+    "issueTracker": "meegle|none",
+    "designTool": "figma|none"
+  }
+}

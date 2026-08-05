@@ -1,0 +1,24 @@
+{
+  "id": "",
+  "slug": "",
+  "title": "",
+  "type": "feature|bug|tech|refactor",
+  "status": "created",
+  "priority": "P0|P1|P2|P3",
+  "securityLevel": "L0|L1|L2",
+  "allowAI": true,
+  "assignee": "",
+  "createdAt": "",
+  "updatedAt": "",
+  "linkedMeegleId": "",
+  "stages": {
+    "analyzed": false,
+    "designed": false,
+    "estimated": false,
+    "planned": false,
+    "coded": false,
+    "reviewed": false,
+    "retrospected": false
+  },
+  "codegraphMaxRisk": "LOW|MEDIUM|HIGH|CRITICAL"
+}

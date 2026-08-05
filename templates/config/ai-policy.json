@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "globalPolicy": "allow",
+  "restrictions": {
+    "allowAICodeGeneration": true,
+    "allowAIRefactoring": true,
+    "allowAISecurityAnalysis": true,
+    "prohibitAIOnRawContext": true,
+    "requireHumanApprovalForCritical": true,
+    "requireHumanApprovalForL0": true
+  },
+  "safetyBoundaries": [
+    "禁止 AI 直接读取 context/raw.md（只能读 sanitized.md）",
+    "禁止 AI 在 HIGH/CRITICAL 风险下自动执行代码修改",
+    "禁止 AI 自动 push 到主分支",
+    "禁止 AI 处理 L0 级别核心交易逻辑（必须人工审查）",
+    "禁止 AI 在未完成 Context Checkpoint 的情况下跨阶段推进"
+  ],
+  "codegraphFallback": {
+    "strategy": "warn",
+    "allowedActions": ["analyze","design"],
+    "blockedActions": ["code","fix","refactor"],
+    "message": "CodeGraph 不可用，高风险操作已被阻止。请先执行 codegraph status 排查。"
+  }
+}

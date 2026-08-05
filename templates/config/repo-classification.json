@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "levels": {
+    "L0": { "description": "核心交易/支付/账户/权限模块", "aiPolicy": "仅辅助分析，代码修改必须人工执行+审查", "examples": ["src/payment/","src/auth/core/","src/account/balance/"] },
+    "L1": { "description": "业务核心模块（非交易）",       "aiPolicy": "AI 可辅助，HIGH/CRITICAL 必须人工确认",    "examples": ["src/order/","src/user/","src/market/"] },
+    "L2": { "description": "基础设施/工具/UI 组件",        "aiPolicy": "AI 可全量辅助，LOW/MEDIUM 自动放行",       "examples": ["src/components/","src/utils/","src/hooks/"] }
+  },
+  "modules": {}
+}
