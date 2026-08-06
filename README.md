@@ -53,11 +53,11 @@ refactor → review → retrospect
 | `devflow start` | 创建工作项，进入需求收集模式（Intake Mode） |
 | `devflow quick` | **快速需求**：需求描述直接作为输入，跳过 PRD，一步完成分析 |
 | `devflow analyze` | 边录边析：逐段输入即时解析，读 Figma / YApi，CodeGraph 反查现有接口 |
-| `devflow design` | 爆炸半径评估，边设计边追问，生成内部设计文档 + 对外技术方案文档 |
+| `devflow design` | 爆炸半径评估，边设计边追问，生成内部设计文档；冻结后生成可走查的对外技术方案（时序图/文件清单/真实接口签名/埋点/多语言 Key/测试验收清单） |
 | `devflow estimate` | 三点置信区间估算，历史 Bug 密度因子，可更新 Meegle 排期 |
 | `devflow plan` | 标准化任务格式，Bug 经验召回，静默输出 tasks.md |
 | `devflow code` | 执行范围选择，编码禁令，lint/test 质量门禁 |
-| `devflow fix` | Meegle issue 批量处理，90 分准入门禁，人工验证后提交 |
+| `devflow fix` | Meegle issue 批量处理，四阶段 CodeGraph 根因分析（含原子修复方案），90 分准入门禁，生成完整修复清单，人工验证后提交 |
 | `devflow refactor` | 测试基线验证，重构后一致性断言 |
 | `devflow review` | 四维度审查，CRITICAL 阻断合并 |
 | `devflow retrospect` | 经验卡去重入库，关闭 Meegle 工作项 |
@@ -87,7 +87,7 @@ refactor → review → retrospect
 ```
 plugins/devflow/
 ├── .claude-plugin/plugin.json     # 插件元数据
-├── commands/                      # 18 个命令（含 frontmatter，支持自动触发）
+├── commands/                      # 19 个命令（含 frontmatter，支持自动触发）
 │   ├── sync.md                    # 团队 AI 文件同步
 │   └── ...（其余 17 个命令）
 ├── skills/
