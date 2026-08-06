@@ -198,31 +198,56 @@ codegraph_explore <symbol>
 
 ### 6. 接口设计与同步
 
-#### 接口信息检查
+#### 接口信息收集（四步优先级）
 
-在进行任何接口设计前，先确认接口来源：
+在进行接口设计前，按以下顺序收集接口信息，**每一步有结果就停止，不跳级**：
 
-**已有接口改动**（需求中提到修改/扩展现有接口）：
-- `spec/requirement.md` 的「接口依赖」章节已有 YApi 链接 → 直接使用
-- 章节为空或无链接 → **立即追问**：
+**① 优先用 `spec/requirement.md` 已有数据**
+
+若「接口依赖」章节已有来自 YApi 的接口定义（analyze 阶段已读取），直接进入接口设计，跳过后续步骤。
+
+**② CodeGraph 主动查询**
+
+若需求文档中接口信息不完整，从功能需求中提取关键实体词（接口路径关键词、业务模块名、数据对象名），通过 CodeGraph 查找现有实现：
 
 ```
-⚠️ 发现现有接口改动，但未找到接口文档。
-   请提供以下任一信息后继续设计：
+codegraph_explore("<模块名 数据对象名 接口路径关键词>")
+```
+
+从结果中提取：
+- Repository / DataSource / ApiService 类的方法签名
+- 已有的接口路径常量（如 `const val API_UPLOAD_AVATAR = "/user/avatar/upload"`）
+- 请求/响应数据类的字段定义
+
+找到后在 YApi 中验证：
+```
+WebFetch: https://yapi.hszq8.com/api/interface/list?project_id={pid}&limit=50
+```
+按路径匹配，找到则读取完整接口详情，补充到 `spec/requirement.md` 的「接口依赖」章节，标注来源 `[CodeGraph 反查]`。
+
+**③ YApi 全局搜索**
+
+若 CodeGraph 未找到对应实现，按功能关键词在 YApi 搜索：
+```
+WebFetch: https://yapi.hszq8.com/api/interface/list?project_id={pid}&limit=100
+```
+按接口路径或名称模糊匹配（如需求涉及「头像」，搜索 `avatar`、`profile`、`user`）。
+
+找到则读取详情，写入 `spec/requirement.md`，标注来源 `[YApi 搜索]`；未找到则继续步骤 ④。
+
+**④ 仍未找到时才追问**
+
+经过 ② ③ 均未找到接口信息，再向用户追问：
+
+```
+⚠️ 已通过 CodeGraph 和 YApi 搜索，未找到「{功能点}」相关接口。
+   请提供以下任一信息：
    · YApi 接口链接：https://yapi.hszq8.com/project/.../interface/api/...
    · 接口路径或名称（如：POST /user/avatar/upload）
-   · 若接口由本次需求新增（非改造），请说明「新增接口」
+   · 若此接口需新增，请确认「新增接口，由前端起草」或「后端已有草稿，链接：...」
 ```
 
-**新增接口**（需求中提到需要新接口）：
-- 若后端尚未定义 → 在 `spec/api.md` 中完成接口设计草案，并标注「**待后端确认**」
-- 若后端已有草稿 → 请提供 YApi 链接或接口文档：
-
-```
-⚠️ 需要新增接口，请提供：
-   · 已有 YApi 草稿链接（若后端已建）
-   · 或确认「接口由前端起草，待后端评审」
-```
+---
 
 #### 现有接口变更
 若设计涉及对现有接口的字段新增/修改：
