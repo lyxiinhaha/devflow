@@ -66,7 +66,31 @@ description: DevFlow 编码执行阶段。包含 CodeGraph 主动预警、前置
 **a) L0 安全检查**
 标注 `🔒 [人工审查必须]` → 仅提供代码片段建议，禁止写入文件。
 
-**b) CodeGraph 前置检查门禁**
+**b) CodeGraph 现有实现探查（复用优先）**
+
+编码前先查，**禁止在未探查的情况下直接新建类/方法**：
+
+从任务的 `Description` 和 `Files` 中提取关键词（类名、方法名、功能动词、业务实体），执行：
+```
+codegraph_explore("<关键词 空格分隔>")
+```
+
+按结果决定实现策略：
+
+| 探查结果 | 策略 |
+|---------|------|
+| 找到完全匹配的现有实现 | **直接复用**，在任务描述中记录复用的类/方法路径 |
+| 找到部分匹配（逻辑相似但不完全一致） | **改造复用**，说明改造点，不重复造轮子 |
+| 未找到相关实现 | **新建**，在 `spec/design.md` 指定的架构层级内创建 |
+
+探查结论写入任务完成记录（`progress.md`）：
+```
+[T001] 已完成
+  复用策略：{直接复用 XxxRepository.fetchData() | 改造 XxxManager | 新建 YyyComponent}
+  文件：{实际修改的文件路径}
+```
+
+**c) CodeGraph 前置检查门禁**
 标注 `⚠️ [CodeGraph 前置检查]` → 必须执行：
 ```
 codegraph_explore <涉及符号>
@@ -75,18 +99,19 @@ codegraph_impact  <涉及符号>
 - HIGH / CRITICAL → **强制暂停**，等待用户确认后才能继续
 - 用户拒绝确认 → 标记任务为「等待确认」，跳过该任务
 
-**c) 编码实现**
+**d) 编码实现**
 - 只修改任务 `Files` 字段中指定的文件
 - 参照 `spec/design.md` 和 `spec/requirement.md` 实现
 - 遵守任务 `Technical Requirements` 中的编码约束
+- **优先调用步骤 b 中探查到的现有工具方法/组件**，不重复实现已有逻辑
 
-**d) 质量门禁**
+**e) 质量门禁**
 编码完成后执行：
 - Lint 检查（如 `eslint` / `ktlint` / `swiftlint`，按项目配置）
 - 已有测试命令（如 `./gradlew :module:test`）
 - 记录 lint/test 结果
 
-**e) 状态同步**
+**f) 状态同步**
 立即将任务标记为 `- [x]`，不得批量完成后再统一标记。
 
 ### 5. Context Checkpoint 更新
