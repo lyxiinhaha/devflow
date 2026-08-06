@@ -45,7 +45,7 @@ refactor → review → retrospect
 
 ---
 
-## 17 个命令
+## 18 个命令
 
 | 命令 | 核心能力 |
 |------|---------|
@@ -65,7 +65,8 @@ refactor → review → retrospect
 | `devflow switch` | 切换工作项，自动恢复上下文 |
 | `devflow list` | 状态总览，Active/Paused/Completed 分组 |
 | `devflow change` | Minor/Major 变更分级，状态机回退，受影响任务标记返工 |
-| `devflow knowledge` | 结构化查询，健康检查，JSON 导出 |
+| `devflow knowledge` | Bug 经验卡查询/添加/健康检查，历史防坑手册 |
+| `devflow sync` | 同步团队公共 skills/agents 到当前项目，维护软链接和 .gitignore |
 
 ---
 
@@ -75,8 +76,8 @@ refactor → review → retrospect
 |-----|---------|------|
 | `codegraph` | 必须 | 代码知识图谱，爆炸半径分析 |
 | `meegle` | 可选 | 项目管理，工作项全生命周期联动 |
-| `Framelink MCP for Figma` | 可选 | 需求分析阶段读取设计稿 |
-| `YApi` | 可选 | WebFetch 读取接口定义（`yapi.hszq8.com`） |
+| `figma` | 可选 | Figma Desktop MCP（官方插件），需求分析阶段读取设计稿，降级使用 Framelink MCP |
+| `YApi` | 可选 | WebFetch 读取接口定义（`yapi.hszq8.com`），降级使用 Apifox MCP |
 
 ---
 
@@ -84,11 +85,19 @@ refactor → review → retrospect
 
 ```
 plugins/devflow/
-├── .claude-plugin/plugin.json   # 插件元数据
-├── commands/                    # 17 个命令（含 SKILL.md frontmatter，支持自动触发）
+├── .claude-plugin/plugin.json     # 插件元数据
+├── commands/                      # 18 个命令（含 frontmatter，支持自动触发）
+│   ├── sync.md                    # 团队 AI 文件同步
+│   └── ...（其余 17 个命令）
+├── skills/
+│   └── devflow-sync/
+│       └── sync-ai-files.sh      # 同步脚本
+├── ai-files/
+│   ├── skills/                   # 团队公共 skills（由团队维护，devflow sync 分发）
+│   └── agents/                   # 团队公共 agents（可选）
 ├── assets/
-│   ├── config/                  # devflow.json、ai-policy.json、分级配置
-│   └── templates/               # 文档模板 + bug-experience-cards.csv（20 条内置经验）
+│   ├── config/                   # devflow.json、ai-policy.json、分级配置
+│   └── templates/                # 文档模板 + bug-experience-cards.csv（20 条内置经验）
 └── references/
-    └── meegle-integration.md    # Meegle CLI 调用速查
+    └── meegle-integration.md     # Meegle CLI 调用速查
 ```
