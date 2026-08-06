@@ -45,12 +45,13 @@ refactor → review → retrospect
 
 ---
 
-## 18 个命令
+## 19 个命令
 
 | 命令 | 核心能力 |
 |------|---------|
 | `devflow init` | 配置 CodeGraph + Meegle，建立工作区，写入 .gitignore |
 | `devflow start` | 创建工作项，进入需求收集模式（Intake Mode） |
+| `devflow quick` | **快速需求**：需求描述直接作为输入，跳过 PRD，一步完成分析 |
 | `devflow analyze` | 边录边析：逐段输入即时解析，读 Figma / YApi，CodeGraph 反查现有接口 |
 | `devflow design` | 爆炸半径评估，边设计边追问，生成内部设计文档 + 对外技术方案文档 |
 | `devflow estimate` | 三点置信区间估算，历史 Bug 密度因子，可更新 Meegle 排期 |
