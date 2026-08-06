@@ -53,7 +53,7 @@ description: DevFlow 技术设计阶段。读取 spec/requirement.md（含 Figma
 - 验收标准
 
 若 `spec/requirement.md` 中 UI 交互规范或接口依赖章节为空/标注「待核验」，补充读取：
-- Figma：使用 Framelink MCP 读取原始链接
+- Figma：优先 Figma Desktop MCP（`get_figma_data` / `get_screenshot`），降级 Framelink MCP
 - 接口：优先 YApi WebFetch，降级 Apifox MCP
 
 ---

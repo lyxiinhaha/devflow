@@ -11,8 +11,8 @@
     "required": ["codegraph"],
     "optional": ["meegle", "figma", "apifox", "github"],
     "notes": {
-      "figma": "Framelink MCP for Figma（figma-developer-mcp），需在项目 .mcp.json 配置",
-      "apifox": "MCP 名「API 文档」（apifox-mcp-server），已在 ~/.mcp.json 全局配置，project-id=7937524",
+      "figma": "Figma Desktop MCP（官方 figma 插件，claude plugins install figma），降级使用 Framelink MCP（figma-developer-mcp）",
+      "apifox": "MCP 名「API 文档」（apifox-mcp-server），已在 ~/.mcp.json 全局配置，project-id=7937524，YApi 不可用时降级使用",
       "meegle": "meegle-cli，需 meegle auth login 授权"
     }
   }

@@ -73,10 +73,14 @@ description: DevFlow 需求分析阶段。支持两种模式：（1）Intake Mod
 
 识别规则：URL 包含 `figma.com/design/` 或 `figma.com/file/`
 
-1. **立即读取**：使用 **Framelink MCP for Figma** 读取节点内容
+1. **立即读取**：优先使用 **Figma Desktop MCP**（`figma` 插件，已全局安装）读取节点内容
+
    ```
-   get_figma_data(fileKey, nodeId)
+   get_figma_data(fileKey, nodeId)     # 读取节点结构和属性
+   get_screenshot(fileKey, nodeId)     # 获取视觉截图（辅助理解布局）
+   get_metadata(fileKey)               # 获取文件级元数据
    ```
+
    从 URL 解析 `fileKey`（路径第三段）和 `nodeId`（`node-id` 参数）
 
 2. **提取并记录**：
@@ -103,11 +107,17 @@ description: DevFlow 需求分析阶段。支持两种模式：（1）Intake Mod
   [⚠️ {交叉核验发现的问题，即时追问}]
 ```
 
-**Figma MCP 不可用时：**
-```
-📥 #N Figma 链接已记录（MCP 不可用，分析阶段待手动核验）
-  链接：{URL}
-```
+**Figma Desktop MCP 不可用时（降级顺序）：**
+
+1. **Framelink MCP**（`figma-developer-mcp`，项目 `.mcp.json` 中配置）：
+   ```
+   get_figma_data(fileKey, nodeId)
+   ```
+2. **均不可用**：记录链接，标注「待手动核验」，不阻塞流程：
+   ```
+   📥 #N Figma 链接已记录（MCP 不可用，分析阶段待手动核验）
+     链接：{URL}
+   ```
 
 ---
 
