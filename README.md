@@ -1,4 +1,4 @@
-# DevFlow v3.0.0 — AI-Native 研发工作流
+# DevFlow v3.0.0 — AI 工作流
 
 > 从需求到交付的全流程 AI 辅助研发工作流。深度集成 **CodeGraph 知识图谱 + Meegle 项目管理 + Figma + YApi**，内置状态机、安全分级、强制复盘和 Context Checkpoint，构建自我进化的研发闭环。
 
