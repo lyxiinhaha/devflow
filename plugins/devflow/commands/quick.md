@@ -1,124 +1,179 @@
 ---
 name: devflow-quick
-description: DevFlow 快速需求。把需求描述直接作为输入，跳过 PRD 填写阶段，立即完成分析并生成 spec/requirement.md。适合需求清晰的小功能、紧急修改、文案调整等场景。当用户说「devflow quick」「快速需求」「快速开始」或直接跟着需求描述时触发。
+description: DevFlow 快速需求。把需求描述直接作为输入，根据复杂度自动判断路径：极简改动（1-2个文件）直接编码，小需求跳过 design/plan 直接编码，复杂需求走完整流程。当用户说「devflow quick」「快速需求」「快速开始」或直接跟着需求描述时触发。
 ---
 
 # devflow quick — 快速需求
 
-**用途：** 将需求描述直接作为输入，跳过「创建 PRD → 填写 → 分析」三步，合并为一步完成。适合需求清晰、不需要反复确认 PRD 的场景。
+**用途：** 将需求描述直接作为输入，根据复杂度自动判断执行路径，避免小改动走完整流程的浪费。
 
-**与 `devflow start` 的区别：**
+---
 
-| | `devflow start` | `devflow quick` |
-|---|---|---|
-| 适用场景 | 需求复杂，需要逐段补充 PRD | 需求清晰，一次说清 |
-| 需求输入方式 | Intake Mode 逐段发送 | `$ARGUMENTS` 直接传入 |
-| 产出 `01_initial_prd.md` | ✅ 有 | ❌ 跳过 |
-| 产出 `spec/requirement.md` | Finalize 后生成 | **直接生成** |
-| 后续流程 | 完全相同 | 完全相同 |
+## 三条执行路径
+
+分析完需求后，根据复杂度自动选择路径：
+
+| 路径 | 适用场景 | 执行步骤 |
+|------|---------|---------|
+| **极简** | 改动 ≤ 2 个文件，逻辑显而易见（文案/配置/样式微调） | 分析 → **直接编码** |
+| **快速** | 改动 3-5 个文件，思路清晰但有一定影响面 | 分析 → **内联方案** → 直接编码 |
+| **完整** | 改动 > 5 个文件，或涉及新模块/接口设计/架构变更 | 分析 → 转交 `devflow design → plan → code` |
+
+判断标准：
+- CodeGraph 查到的影响符号 ≤ 3 个 → 极简
+- CodeGraph 影响符号 4-10 个，且无新增接口 → 快速
+- CodeGraph 影响符号 > 10 个，或需要新增接口/模块 → 完整
 
 ---
 
 ## 前置条件
 
 - 若 `.devflow/` 不存在，自动触发 `devflow init` 后继续。
-- `$ARGUMENTS` 不为空（必须附带需求描述）。
+- `$ARGUMENTS` 不为空。
 
-无描述时输出：
 ```
 ✗ 请在命令后附上需求描述。
-  示例：devflow quick 修改登录页文案，「立即登录」改为「登录」
+  示例：devflow quick 修改登录页文案「立即登录」改为「登录」
 ```
 
 ---
 
 ## 输入
 
-`$ARGUMENTS` 直接传入需求描述，支持：
-- 一句话描述：`devflow quick 添加分享按钮到详情页右上角`
-- 多行描述（直接粘贴段落）
-- 含 Figma 链接：`devflow quick 修改头像样式 https://figma.com/...`
-- 含 YApi 链接：`devflow quick 接入新接口 https://yapi.hszq8.com/...`
+```
+devflow quick 修改登录页文案「立即登录」改为「登录」
+devflow quick 详情页右上角加分享按钮 https://figma.com/...
+devflow quick 接入优惠券列表接口 https://yapi.hszq8.com/...
+```
 
 ---
 
 ## 执行步骤
 
-### 1. 前置检查与自愈
+### 1. 前置检查与工作项创建（静默完成）
 
 检查 `.devflow/workspace.json`，不存在则自动执行 `devflow init`。
 
-### 2. 创建工作项（无提示，静默完成）
-
-从描述中推断：
-- `type`：feature / bug / tech / refactor
-- `slug`：英文驼峰，如 `ShareButton`
-- `title`：中文简短标题
-
-生成 ID：`{YYYYMMDD}-{slug}`，创建目录结构（同 `devflow start`）：
+从描述推断 `type` / `slug` / `title`，生成 ID `{YYYYMMDD}-{slug}`，创建目录：
 
 ```
 .devflow/work-items/{YYYYMMDD}-{slug}/
 ├── meta.json
 ├── context/
-│   └── sanitized.md   ← 直接写入 $ARGUMENTS 内容（无 raw.md 脱敏步骤）
+│   └── sanitized.md   ← 直接写入 $ARGUMENTS
 ├── spec/
-│   └── requirement.md ← 本命令结束时生成
-├── tasks.md
+│   └── requirement.md ← 分析后生成
 ├── progress.md
 └── artifacts/
 ```
 
-> **注意**：quick 场景需求描述简短且无敏感信息，`sanitized.md` 直接写入原始输入，不创建 `raw.md`。
+### 2. 立即处理资源链接
 
-更新 `workspace.json`：`currentWorkItem` 指向新工作项。
+扫描 `$ARGUMENTS` 中的链接：
+- **Figma 链接** → Figma Desktop MCP 立即读取（`get_figma_data` / `get_screenshot`）
+- **YApi 链接** → WebFetch 立即读取接口详情
 
-### 3. 立即识别并处理资源链接
+### 3. 分析 + 复杂度评估（合并完成）
 
-扫描 `$ARGUMENTS` 中的链接，立即处理（无需等待用户触发）：
+执行以下分析，**全部收集后一次性输出**（不逐段打断）：
 
-**Figma 链接**（含 `figma.com/design/` 或 `figma.com/file/`）：
-- 使用 Figma Desktop MCP 立即读取（`get_figma_data` / `get_screenshot`）
-- 提取页面层级、组件、交互状态、文案，写入后续生成的需求文档
+1. 从描述提取改动点、涉及模块
+2. `devflow-cg explore "<模块名 关键词>"` 查现有实现和影响面
+3. 检查是否需要新增/修改接口（无则跳过 YApi 搜索）
+4. 统计 CodeGraph 影响符号数量，**判断路径**
 
-**YApi / 接口链接**（含 `yapi.` 或 `/interface/api/`）：
-- WebFetch 立即读取接口详情
-- 提取字段定义、枚举值，写入后续生成的需求文档
+若有歧义，在输出中汇总为一次追问，等用户回复后继续。
 
-**均无链接时**：进入步骤 4 的 CodeGraph 自动探查。
-
-### 4. 分析与文档生成（一次性完成）
-
-直接执行 `devflow analyze` 的 **Finalize 模式**逻辑，顺序：
-
-1. **Figma 完整性检查**：发现 UI 改动但无设计稿 → 追问（同 analyze Finalize 步骤 1）
-2. **CodeGraph 代码现状核验 + 现有接口反查**（同 analyze Finalize 步骤 3）
-3. **补充歧义追问**：将识别到的歧义汇总后一次性提问（不像 Intake Mode 那样逐段打断），等用户回复后回写
-4. **生成 `spec/requirement.md`**：输出完整需求文档
-
-> **与 Intake Mode 的差异**：quick 不逐段打断追问，而是收集完所有歧义点后**汇总为一次提问**，用户回复后一次性写入文档。适合小需求节奏更快的场景。
-
-### 5. 可选：同步到 Meegle
-
-若 `workspace.json` 已配置 `meegle.projectKey`，询问是否同步创建 Meegle 工作项（同 `devflow start` 步骤 6）。
-
-### 6. Context Checkpoint
-
-写入 `progress.md`，更新 `meta.json`：`status → analyzing`，`stages.analyzed = true`。
+生成 `spec/requirement.md`（简化版，极简/快速路径只需：改动点描述 + 涉及文件 + 验收标准）。
 
 ---
 
-## 输出
+### 路径 A：极简（≤ 2 文件，直接编码）
+
+**跳过 `design` 和 `plan`**，直接编码。
+
+输出确认后执行：
+```
+✅ 极简改动，直接编码
+  涉及文件：{file1}, {file2}
+  改动说明：{一句话}
+  开始编码...
+```
+
+按 `devflow code` 的编码规范执行（质量门禁、lint/test 不跳过），完成后直接进 `devflow review`。
+
+---
+
+### 路径 B：快速（3-5 文件，内联方案后编码）
+
+**跳过独立的 `design` 文档和 `plan` 文档**，在 `requirement.md` 末尾追加一个内联方案节：
+
+```markdown
+## 快速方案（inline）
+
+**改动文件：**
+| 文件 | 改动说明 |
+|------|---------|
+| com/xxx/XxxViewModel.kt | 新增状态字段 |
+| res/layout/fragment_xxx.xml | 新增按钮控件 |
+
+**关键逻辑：**
+{一两句描述核心改动，不展开完整设计}
+
+**验收：**
+- [ ] {验收条件1}
+- [ ] {验收条件2}
+```
+
+**输出确认：**
+```
+⚙️ 快速路径确认
+  影响符号：{n} 个
+  改动文件：{n} 个
+  内联方案：已写入 requirement.md
+
+  继续编码？(y / 查看方案详情 / 转完整流程)
+```
+
+用户确认后，按内联方案直接编码，完成后进 `devflow review`。
+
+---
+
+### 路径 C：完整（转交标准流程）
+
+输出：
+```
+⚠️ 需求复杂度超出快速路径范围
+  影响符号：{n} 个（超过阈值）
+  原因：{涉及新增接口 | 影响面过大 | 需要架构决策}
+
+  已完成需求分析，建议继续：
+  → devflow design
+```
+
+`spec/requirement.md` 已生成，直接进 `devflow design` 即可，不需要重新分析。
+
+---
+
+### 4. 收尾
+
+更新 `meta.json`：
+- 极简/快速路径：`status → coding`，`stages.analyzed = true`，`stages.planned = true`
+- 完整路径：`status → analyzing`，`stages.analyzed = true`
+
+写入 `progress.md` Checkpoint。
+
+可选：若 `meegle.projectKey` 已配置，询问是否同步 Meegle 工作项。
+
+---
+
+## 输出汇总
 
 ```
-✅ 快速需求已创建并完成分析：{YYYYMMDD}-{slug}
-  类型：{type}  标题：{title}
-  Figma：{已读取 n 个节点 | 无}
-  接口：{已读取 n 个接口 | CodeGraph 反查 n 个 | 无}
-  歧义问题：{n} 个已确认 | 无歧义
-  Meegle：{已同步 | 未配置}
-
-已生成：spec/requirement.md
-
-下一步：使用 `devflow design` 开始技术设计。
+✅ 快速需求：{title}（{YYYYMMDD}-{slug}）
+  路径：{极简 → 直接编码 | 快速 → 内联方案后编码 | 完整 → 转 devflow design}
+  Figma：{已读取 | 无}
+  接口：{已读取 n 个 | 无}
+  影响符号：{n} 个
+  歧义：{n 个已确认 | 无}
 ```
