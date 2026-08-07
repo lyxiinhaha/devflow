@@ -3,5 +3,13 @@
   "meegle": {
     "projectKey": null,
     "defaultWorkItemType": null
+  },
+  "codegraph": {
+    "strategy": "single-root",
+    "roots": [
+      { "path": ".", "covers": "整个项目" }
+    ],
+    "moduleRootMap": {},
+    "lastRebuildAt": null
   }
 }

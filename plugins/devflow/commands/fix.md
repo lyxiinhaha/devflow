@@ -101,22 +101,15 @@ meegle comment list --work-item-id <id>                       # 获取全部评�
 
 ## Step 2：根因分析（四阶段 CodeGraph 法）
 
-#### 多根目录路由（执行前必须）
-
-读取 `workspace.json.codegraph`，先检查索引新鲜度（同 `devflow code` 步骤 3 的逻辑）。
-
-多根项目的查询策略：
-- 阶段一（定位入口）→ 先在涉及组件的 root 查，再在壳工程 root 补查
-- 阶段二（爆炸半径）→ 必须在**壳工程 root** 执行，才能获取完整全局调用方
-- 阶段三（修复后验证）→ 同阶段二，壳工程 root 执行
-
-详见 `references/codegraph-routing.md`。
+所有 CodeGraph 调用通过 `devflow-cg` 脚本执行（自动路由 + 新鲜度检查，不占 LLM Token）：
+- 阶段一/三（定位符号）：`devflow-cg explore "<query>"`
+- 阶段二（爆炸半径）：`devflow-cg impact <symbol>`（脚本自动在壳工程 root 执行全局查询）
 
 CodeGraph 已预先索引全部符号和调用关系，一次查询即可返回相关符号的源码、调用路径和影响链，比 grep/find 更精准高效。
 
 ### 阶段一：定位入口符号
 ```
-codegraph_explore("<关键类名、方法名或自然语言描述问题>")
+devflow-cg explore "<关键类名、方法名或自然语言描述问题>"
 ```
 - query 可以是自然语言（如"条件单列表触发条件文案生成"）或符号名
 - 返回结果包含相关符号的逐行源码、文件路径、符号间调用关系
@@ -124,7 +117,7 @@ codegraph_explore("<关键类名、方法名或自然语言描述问题>")
 
 ### 阶段二：追踪调用链（爆炸半径门禁）
 ```
-codegraph_explore("<根因方法名> 调用方 影响")
+devflow-cg explore "<根因方法名> 调用方 影响"
 ```
 
 | 直接调用方 | 风险等级 | 行为 |
@@ -154,7 +147,7 @@ codegraph_explore("<根因方法名> 调用方 影响")
 - **修复策略**：最小改动，只修当前 bug 所需内容，不引入新抽象、新依赖
 - **修复后影响面验证**：
   ```
-  codegraph_explore("<修改后符号> 影响")
+  devflow-cg explore "<修改后符号> 影响"
   ```
   强制断言：影响面不得扩大。若扩大，报错并要求修改方案后重新验证。
 
