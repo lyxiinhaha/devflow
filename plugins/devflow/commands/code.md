@@ -55,9 +55,28 @@ description: DevFlow 编码执行阶段。包含 CodeGraph 主动预警、前置
 
 从 `progress.md` 读取 Checkpoint，防止长会话遗忘关键约束。
 
-### 3. CodeGraph 主动预警
+### 3. CodeGraph 主动预警 + 多根目录路由
 
-执行 `codegraph status`。若编码期间检测到其他分支/协作者引入了对当前修改符号的新调用，**必须主动提示用户重新评估影响面**，不得静默继续。
+**索引新鲜度检查：**
+
+读取 `workspace.json.codegraph.roots`，对每个 root 执行 `codegraph status`：
+
+- 检测到 `pod install` / `pod update` 后未重建（Podfile.lock 比 `.codegraph/codegraph.db` 新）→ 提示：
+  ```
+  ⚠️ 检测到 pod update 后 CodeGraph 索引未重建。
+     建议先执行：codegraph index
+     否则影响面分析可能遗漏新增/删除的符号。是否继续？
+  ```
+- 检测到本地 path Pod 目录有文件变更（mtime 比对）但未 sync → 提示：
+  ```
+  ⚠️ 本地 Pod {pod-name} 有未同步的文件变更。
+     建议先执行：cd {pod-path} && codegraph sync
+  ```
+- 一切正常 → 继续
+
+**多根路由：** 后续所有 CodeGraph 调用按 `codegraph-routing.md` 路由。若涉及本地 path Pod 内的符号，先在该 Pod 的 root 查，再在壳工程 root 查全局影响，合并结果。
+
+若编码期间检测到其他分支/协作者引入了对当前修改符号的新调用，**必须主动提示用户重新评估影响面**，不得静默继续。
 
 ### 4. 任务执行循环
 

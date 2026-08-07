@@ -103,6 +103,13 @@ description: DevFlow 技术设计阶段。读取 spec/requirement.md（含 Figma
 
 ### 3. CodeGraph 深度分析
 
+#### 多根目录路由（执行前必须）
+
+读取 `workspace.json.codegraph`，确定查询策略：
+- **单根**：直接执行
+- **多根**：先检查索引新鲜度；查符号定义 → cd 到组件 root；查全局影响 → 壳工程 root；合并结果
+- 详见 `references/codegraph-routing.md`
+
 #### 3.1 现有代码结构分析
 
 对需求中涉及的模块/类/函数名执行：

@@ -101,6 +101,17 @@ meegle comment list --work-item-id <id>                       # 获取全部评�
 
 ## Step 2：根因分析（四阶段 CodeGraph 法）
 
+#### 多根目录路由（执行前必须）
+
+读取 `workspace.json.codegraph`，先检查索引新鲜度（同 `devflow code` 步骤 3 的逻辑）。
+
+多根项目的查询策略：
+- 阶段一（定位入口）→ 先在涉及组件的 root 查，再在壳工程 root 补查
+- 阶段二（爆炸半径）→ 必须在**壳工程 root** 执行，才能获取完整全局调用方
+- 阶段三（修复后验证）→ 同阶段二，壳工程 root 执行
+
+详见 `references/codegraph-routing.md`。
+
 CodeGraph 已预先索引全部符号和调用关系，一次查询即可返回相关符号的源码、调用路径和影响链，比 grep/find 更精准高效。
 
 ### 阶段一：定位入口符号

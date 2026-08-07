@@ -235,7 +235,20 @@ get_api_detail(apiId)
 
 ### 3. CodeGraph 代码现状核验 + 现有接口反查
 
-提取所有页面名、模块名、接口名，执行：
+#### 多根目录路由（执行查询前必须）
+
+读取 `workspace.json` 的 `codegraph` 配置，确定查询策略：
+
+- **单根项目**：直接在当前目录执行 `codegraph_explore`
+- **多根项目（iOS CocoaPods / 多仓库）**：
+  1. 先检查索引新鲜度（`codegraph status`），若检测到 `pod install` / `submodule update` 后未重建，提示用户先执行 `codegraph index` 再继续
+  2. 查符号定义和组件内部实现 → cd 到该符号所在组件的 root 路径执行
+  3. 查全局影响（谁调用了该符号）→ 在壳工程根目录（`roots[0].path`）执行
+  4. 合并两次结果，完整影响面 = 组件内调用链 + 全局调用方
+
+详细路由规则见 `references/codegraph-routing.md`。
+
+提取所有页面名、模块名、接口名，按上述路由执行：
 ```
 codegraph_explore("<提取的名词 空格分隔>")
 ```

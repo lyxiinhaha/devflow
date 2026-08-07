@@ -35,13 +35,27 @@ description: DevFlow 进度恢复。新会话或 /clear 后读取 Context Checkp
 ```
 等待用户选择，不自行决定。
 
-### 3. 读取 Context Checkpoint（核心）
+### 3. CodeGraph 索引新鲜度检查
+
+若 `workspace.json.codegraph.roots` 存在，对每个 root 快速检查：
+
+```bash
+# 比较 Podfile.lock 和 codegraph.db 的修改时间
+stat -f "%m" Podfile.lock vs stat -f "%m" .codegraph/codegraph.db
+```
+
+发现以下任一情况，在输出中加一行提醒（不阻塞流程，不强制用户操作）：
+- iOS 项目：Podfile.lock 比 `.codegraph/codegraph.db` 新 → `⚠️ 检测到 pod update，建议执行 codegraph index 后再开始分析`
+- Android 项目：`.gitmodules` 存在且 submodule 有新 commit → `⚠️ 检测到 submodule 更新，建议执行 codegraph index`
+- 本地 path Pod：对应目录有文件比 `.codegraph/codegraph.db` 新 → `⚠️ 本地 Pod {name} 有未同步变更，建议执行 cd {path} && codegraph sync`
+
+### 4. 读取 Context Checkpoint（核心）
 
 **优先读取 `progress.md` 中的 Checkpoint 表格**，快速恢复关键约束，避免重读所有长文档浪费 Token。
 
 再补充读取 `meta.json` 获取状态和各阶段完成情况。
 
-### 4. 状态机推荐
+### 5. 状态机推荐
 
 根据 `devflow.json` 的状态转换配置推荐下一步：
 
@@ -56,7 +70,7 @@ description: DevFlow 进度恢复。新会话或 /clear 后读取 Context Checkp
 | `reviewing` | `devflow retrospect` |
 | `done` | 工作项已完成，可执行 `devflow switch` 切换 |
 
-### 5. 可选：同步 Meegle 最新状态
+### 6. 可选：同步 Meegle 最新状态
 
 若 `meta.json.linkedMeegleId` 存在，拉取 Meegle 工作项最新状态展示（不主动流转）：
 ```bash
