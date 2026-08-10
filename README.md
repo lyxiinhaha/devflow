@@ -1,4 +1,4 @@
-# DevFlow  — AI 工作流
+# DevFlow v3.1.0 — AI 工作流
 
 > 从需求到交付的全流程 AI 辅助研发工作流。深度集成 **CodeGraph 知识图谱 + Meegle 项目管理 + Figma + YApi**，内置状态机、安全分级、强制复盘和 Context Checkpoint，构建自我进化的研发闭环。
 
@@ -88,11 +88,14 @@ refactor → review → retrospect
 plugins/devflow/
 ├── .claude-plugin/plugin.json     # 插件元数据
 ├── commands/                      # 19 个命令（含 frontmatter，支持自动触发）
+│   ├── quick.md                   # 快速需求（三路径自动判断）
 │   ├── sync.md                    # 团队 AI 文件同步
 │   └── ...（其余 17 个命令）
 ├── skills/
+│   ├── devflow-cg/
+│   │   └── devflow-cg.sh         # CodeGraph 多根路由脚本
 │   └── devflow-sync/
-│       └── sync-ai-files.sh      # 同步脚本
+│       └── sync-ai-files.sh      # 团队 AI 文件同步脚本
 ├── ai-files/
 │   ├── skills/                   # 团队公共 skills（由团队维护，devflow sync 分发）
 │   └── agents/                   # 团队公共 agents（可选）
@@ -100,5 +103,10 @@ plugins/devflow/
 │   ├── config/                   # devflow.json、ai-policy.json、分级配置
 │   └── templates/                # 文档模板 + bug-experience-cards.csv（20 条内置经验）
 └── references/
+    ├── codegraph-routing.md      # CodeGraph 多根目录查询规则
     └── meegle-integration.md     # Meegle CLI 调用速查
 ```
+
+---
+
+更新日志：[CHANGELOG.md](./CHANGELOG.md)
