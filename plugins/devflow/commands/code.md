@@ -36,7 +36,39 @@ description: DevFlow 编码执行阶段。包含 CodeGraph 主动预警、前置
 
 ## 执行步骤
 
-### 1. 执行范围确认
+### 1. 创建 Worktree（推荐）
+
+编码前询问是否在独立 worktree 中工作（隔离当前工作区，review 后直接提 MR）：
+
+```
+是否在独立 worktree 中编码？（推荐：隔离改动，review 后直接提 MR）
+1. 是 — 创建 worktree，分支名：feature/{YYYYMMDD}-{slug}
+2. 否 — 在当前工作区直接编码
+```
+
+**选择「是」时**，按 `using-git-worktrees` skill 的流程执行：
+
+```bash
+# 检查 worktree 目录（优先级：.worktrees/ > worktrees/ > 询问用户）
+ls -d .worktrees 2>/dev/null || ls -d worktrees 2>/dev/null
+
+# 确认目录在 .gitignore 中（不在则先添加并 commit）
+git check-ignore -q .worktrees
+
+# 创建 worktree
+git worktree add .worktrees/{slug} -b feature/{YYYYMMDD}-{slug}
+```
+
+Worktree 路径写入 `meta.json`：
+```json
+{ "worktree": ".worktrees/{slug}", "branch": "feature/{YYYYMMDD}-{slug}" }
+```
+
+**选择「否」时**：直接在当前分支编码，跳过本步骤。
+
+---
+
+### 2. 执行范围确认
 
 读取 `tasks.md`，展示未完成任务摘要，询问用户本次执行范围（除非用户已明确指定）：
 
@@ -51,11 +83,11 @@ description: DevFlow 编码执行阶段。包含 CodeGraph 主动预警、前置
 3. 执行到指定编号任务（请回复任务编号）
 ```
 
-### 2. Context Checkpoint 恢复
+### 3. Context Checkpoint 恢复
 
 从 `progress.md` 读取 Checkpoint，防止长会话遗忘关键约束。
 
-### 3. CodeGraph 主动预警
+### 4. CodeGraph 主动预警
 
 ```bash
 devflow-cg status   # 检查索引新鲜度，pod update / submodule 更新后自动提示重建
@@ -63,7 +95,7 @@ devflow-cg status   # 检查索引新鲜度，pod update / submodule 更新后�
 
 若编码期间检测到其他分支/协作者引入了对当前修改符号的新调用，**必须主动提示用户重新评估影响面**，不得静默继续。
 
-### 4. 任务执行循环
+### 5. 任务执行循环
 
 对每个待执行任务：
 
@@ -120,13 +152,13 @@ devflow-cg impact  <涉及符号>
 **f) 状态同步**
 立即将任务标记为 `- [x]`，不得批量完成后再统一标记。
 
-### 5. Context Checkpoint 更新
+### 6. Context Checkpoint 更新
 
 将本轮完成的任务摘要追加写入 `progress.md`。
 
 所有任务完成后更新 `meta.json`：`status → coding`，`stages.coded = true`。
 
-### 6. 可选：更新 Meegle 状态
+### 7. 可选：更新 Meegle 状态
 
 若 `meta.json.linkedMeegleId` 存在且所有任务已完成，询问是否流转 Meegle 状态：
 ```bash

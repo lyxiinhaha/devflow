@@ -11,6 +11,8 @@
   "createdAt": "",
   "updatedAt": "",
   "linkedMeegleId": "",
+  "worktree": "",
+  "branch": "",
   "stages": {
     "analyzed": false,
     "designed": false,

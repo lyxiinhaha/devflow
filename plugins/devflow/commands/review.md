@@ -134,7 +134,58 @@ devflow-cg impact <涉及符号>
 
 ---
 
-### 7. 可选：更新 Meegle 状态
+### 7. Worktree 合并与 MR（审查通过时）
+
+若 `meta.json.worktree` 存在（编码阶段在 worktree 中进行），审查通过（Status: APPROVED）后，按 `finishing-a-development-branch` skill 的流程处理：
+
+```
+实现已完成，代码审查通过。请选择后续操作：
+
+1. 合并到本地 <base-branch>
+2. Push 并创建 MR/PR
+3. 保留分支（稍后自行处理）
+4. 丢弃此次改动
+```
+
+**选择「2. Push 并创建 MR/PR」时**：
+```bash
+# Push 分支
+git push -u origin feature/{YYYYMMDD}-{slug}
+
+# 创建 MR（GitLab）或 PR（GitHub）
+gh pr create \
+  --title "{工作项标题}" \
+  --body "$(cat <<'EOF'
+## 改动说明
+- {来自 spec/requirement.md 的功能点}
+
+## 涉及文件
+{来自 tasks.md 的文件清单}
+
+## 验收清单
+- [ ] {来自 spec/acceptance-checklist.md，若已生成}
+
+## Meegle 工作项
+{linkedMeegleId 链接}
+EOF
+)"
+```
+
+**选择「1. 合并到本地」时**：
+```bash
+git checkout <base-branch> && git pull
+git merge feature/{YYYYMMDD}-{slug}
+git worktree remove .worktrees/{slug}
+git branch -d feature/{YYYYMMDD}-{slug}
+```
+
+**选择「3. 保留分支」时**：保留 worktree，不执行任何 git 操作。
+
+**Status 为 CHANGES REQUESTED 或 BLOCKED 时**：不触发此步骤，开发者修复问题后重新执行 `devflow review`。
+
+---
+
+### 8. 可选：更新 Meegle 状态
 
 若 `meta.json.linkedMeegleId` 存在且审查通过：
 ```bash
@@ -156,6 +207,7 @@ meegle comment add --work-item-id <id> \
 - Warning  🟡: {n}
 - Info     🟢: {n}
 - 影响面验证: {一致 | 扩大（需确认）}
+- Worktree: {feature/YYYYMMDD-slug → 等待选择合并方式 | 无 worktree}
 
 Meegle 状态：{已流转 | 未配置}
 
