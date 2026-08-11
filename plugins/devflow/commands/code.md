@@ -57,7 +57,14 @@ git check-ignore -q .worktrees
 
 # 创建 worktree
 git worktree add .worktrees/{slug} -b feature/{YYYYMMDD}-{slug}
+
+# 自动初始化 worktree 环境（软链本地文件、iOS 执行 pod install）
+bash <devflow-skill-dir>/devflow-worktree-setup/worktree-setup.sh .worktrees/{slug}
 ```
+
+脚本自动处理：
+- **Android**：软链 `local.properties`（SDK 路径）到 worktree，`gradlew` 直接可用
+- **iOS**：检查 path Pod 路径，执行 `pod install`，worktree 可直接 Xcode 打开运行
 
 Worktree 路径写入 `meta.json`：
 ```json
