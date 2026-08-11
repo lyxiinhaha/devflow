@@ -1,6 +1,6 @@
 ---
 name: devflow-code
-description: DevFlow 编码执行阶段。包含 CodeGraph 主动预警、前置检查门禁、L0 安全限制，完成后可更新 Meegle 状态。当用户说「开始编码」「执行编码」「devflow code」或需要按任务清单实现代码时触发。
+description: DevFlow 编码执行阶段。默认在独立 worktree 中编码（隔离改动，review 后直接提 MR），传入 noworktree 参数跳过。包含 CodeGraph 主动预警、前置检查门禁、L0 安全限制。当用户说「开始编码」「执行编码」「devflow code」或需要按任务清单实现代码时触发。
 ---
 
 # devflow code — 执行编码
@@ -36,20 +36,19 @@ description: DevFlow 编码执行阶段。包含 CodeGraph 主动预警、前置
 
 ## 执行步骤
 
-### 1. 创建 Worktree（推荐）
+### 1. 创建 Worktree
 
-编码前询问是否在独立 worktree 中工作（隔离当前工作区，review 后直接提 MR）：
+**默认行为：在独立 worktree 中编码。** 传入 `noworktree` 参数时跳过。
 
 ```
-是否在独立 worktree 中编码？（推荐：隔离改动，review 后直接提 MR）
-1. 是 — 创建 worktree，分支名：feature/{YYYYMMDD}-{slug}
-2. 否 — 在当前工作区直接编码
+devflow code              ← 默认，创建 worktree
+devflow code noworktree   ← 跳过 worktree，在当前工作区直接编码
 ```
 
-**选择「是」时**，按 `using-git-worktrees` skill 的流程执行：
+**创建流程：**
 
 ```bash
-# 检查 worktree 目录（优先级：.worktrees/ > worktrees/ > 询问用户）
+# 检查 worktree 目录（优先级：.worktrees/ > worktrees/ > 使用 .worktrees/）
 ls -d .worktrees 2>/dev/null || ls -d worktrees 2>/dev/null
 
 # 确认目录在 .gitignore 中（不在则先添加并 commit）
@@ -70,8 +69,6 @@ Worktree 路径写入 `meta.json`：
 ```json
 { "worktree": ".worktrees/{slug}", "branch": "feature/{YYYYMMDD}-{slug}" }
 ```
-
-**选择「否」时**：直接在当前分支编码，跳过本步骤。
 
 ---
 
