@@ -1,5 +1,91 @@
 # Changelog
 
+## v3.2.0 — 2026-08-11
+
+### Worktree 并行开发支持
+
+#### `devflow code` — 默认 worktree 模式
+
+编码阶段默认在独立 worktree 中进行，无需手动选择：
+
+```bash
+devflow code              # 默认，自动创建 worktree
+devflow code noworktree   # 跳过 worktree，在当前工作区直接编码
+```
+
+创建 worktree 后自动执行 `worktree-setup.sh` 完成环境初始化，worktree 可直接构建真机包：
+
+- **Android**：软链 `local.properties`（SDK 路径），`gradlew` 立即可用
+- **iOS**：检查 path Pod 路径，执行 `pod install`，可直接 Xcode 打开
+
+#### 新增 `skills/devflow-worktree-setup/worktree-setup.sh`
+
+一键处理 worktree 的本地文件软链和环境初始化，不需要手动处理：
+
+| 项目类型 | 自动处理内容 |
+|---------|-----------|
+| Android | 软链 `local.properties`、`keystore.properties`、`signing.properties` |
+| iOS | 检测外部 path Pod 并警告，执行 `pod install` |
+
+#### `devflow review` — 审查通过后选择合并/提 MR
+
+审查通过（APPROVED）后提供 4 个选项（基于 `finishing-a-development-branch` skill）：
+
+```
+1. 合并到本地 <base-branch>
+2. Push 并创建 MR/PR         ← MR body 自动填充改动说明、文件清单、验收清单链接
+3. 保留分支（稍后处理）
+4. 丢弃此次改动
+```
+
+BLOCKED / CHANGES REQUESTED 时不触发，修复后重跑 review。
+
+---
+
+### workspace.json 多工作项并行支持
+
+`workspace.json` 结构升级，支持多个工作项同时进行：
+
+```json
+// 之前
+{ "currentWorkItem": "20260811-UserAvatarUpload" }
+
+// 之后
+{
+  "focus": "20260811-UserAvatarUpload",
+  "activeWorkItems": [
+    {
+      "id": "20260811-UserAvatarUpload",
+      "title": "用户头像上传",
+      "status": "coding",
+      "worktree": ".worktrees/UserAvatarUpload",
+      "branch": "feature/20260811-UserAvatarUpload",
+      "startedAt": "2026-08-11T10:00:00Z"
+    },
+    {
+      "id": "20260810-PaymentRefactor",
+      "title": "支付模块重构",
+      "status": "designing",
+      "worktree": ".worktrees/PaymentRefactor",
+      "branch": "feature/20260810-PaymentRefactor",
+      "startedAt": "2026-08-10T14:00:00Z"
+    }
+  ]
+}
+```
+
+**各命令行为变化：**
+
+| 命令 | 之前 | 之后 |
+|------|------|------|
+| `devflow code` | 切换 currentWorkItem | 追加到 activeWorkItems，不影响其他项 |
+| `devflow switch` | 覆盖 currentWorkItem | 只切换 focus，其他项继续跑 |
+| `devflow continue` | 恢复单个工作项 | 展示所有并行项，选焦点后恢复 |
+| `devflow list` | 平铺所有工作项 | 活跃分组额外显示 worktree 路径和存在状态 |
+| review 合并后 | 无感知 | 从 activeWorkItems 移除，focus 自动切到下一项 |
+
+---
+
 ## v3.1.1 — 2026-08-11
 
 ### 新增 `devflow checklist` — 真机验收清单

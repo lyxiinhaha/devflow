@@ -2,7 +2,7 @@
   "name": "devflow",
   "displayName": "DevFlow — AI 工作流 v3",
   "description": "从需求到交付的全流程 AI 辅助研发工作流。深度集成 CodeGraph 知识图谱 + Meegle 项目管理，内置状态机、安全分级、强制复盘和 Context Checkpoint，构建自我进化的研发闭环。",
-  "version": "3.1.1",
+  "version": "3.2.0",
   "author": {
     "name": "Yeesin"
   },
