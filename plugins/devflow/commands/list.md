@@ -1,11 +1,11 @@
 ---
 name: devflow-list
-description: DevFlow 工作项列表总览。列出所有本地工作项状态，可选同步展示 Meegle 状态。当用户说「查看工作项」「列出需求」「devflow list」或想了解当前有哪些进行中的需求时触发。
+description: DevFlow 工作项列表总览。展示所有活跃并行工作项（含 worktree 状态）和已完成项，可选同步 Meegle 状态。当用户说「查看工作项」「列出需求」「devflow list」时触发。
 ---
 
 # devflow list — 查看工作项列表
 
-**用途：** 按状态分组展示所有工作项，输出完整字段（ID / 标题 / 类型 / 状态 / 优先级 / 最后更新时间），可选同步 Meegle 最新状态。
+**用途：** 展示所有工作项状态，重点呈现并行中的活跃工作项及其 worktree 状态，可选同步 Meegle 状态。
 
 ---
 
@@ -24,31 +24,22 @@ No work items found. 请先执行 devflow start 创建工作项。
 
 ### 1. 读取所有工作项
 
-扫描 `.devflow/work-items/`，读取每个 `meta.json`，提取：
-- ID（`{YYYYMMDD}-{slug}`）
-- 标题（`title`）
-- 类型（`type`）
-- 状态（`status`）
-- 优先级（`priority`）
-- 最后更新时间（`updatedAt`）
-- Meegle ID（`linkedMeegleId`，若有）
+- 扫描 `.devflow/work-items/`，读取每个 `meta.json`
+- 合并 `workspace.json.activeWorkItems` 中的 worktree / branch 信息
+- 检查 worktree 目录是否实际存在（`git worktree list` 验证）
 
-### 2. 按状态分组
+### 2. 分组展示
 
 按以下三组组织：
-- **Active**：status 为 `created / analyzing / designing / planning / estimating / coding / reviewing`
-- **Paused**（当前非 active 且未完成）：保留但不活跃的工作项
-- **Completed**：status 为 `done`
-
-若某分组无工作项，显示 `None`。
+- **Active**（并行进行中）：在 `activeWorkItems` 中的工作项
+- **Paused**：有进度但不在 activeWorkItems 中
+- **Completed**：`status = done`
 
 ### 3. 可选：同步 Meegle 状态
 
-若传入 `--sync` 参数，且存在 `linkedMeegleId` 的工作项，批量拉取 Meegle 状态：
+传入 `--sync` 时批量拉取：
 ```bash
-meegle workitem batch-get \
-  --work-item-ids <id1>,<id2> \
-  --fields '["name","status"]'
+meegle workitem batch-get --work-item-ids <ids> --fields '["name","status"]'
 ```
 
 ---
@@ -56,18 +47,31 @@ meegle workitem batch-get \
 ## 输出
 
 ```
-### Project Workspaces
+DevFlow 工作项
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  活跃（{n} 个并行中）
 
-#### Active (n)
-- **[*]** {YYYYMMDD}-{slug}  {type}  {status}  P{priority}  更新 2h 前  Meegle: {状态|未关联}
+  [*] 20260811-UserAvatarUpload   feature   coding
+      Worktree：.worktrees/UserAvatarUpload  ✓ 存在
+      Branch：feature/20260811-UserAvatarUpload
+      Meegle：开发中
 
-#### Paused (n)
-- **[ ]** {YYYYMMDD}-{slug}  {type}  paused    P{priority}  更新 2天 前
+  [ ] 20260810-PaymentRefactor    tech      designing
+      Worktree：.worktrees/PaymentRefactor   ✓ 存在
+      Branch：feature/20260810-PaymentRefactor
+      Meegle：需求确认
 
-#### Completed (n)
-- **[✓]** {YYYYMMDD}-{slug}  {type}  done      P{priority}  更新 5天 前
+  [ ] 20260809-BugFix-LoginCrash  bug       planning
+      Worktree：无（无 worktree）
 
-─────────────────────────────────────────
-总计：{n} 个工作项（Active: {a}，Completed: {c}）
-使用 `devflow switch` 切换工作项
+  暂停
+  [ ] 20260801-OldFeature         feature   analyzing   更新 5天前
+
+  已完成
+  [✓] 20260728-DarkMode           feature   done        更新 14天前
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+合计：{n} 个（活跃 {a}，暂停 {p}，已完成 {c}）
+[*] = 当前焦点
+
+使用 `devflow switch` 切换焦点工作项
 ```

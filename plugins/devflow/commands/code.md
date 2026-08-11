@@ -65,10 +65,24 @@ bash <devflow-skill-dir>/devflow-worktree-setup/worktree-setup.sh .worktrees/{sl
 - **Android**：软链 `local.properties`（SDK 路径）到 worktree，`gradlew` 直接可用
 - **iOS**：检查 path Pod 路径，执行 `pod install`，worktree 可直接 Xcode 打开运行
 
-Worktree 路径写入 `meta.json`：
+Worktree 路径写入 `meta.json`，同时注册到 `workspace.json.activeWorkItems`：
 ```json
-{ "worktree": ".worktrees/{slug}", "branch": "feature/{YYYYMMDD}-{slug}" }
+{
+  "focus": "{YYYYMMDD}-{slug}",
+  "activeWorkItems": [
+    {
+      "id": "{YYYYMMDD}-{slug}",
+      "title": "{title}",
+      "status": "coding",
+      "worktree": ".worktrees/{slug}",
+      "branch": "feature/{YYYYMMDD}-{slug}",
+      "startedAt": "{ISO时间戳}"
+    }
+  ]
+}
 ```
+
+已有其他活跃工作项时，追加到 `activeWorkItems` 数组，不覆盖。
 
 ---
 

@@ -1,5 +1,6 @@
 {
-  "currentWorkItem": null,
+  "focus": null,
+  "activeWorkItems": [],
   "meegle": {
     "projectKey": null,
     "defaultWorkItemType": null

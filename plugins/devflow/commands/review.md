@@ -177,6 +177,7 @@ git checkout <base-branch> && git pull
 git merge feature/{YYYYMMDD}-{slug}
 git worktree remove .worktrees/{slug}
 git branch -d feature/{YYYYMMDD}-{slug}
+# 从 workspace.json.activeWorkItems 中移除该工作项，更新 focus 为下一个活跃项（若有）
 ```
 
 **选择「3. 保留分支」时**：保留 worktree，不执行任何 git 操作。
