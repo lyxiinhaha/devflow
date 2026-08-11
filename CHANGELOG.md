@@ -1,5 +1,32 @@
 # Changelog
 
+## v3.1.1 — 2026-08-11
+
+### 新增 `devflow checklist` — 真机验收清单
+
+基于 `spec/requirement.md` 和 `spec/design.md` 生成可直接交付测试人员的结构化清单：
+- 自动识别是否有前端页面（按信号词检测），有则强制输出进入路径
+- 判断前提条件复杂度，难以真实构造的状态自动生成 Mock 接口表格
+- 每条 AC 对应具体可观测的检查点（不允许「正确展示」这类模糊表述）
+- 清单末尾附回归验证表（结合 CodeGraph impact 识别影响范围）
+- 优先读取项目配置的专项 skill（`sahm-acceptance-checklist` 等），降级到通用规范
+
+查找路径（按优先级）：
+```
+{项目根}/.claude/skills/sahm-acceptance-checklist/
+{项目根}/.ai/skills/sahm-acceptance-checklist/
+~/.claude/skills/sahm-acceptance-checklist/
+/Users/apple/AndroidStudioProjects/hssa/.claude/skills/sahm-acceptance-checklist/
+```
+
+清单写入 `spec/acceptance-checklist.md`。
+
+### `devflow review` 委托专项 skill
+
+优先委托 `sahm-code-review-android` / `sahm-code-review-ios` 执行深度审查（平台特有的内存/并发/安全规则），降级通用四维度审查。兜底路径：`/Users/apple/work/workflow/app-agent-assets/src/skills/`。
+
+---
+
 ## v3.1.0 — 2026-08-10
 
 ### 多工程项目兼容

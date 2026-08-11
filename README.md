@@ -45,7 +45,7 @@ refactor → review → retrospect
 
 ---
 
-## 19 个命令
+## 20 个命令
 
 | 命令 | 核心能力 |
 |------|---------|
@@ -57,9 +57,10 @@ refactor → review → retrospect
 | `devflow estimate` | 三点置信区间估算，历史 Bug 密度因子，可更新 Meegle 排期 |
 | `devflow plan` | 标准化任务格式，Bug 经验召回，静默输出 tasks.md |
 | `devflow code` | 执行范围选择，编码禁令，lint/test 质量门禁 |
+| `devflow checklist` | **生成真机验收清单**：进入路径、Mock 数据、逐条 AC 检查点、回归验证表 |
 | `devflow fix` | Meegle issue 批量处理，四阶段 CodeGraph 根因分析（含原子修复方案），90 分准入门禁，生成完整修复清单，人工验证后提交 |
 | `devflow refactor` | 测试基线验证，重构后一致性断言 |
-| `devflow review` | 四维度审查，CRITICAL 阻断合并 |
+| `devflow review` | 优先委托专项 review skill（Android/iOS），降级通用四维度审查，CRITICAL 阻断合并 |
 | `devflow retrospect` | 经验卡去重入库，关闭 Meegle 工作项 |
 | `devflow onboard` | CodeGraph 架构导览，历史 Bug 热点，Meegle 近期工作项 |
 | `devflow continue` | 读取 Checkpoint，新会话快速恢复，展示 Meegle 状态 |
