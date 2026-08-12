@@ -11,20 +11,28 @@ description: DevFlow 工作区初始化。检查并配置 CodeGraph 与 Meegle�
 
 ## 前置条件
 
-- 必须在项目根目录执行。若当前目录不是根目录（无 README、构建配置文件、包管理文件或源码目录），必须提示用户切换目录后再继续，不得猜测。
+- 必须在项目根目录执行。若当前目录不是根目录（无 README、构建配置文件、包管理文件或源码目录），**且也不是空目录或只有 `.git/`**，则提示用户切换目录后再继续，不得猜测。
 
 ---
 
 ## 执行步骤
 
-### 1. 根目录校验
+### 1. 根目录校验与项目类型判断
 
-基于以下任一特征判断是否为项目根目录：README.md、package.json、build.gradle、Cargo.toml、pom.xml、Makefile、Podfile、*.xcodeproj、src/ 目录存在。
+检测以下特征，按三种情况分支处理：
 
-不满足时输出：
+**情况 A：已有项目**（存在任一：README.md、package.json、build.gradle、Cargo.toml、pom.xml、Makefile、Podfile、`*.xcodeproj`、src/ 目录）
+→ 继续执行步骤 2（技术栈检测）
+
+**情况 B：全新空项目**（目录为空，或只有 `.git/`，或只有 `.git/` + README.md）
+→ 跳转至步骤 2-NEW（新项目引导模式）
+
+**情况 C：无法判断**（有文件但无法识别为上述任何一种）
+→ 输出：
 ```
 ✗ 当前目录不像项目根目录。
   请切换到项目根目录后重新执行 devflow init。
+  如果这是一个全新项目，请确保在项目根目录下执行（空目录或只含 .git 均可）。
 ```
 
 ### 2. 技术栈检测与项目画像
@@ -234,6 +242,68 @@ cat package.json | grep workspaces
 - 依赖声明中存在某组件但配置文件无连接信息 → 注明"依赖中存在，连接配置未确认"
 - 完全无法识别某层技术 → 在画像中留空并注明"未检测到，请手动补充"
 - 检测完成后将画像摘要展示给用户，明确询问："以上技术栈信息是否准确？如有遗漏或错误，请告知，我会更新画像。"
+
+---
+
+### 2-NEW. 新项目引导模式（情况 B 专用）
+
+目录为空或只有 `.git/` 时，切换为对话式引导，逐步收集技术栈信息，最终产物与步骤 2c 相同（`devflow-profile.md` + `workspace.json.techStack`）。
+
+**第一步：技术栈选择**
+
+```
+这是一个全新项目，我来帮你完成初始配置。
+
+请选择项目的主要技术栈（可多选，输入编号，逗号分隔）：
+
+  1.  Android（Kotlin / Java）
+  2.  iOS（Swift / Objective-C）
+  3.  KMP（Kotlin Multiplatform，Android + iOS 共享代码）
+  4.  Flutter
+  5.  Vue 3
+  6.  React / Next.js
+  7.  Node.js 服务端（Express / Koa / NestJS / Fastify）
+  8.  Spring Boot / Java 后端
+  9.  Go
+  10. Python（Django / Flask / FastAPI）
+  11. 其他（请说明）
+```
+
+**第二步：数据库 / 存储（按检测到的技术栈按需询问）**
+
+```
+项目是否使用数据库或存储服务？（可多选，跳过请直接回车）
+
+  1. MySQL / MariaDB
+  2. PostgreSQL
+  3. MongoDB
+  4. Redis
+  5. SQLite
+  6. Elasticsearch
+  7. 对象存储（OSS / S3）
+  8. 其他
+```
+
+**第三步：项目名称**
+
+```
+请输入项目名称（用于生成画像文档，直接回车跳过）：
+```
+
+**收集完成后：**
+
+按回答内容生成 `devflow-profile.md` 和 `workspace.json.techStack`，格式与步骤 2c 一致，版本字段填"待配置"（因为还没有实际代码）。
+
+然后询问是否生成项目骨架文件：
+
+```
+是否需要生成以下基础文件？（可多选，跳过请直接回车）
+
+  1. .gitignore（按所选技术栈自动生成）
+  2. README.md（项目简介骨架）
+```
+
+选择后立即生成对应文件，然后继续执行步骤 2d（配置 Review Skill）及后续步骤。
 
 ---
 
@@ -695,10 +765,13 @@ meegle --version
 
 ## 输出
 
+已有项目（情况 A）：
+
 ```
 ✅ DevFlow 初始化完成！
 
   根目录：{path}
+  模式：已有项目（自动检测技术栈）
 
   ── 技术栈画像 ────────────────────────────────
   语言：{Kotlin + Swift | TypeScript | Java | Go | Python | ...}
@@ -726,4 +799,35 @@ meegle --version
   .gitignore：已更新
 
 现在可以使用 `devflow start` 创建第一个需求，或 `devflow fix` 修复 Bug。
+```
+
+全新项目（情况 B）：
+
+```
+✅ DevFlow 初始化完成！
+
+  根目录：{path}
+  模式：全新项目（对话式配置）
+
+  ── 技术栈画像 ────────────────────────────────
+  语言：{用户选择的技术栈}
+  数据库：{用户选择的数据库 | 未配置}
+  完整画像：.devflow/devflow-profile.md
+  （技术栈版本信息待编码后自动补充）
+
+  ── 代码审查 ──────────────────────────────────
+  Review Skill：{已配置 n 个专项 skill | 未配置，将使用通用四维度审查}
+
+  ── CodeGraph ─────────────────────────────────
+  索引：暂无代码，待第一次 devflow code 完成后执行 codegraph init
+
+  ── 骨架文件 ──────────────────────────────────
+  .gitignore：{已生成 | 已跳过}
+  README.md：{已生成 | 已跳过}
+
+  ── 配置 ──────────────────────────────────────
+  Meegle：{已连接（用户：xxx）| 未配置}
+  安全分级：{L0 | L1 | L2}
+
+现在可以使用 `devflow start` 创建第一个需求。
 ```
