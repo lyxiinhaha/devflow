@@ -752,6 +752,23 @@ meegle --version
 
 1. **安全分级确认**：展示默认值，请求用户确认并写入。
 2. **Meegle 空间配置**（可选）：若有，执行 `meegle project search` 获取 `project_key` 写入 `workspace.json`。
+3. **外部集成配置**（可选，跳过请直接回车）：
+
+   **YApi 地址：**
+   ```
+   项目是否使用 YApi 管理接口文档？
+   请输入 YApi 域名（如：yapi.example.com），跳过请直接回车：
+   > 
+   ```
+   有输入则写入 `workspace.json.integrations.yapiHost`；留空则跳过，analyze / design 命令遇到 YApi 链接时会提示配置。
+
+   **专项验收清单 Skill：**
+   ```
+   是否有项目专项的验收清单 Skill？（devflow checklist 会优先使用）
+   请输入 Skill 名称（如：my-acceptance-checklist），跳过请直接回车：
+   > 
+   ```
+   有输入则写入 `workspace.json.checklistSkill`；留空则 devflow checklist 使用内置通用规范。
 
 ---
 

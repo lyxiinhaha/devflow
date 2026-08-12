@@ -125,16 +125,20 @@ description: DevFlow 需求分析阶段。支持两种模式：（1）Intake Mod
 
 识别规则：URL 包含 `yapi.`、`/interface/api/`、`apifox.com`、`/api/detail`
 
+**YApi Host 解析规则（每次调用 YApi 前执行）：**
+
+优先级：① 用户当前消息中直接给出的完整 URL（从 URL 提取 host） → ② `.devflow/workspace.json` 的 `integrations.yapiHost` 字段 → ③ 均无配置则跳过 YApi 步骤，继续后续流程（YApi 为可选集成）。
+
 **① YApi WebFetch（首选）**
 
 ```
-WebFetch: https://{your-yapi-host}/api/interface/get?id={接口ID}
+WebFetch: https://{yapiHost}/api/interface/get?id={接口ID}
 ```
 从 URL 中提取接口 ID（`/api/{id}` 路径段或 `id=` 参数）。
 
 若用户只提供了项目链接（无具体接口 ID），先搜索：
 ```
-WebFetch: https://{your-yapi-host}/api/interface/list?project_id={pid}&page=1&limit=20
+WebFetch: https://{yapiHost}/api/interface/list?project_id={pid}&page=1&limit=20
 ```
 按接口路径或名称匹配，找到后读取接口详情。
 
@@ -246,11 +250,11 @@ devflow-cg explore "<提取的名词 空格分隔>"
 1. 从 CodeGraph 结果中提取现有模块的类名、Repository 名、Service 名
 2. 用模块名/路径关键词在 YApi 中搜索关联接口：
    ```
-   WebFetch: https://{your-yapi-host}/api/interface/list_menu?project_id={pid}
+   WebFetch: https://{yapiHost}/api/interface/list_menu?project_id={pid}
    ```
    或按路径前缀搜索：
    ```
-   WebFetch: https://{your-yapi-host}/api/interface/list?project_id={pid}&page=1&limit=50
+   WebFetch: https://{yapiHost}/api/interface/list?project_id={pid}&page=1&limit=50
    ```
    筛选路径中包含模块关键词的接口（如 `/user/avatar`、`/profile/` 等）
 

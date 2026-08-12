@@ -5,6 +5,12 @@
     "projectKey": null,
     "defaultWorkItemType": null
   },
+  "integrations": {
+    "yapiHost": "",
+    "yapiProjectId": null
+  },
+  "checklistSkill": null,
+  "reviewSkills": [],
   "codegraph": {
     "strategy": "single-root",
     "roots": [

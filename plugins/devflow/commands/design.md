@@ -206,7 +206,9 @@ devflow-cg explore <symbol>
 
 #### 接口信息收集（四步优先级）
 
-在进行接口设计前，按以下顺序收集接口信息，**每一步有结果就停止，不跳级**：
+在进行接口设计前，按以下顺序收集接口信息，**每一步有结果就停止，不跳级**。
+
+**YApi Host 解析（调用 YApi 前执行）：** 读取 `.devflow/workspace.json` 的 `integrations.yapiHost` 字段作为 `{yapiHost}`；未配置则跳过 YApi 步骤，直接追问用户。
 
 **① 优先用 `spec/requirement.md` 已有数据**
 
@@ -227,7 +229,7 @@ codegraph_explore("<模块名 数据对象名 接口路径关键词>")
 
 找到后在 YApi 中验证：
 ```
-WebFetch: https://{your-yapi-host}/api/interface/list?project_id={pid}&limit=50
+WebFetch: https://{yapiHost}/api/interface/list?project_id={pid}&limit=50
 ```
 按路径匹配，找到则读取完整接口详情，补充到 `spec/requirement.md` 的「接口依赖」章节，标注来源 `[CodeGraph 反查]`。
 
@@ -235,7 +237,7 @@ WebFetch: https://{your-yapi-host}/api/interface/list?project_id={pid}&limit=50
 
 若 CodeGraph 未找到对应实现，按功能关键词在 YApi 搜索：
 ```
-WebFetch: https://{your-yapi-host}/api/interface/list?project_id={pid}&limit=100
+WebFetch: https://{yapiHost}/api/interface/list?project_id={pid}&limit=100
 ```
 按接口路径或名称模糊匹配（如需求涉及「头像」，搜索 `avatar`、`profile`、`user`）。
 
@@ -248,7 +250,7 @@ WebFetch: https://{your-yapi-host}/api/interface/list?project_id={pid}&limit=100
 ```
 ⚠️ 已通过 CodeGraph 和 YApi 搜索，未找到「{功能点}」相关接口。
    请提供以下任一信息：
-   · YApi 接口链接：https://{your-yapi-host}/project/.../interface/api/...
+   · YApi 接口链接
    · 接口路径或名称（如：POST /user/avatar/upload）
    · 若此接口需新增，请确认「新增接口，由前端起草」或「后端已有草稿，链接：...」
 ```
