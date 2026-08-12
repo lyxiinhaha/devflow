@@ -117,6 +117,20 @@ description: DevFlow 生成真机验收清单。基于当前工作项的需求�
 .devflow/work-items/{id}-{slug}/spec/acceptance-checklist.md
 ```
 
+**若当前工作项在 worktree 中编码（`meta.json.worktree` 存在）**，在清单头部加上 worktree 路径信息，方便用其他编辑器打开调试：
+
+```markdown
+## 调试环境
+
+| 项 | 路径 |
+|----|------|
+| Worktree | `{项目根}/{worktree路径}`（如 `/Users/xxx/proj/.worktrees/UserAvatarUpload`） |
+| 分支 | `{branch}`（如 `feature/20260812-UserAvatarUpload`） |
+| 直接打开 | `open {项目根}/{worktree路径}` |
+
+> 在此 worktree 目录下直接用 Xcode / Android Studio / VS Code 打开即可，环境已初始化。
+```
+
 同时在对话中完整输出，方便直接复制给测试人员。
 
 ---
@@ -149,6 +163,7 @@ description: DevFlow 生成真机验收清单。基于当前工作项的需求�
   需要 Mock 的场景: {n} 个
   有前端页面: {是 | 否}
   回归验证项: {n} 条
+  Worktree: {绝对路径 | 无 worktree}
 
   已写入: spec/acceptance-checklist.md
 ```
