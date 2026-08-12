@@ -477,7 +477,85 @@ Python 代码审查规范。由 devflow init 自动生成，可按项目实际�
 
 ---
 
-**文件生成后告知用户：**
+*Vue 3：*
+
+```markdown
+<!-- @meta skill_name -->
+devflow-review-vue
+<!-- @meta version -->
+1.0.0
+<!-- @meta platform_label -->
+Vue 3
+<!-- @meta description -->
+Vue 3 代码审查规范。由 devflow init 自动生成，可按项目实际情况修改。
+<!-- @meta stack_detection -->
+命中条件（满足任一即使用本规范）：
+- diff 含 *.vue
+- package.json 含 "vue" 依赖且版本 >= 3
+- 存在 vite.config.ts / vite.config.js 且 package.json 含 vue
+<!-- @meta core_checklist -->
+## 核心审查清单
+
+| 维度 | 检查项 |
+|------|--------|
+| Composition API | ref/reactive 选择是否合理、computed 是否有副作用、watch/watchEffect 依赖声明完整性 |
+| 响应式陷阱 | 解构响应式对象丢失响应性（应用 toRefs）、直接替换整个 reactive 对象、数组索引赋值 |
+| 生命周期 | onMounted/onUnmounted 配对（事件监听、定时器、WebSocket）、setup 中异步操作未处理错误 |
+| 组件通信 | props 类型声明、emit 事件声明、v-model 双向绑定正确性 |
+| 模板安全 | v-html 使用（XSS 风险）、用户输入直接渲染、动态 :href/:src 未过滤 javascript: |
+| 性能 | v-for 缺少 :key 或 key 用 index、不必要的 v-if+v-for 同层、大列表未虚拟化、组件未按需懒加载 |
+| Pinia / Vuex | store action 异常处理、getter 缓存正确性、跨 store 依赖循环 |
+| TypeScript | 组件 props/emits 类型声明、模板 ref 类型标注、any 使用 |
+
+<!-- 项目专项规则 —— 请在下方添加本项目特有的审查规则 -->
+<!-- @meta domain_hit_rules -->
+<!-- 示例：diff 含 payment/checkout → 检查 XSS 和输入校验 -->
+<!-- 示例：diff 含 *.vue 且含表单元素 → 检查 v-model 校验逻辑 -->
+<!-- 在此添加本项目的领域命中规则 -->
+<!-- @meta end -->
+```
+
+---
+
+*Node.js 服务端：*
+
+```markdown
+<!-- @meta skill_name -->
+devflow-review-nodejs
+<!-- @meta version -->
+1.0.0
+<!-- @meta platform_label -->
+Node.js (Express / Koa / NestJS / Fastify)
+<!-- @meta description -->
+Node.js 服务端代码审查规范。由 devflow init 自动生成，可按项目实际情况修改。
+<!-- @meta stack_detection -->
+命中条件（满足任一即使用本规范）：
+- package.json 含 express / koa / fastify / @nestjs/core 依赖
+- diff 含 *.ts / *.js 且在 src/ 下，且项目无前端框架特征（无 *.vue / 无 react）
+- 存在 tsconfig.json 且 package.json 含 @types/node
+<!-- @meta core_checklist -->
+## 核心审查清单
+
+| 维度 | 检查项 |
+|------|--------|
+| 安全 | SQL/NoSQL 注入（字符串拼接查询）、命令注入（exec/spawn 拼接用户输入）、路径穿越（../）、不安全的反序列化 |
+| 认证与授权 | 中间件鉴权是否挂载到路由、JWT 验签逻辑、敏感接口缺少权限校验 |
+| 输入校验 | 用户输入未校验直接使用、缺少类型校验和长度限制、文件上传类型/大小未限制 |
+| 异步错误 | Promise 未 catch、async 函数未 try/catch、Express 异步错误未传给 next(err) |
+| 资源泄漏 | 数据库连接/文件句柄未关闭、流未 destroy、定时器未清理 |
+| 敏感信息 | 密钥/Token 硬编码在代码中（应读环境变量）、错误响应暴露堆栈信息、日志打印敏感字段 |
+| 性能 | 同步 IO（fs.readFileSync 在请求路径上）、大结果集未分页、缺少缓存的高频查询 |
+| 依赖安全 | 新增第三方包是否必要、是否有已知漏洞版本（可提示运行 npm audit） |
+
+<!-- 项目专项规则 —— 请在下方添加本项目特有的审查规则 -->
+<!-- @meta domain_hit_rules -->
+<!-- 示例：diff 含 /api/payment → 检查幂等性和金额精度 -->
+<!-- 示例：diff 含 multer/formidable → 检查文件上传安全 -->
+<!-- 在此添加本项目的领域命中规则 -->
+<!-- @meta end -->
+```
+
+---
 ```
 ✅ 已生成 Review Skill 文件：
    .ai/skills/devflow-review-{技术栈标识}/skill.meta.md
