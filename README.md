@@ -1,4 +1,4 @@
-# DevFlow v3.2.0 — AI 工作流
+# DevFlow v3.3.0 — AI 工作流
 
 > 从需求到交付的全流程 AI 辅助研发工作流。深度集成 **CodeGraph 知识图谱 + Meegle 项目管理 + Figma + YApi**，内置状态机、安全分级、强制复盘和 Context Checkpoint，构建自我进化的研发闭环。
 
@@ -18,7 +18,11 @@ claude plugins install devflow
 devflow init
 ```
 
-AI 自动完成：检查 CodeGraph / Meegle 状态、建立 `.devflow/` 目录、写入 `.gitignore`、确认安全分级。
+AI 自动完成：**检测技术栈并生成项目画像**、配置 CodeGraph / Meegle、建立 `.devflow/` 目录、写入 `.gitignore`、确认安全分级、配置专项 Review Skill。
+
+支持两种场景：
+- **已有项目**：自动扫描特征文件识别技术栈（Android / iOS / KMP / Vue / React / Node.js / Spring Boot / Go / Python 等）
+- **全新项目**：对话式引导选择技术栈，可生成 `.gitignore` / `README.md` 骨架
 
 ### 第三步：开始开发
 
@@ -49,18 +53,18 @@ refactor → review → retrospect
 
 | 命令 | 核心能力 |
 |------|---------|
-| `devflow init` | 配置 CodeGraph + Meegle，建立工作区，写入 .gitignore |
+| `devflow init` | 自动检测技术栈生成项目画像，配置专项 Review Skill，建立工作区 |
 | `devflow start` | 创建工作项，进入需求收集模式（Intake Mode） |
 | `devflow quick` | **快速需求**：需求描述直接作为输入，跳过 PRD，一步完成分析 |
 | `devflow analyze` | 边录边析：逐段输入即时解析，读 Figma / YApi，CodeGraph 反查现有接口 |
 | `devflow design` | 爆炸半径评估，边设计边追问，生成内部设计文档；冻结后生成可走查的对外技术方案（时序图/文件清单/真实接口签名/埋点/多语言 Key/测试验收清单） |
 | `devflow estimate` | 三点置信区间估算，历史 Bug 密度因子，可更新 Meegle 排期 |
 | `devflow plan` | 标准化任务格式，Bug 经验召回，静默输出 tasks.md |
-| `devflow code` | 执行范围选择，编码禁令，lint/test 质量门禁 |
-| `devflow checklist` | **生成真机验收清单**：进入路径、Mock 数据、逐条 AC 检查点、回归验证表 |
+| `devflow code` | 执行范围选择，编码禁令，lint/test 质量门禁，**所有任务完成后自动编译验证** |
+| `devflow checklist` | **生成真机验收清单**：进入路径、Mock 数据、逐条 AC 检查点、回归验证表，含 Worktree 绝对路径 |
 | `devflow fix` | Meegle issue 批量处理，四阶段 CodeGraph 根因分析（含原子修复方案），90 分准入门禁，生成完整修复清单，人工验证后提交 |
 | `devflow refactor` | 测试基线验证，重构后一致性断言 |
-| `devflow review` | 优先委托专项 review skill（Android/iOS），降级通用四维度审查，CRITICAL 阻断合并 |
+| `devflow review` | 优先使用项目配置的专项 Review Skill，未配置时降级通用四维度审查，CRITICAL 阻断合并 |
 | `devflow retrospect` | 经验卡去重入库，关闭 Meegle 工作项 |
 | `devflow onboard` | CodeGraph 架构导览，历史 Bug 热点，Meegle 近期工作项 |
 | `devflow continue` | 读取 Checkpoint，新会话快速恢复，展示 Meegle 状态 |
@@ -88,10 +92,14 @@ refactor → review → retrospect
 ```
 plugins/devflow/
 ├── .claude-plugin/plugin.json     # 插件元数据
-├── commands/                      # 19 个命令（含 frontmatter，支持自动触发）
+├── commands/                      # 20 个命令（含 frontmatter，支持自动触发）
+│   ├── init.md                    # 技术栈检测 + 项目画像 + Review Skill 配置
+│   ├── code.md                    # 编码执行 + 编译验证
+│   ├── review.md                  # 专项 Skill 委托 + 通用四维度审查 + 自审盲区防护
+│   ├── checklist.md               # 真机验收清单（含 Worktree 路径）
 │   ├── quick.md                   # 快速需求（三路径自动判断）
 │   ├── sync.md                    # 团队 AI 文件同步
-│   └── ...（其余 17 个命令）
+│   └── ...（其余 14 个命令）
 ├── skills/
 │   ├── devflow-cg/
 │   │   └── devflow-cg.sh         # CodeGraph 多根路由脚本
