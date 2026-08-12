@@ -74,7 +74,7 @@ DevFlow 的核心是 20 个纯文本命令文件，任何能读取文件的 AI �
 | 平台 | 适配方式 | 状态 |
 |------|---------|------|
 | **Claude Code** | 官方插件（`claude plugins install`） | ✅ 完整支持 |
-| **Cursor** | `.cursor/rules/devflow.mdc` | ✅ 完整支持 |
+| **Cursor** | `.cursor/rules/devflow.mdc` | ✅ 完整支持 · [使用手册](./README-Cursor.md) |
 | **Codex**（OpenAI） | `AGENTS.md` | ✅ 完整支持 |
 | **OpenCode** | `OPENCODE.md` | ✅ 完整支持 |
 | **Gemini CLI** | `GEMINI.md` | ✅ 完整支持 |
@@ -109,6 +109,8 @@ bash install.sh --platform codex --dir /path/to/your-project
 脚本会自动完成：将命令文件复制到 `.devflow/commands/`、写入平台适配配置、更新 `.gitignore`。
 
 安装完成后，在 AI 工具中打开项目，输入 `devflow init` 开始初始化。
+
+> Cursor 用户请参阅 **[详细使用手册 →](./README-Cursor.md)**，包含从安装到日常开发的完整步骤说明。
 
 ### 各平台适配文件说明
 
