@@ -255,33 +255,33 @@ refactor → review → retrospect
 
 ### 项目管理
 
-| 命令 | 功能说明 |
+| 命令 | 使用方式 |
 |------|---------|
-| `devflow init` | 自动检测技术栈，生成项目画像，配置专项 Review Skill，建立工作区 |
-| `devflow list` | 状态总览，Active / Paused / Completed 分组显示 |
-| `devflow switch` | 切换工作项，自动恢复上下文 |
-| `devflow continue` | 读取 Checkpoint，新会话快速恢复，展示 Meegle 状态 |
-| `devflow sync` | 同步团队公共 skills / agents 到当前项目，维护软链接和 .gitignore |
+| `devflow init` | 每个项目执行一次，自动检测技术栈、配置 CodeGraph、生成 Review Skill |
+| `devflow list` | 查看所有工作项，Active / Paused / Completed 分组显示 |
+| `devflow switch` | 多需求并行时切换焦点工作项，自动恢复上下文 |
+| `devflow continue` | 新会话 / 对话中断后恢复进度，AI 重新读取 Checkpoint |
+| `devflow sync` | 同步团队公共 skills / agents 到当前项目 |
 
 ### 需求主线
 
-| 命令 | 功能说明 |
+| 命令 | 使用方式 |
 |------|---------|
-| `devflow start` | 创建工作项，进入需求收集模式（Intake Mode） |
-| `devflow quick` | 快速需求：需求描述直接输入，跳过 PRD，一步完成分析 |
-| `devflow analyze` | 边录边析，逐段即时解析，读 Figma / YApi，CodeGraph 反查现有接口 |
-| `devflow design` | 爆炸半径评估，边设计边追问，冻结后生成含时序图 / 接口签名 / 埋点 / 验收清单的对外技术方案 |
+| `devflow start` | `devflow start 用户头像上传 支持裁剪和预览` — 创建工作项，描述写在命令后面 |
+| `devflow analyze` | 输入命令后，把需求内容直接贴进来（PRD 文字 / 截图 / Figma 链接 / 接口链接，可分多次贴）；AI 边接收边解析，追问歧义后生成需求文档 |
+| `devflow quick` | `devflow quick 登录按钮文案改为「登录」` — 小需求一条命令，AI 自动判断是否需要走完整流程 |
+| `devflow design` | 接续 analyze，AI 做爆炸半径评估，生成含时序图 / 接口签名 / 验收清单的技术方案 |
 | `devflow estimate` | 三点置信区间估算，历史 Bug 密度因子，可更新 Meegle 排期 |
-| `devflow plan` | 标准化任务格式，Bug 经验召回，静默输出 tasks.md |
+| `devflow plan` | 将设计文档拆解为标准化原子任务，召回相关历史 Bug 经验，生成 tasks.md |
 
 ### 编码与交付
 
-| 命令 | 功能说明 |
+| 命令 | 使用方式 |
 |------|---------|
-| `devflow code` | 执行范围选择，编码禁令，lint / test 质量门禁，**所有任务完成后自动编译验证** |
-| `devflow checklist` | 生成真机验收清单：进入路径、Mock 数据、逐条 AC 检查点、回归验证表，含 Worktree 绝对路径 |
-| `devflow review` | 优先使用项目专项 Review Skill，未配置时降级通用四维度审查，CRITICAL 阻断合并 |
-| `devflow retrospect` | 经验卡去重入库，关闭 Meegle 工作项 |
+| `devflow code` | 按 tasks.md 逐项编码，lint / test 质量门禁，**所有任务完成后自动编译验证**；传 `noworktree` 参数可跳过独立分支 |
+| `devflow checklist` | 生成可直接交付测试的验收清单：进入路径、Mock 数据构造、逐条 AC 检查点、回归验证表 |
+| `devflow review` | 代码审查，优先使用项目专项 Review Skill，CRITICAL 问题阻断合并；审查通过后可直接合并或提 MR/PR |
+| `devflow retrospect` | 提炼经验卡入库，关闭 Meegle 工作项，完成整个需求闭环 |
 
 ### Bug 修复
 
@@ -307,11 +307,11 @@ AI 执行四阶段 CodeGraph 根因分析（定位入口 → 追踪调用链 →
 
 ### 知识与协作
 
-| 命令 | 功能说明 |
+| 命令 | 使用方式 |
 |------|---------|
-| `devflow onboard` | CodeGraph 架构导览，历史 Bug 热点，Meegle 近期工作项 |
-| `devflow change` | Minor / Major 变更分级，状态机回退，受影响任务标记返工 |
-| `devflow knowledge` | Bug 经验卡查询 / 添加 / 健康检查，历史防坑手册 |
+| `devflow onboard` | `devflow onboard payment 模块` — 新成员快速了解指定模块，CodeGraph 导览 + 历史 Bug 热点 |
+| `devflow change` | 需求中途变更时使用，Minor / Major 分级，状态机自动回退到正确阶段，受影响任务标记返工 |
+| `devflow knowledge` | 查询 / 添加 Bug 经验卡，历史防坑手册，`devflow plan` 会自动召回相关经验 |
 
 <p align="right">(<a href="#20-个命令">返回顶部</a>)</p>
 
