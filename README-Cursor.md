@@ -24,7 +24,7 @@
 ### 前置要求
 
 - **Cursor** 已安装（[下载](https://www.cursor.com)）
-- **Node.js 18+** — 用于安装 CodeGraph
+- **Node.js 18+** — CodeGraph 依赖，`devflow init` 会自动用 npm 安装 CodeGraph，确保 Node.js 可用即可
 - **Git** — 用于克隆仓库
 
 ### 第一步：克隆 DevFlow 仓库
@@ -53,23 +53,7 @@ bash install.sh --platform cursor --dir ~/code/my-app
 - 初始化 `your-project/.devflow/workspace.json`
 - 更新 `your-project/.gitignore`
 
-### 第三步：安装 CodeGraph
-
-CodeGraph 是 DevFlow 的核心依赖，负责代码知识图谱能力：
-
-```bash
-npm install -g @colbymchenry/codegraph
-```
-
-安装后在你的项目根目录执行一次索引构建（可能需要几分钟，取决于代码库大小）：
-
-```bash
-cd /path/to/your-project
-codegraph init
-codegraph install   # 注册为 MCP，让 Cursor 能调用
-```
-
-> CodeGraph 必须安装，DevFlow 的爆炸半径评估、根因追踪、接口反查等核心能力都依赖它。
+安装完成后，用 Cursor 打开项目，输入 `devflow init`——CodeGraph 的安装和索引构建会在 init 过程中自动完成。
 
 ---
 
@@ -299,7 +283,13 @@ codegraph update
 
 **Q：能不能不用 CodeGraph？**
 
-A：可以跳过，DevFlow 的需求分析、任务拆解、复盘等命令不依赖 CodeGraph。但 `design`（爆炸半径评估）、`fix`（根因分析）、`review`（影响面验证）等命令会降级，分析精度明显下降。对于 600 文件以上的项目强烈建议安装。
+A：`devflow init` 会自动安装 CodeGraph，通常不需要手动干预。如果安装失败，可以手动执行：
+```bash
+npm install -g @colbymchenry/codegraph
+codegraph init      # 在项目根目录构建索引
+codegraph install   # 注册为 MCP
+```
+跳过 CodeGraph 也可以用 DevFlow，但 `design`（爆炸半径评估）、`fix`（根因分析）、`review`（影响面验证）等命令会降级，分析精度明显下降。对于 600 文件以上的项目强烈建议安装。
 
 ---
 
