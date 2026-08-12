@@ -21,10 +21,9 @@ description: DevFlow 生成真机验收清单。基于当前工作项的需求�
 在执行前，先检查项目是否配置了专项 checklist skill：
 
 ```
-{项目根}/.claude/skills/sahm-acceptance-checklist/SKILL.md
-{项目根}/.ai/skills/sahm-acceptance-checklist/SKILL.md
-~/.claude/skills/sahm-acceptance-checklist/SKILL.md
-/Users/apple/AndroidStudioProjects/hssa/.claude/skills/sahm-acceptance-checklist/SKILL.md
+{项目根}/.claude/skills/project-acceptance-checklist/SKILL.md
+{项目根}/.ai/skills/project-acceptance-checklist/SKILL.md
+~/.claude/skills/project-acceptance-checklist/SKILL.md
 ```
 
 **找到专项 skill** → 读取其 SKILL.md，按其规范生成清单（包含 Mock 接口表格格式等项目特有约定），本命令的通用规则作为补充。
@@ -158,7 +157,7 @@ description: DevFlow 生成真机验收清单。基于当前工作项的需求�
 ```
 ✅ 验收清单已生成
 
-  Skill: {sahm-acceptance-checklist | 通用规范}
+  Skill: {project-acceptance-checklist | 通用规范}
   功能点: {n} 个
   需要 Mock 的场景: {n} 个
   有前端页面: {是 | 否}

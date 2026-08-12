@@ -1,6 +1,6 @@
 ---
 name: devflow-review
-description: DevFlow 代码审查阶段。优先委托项目配置的专项 review skill（如 sahm-code-review-android / sahm-code-review-ios），找不到时使用通用四维度审查。验证 CodeGraph 影响面一致性，可更新 Meegle 工作项状态。当用户说「代码审查」「review」「devflow review」或编码完成后需要审查代码质量时触发。
+description: DevFlow 代码审查阶段。优先委托项目配置的专项 review skill（如 project-code-review-android / project-code-review-ios），找不到时使用通用四维度审查。验证 CodeGraph 影响面一致性，可更新 Meegle 工作项状态。当用户说「代码审查」「review」「devflow review」或编码完成后需要审查代码质量时触发。
 ---
 
 # devflow review — 代码审查
@@ -156,7 +156,7 @@ devflow-cg impact <涉及符号>
 ```
 ### Code Review Report
 
-- **Skill**: {sahm-code-review-android v0.1.0 | sahm-code-review-ios v0.2.0 | 通用审查}
+- **Skill**: {project-code-review-android v0.1.0 | project-code-review-ios v0.2.0 | 通用审查}
 - **Status**: [APPROVED | CHANGES REQUESTED | BLOCKED]
 - **Critical** 🔴: {n 条，必须修复后才能合并}
 - **Warning** 🟡: {n 条，建议修复}
@@ -248,7 +248,7 @@ meegle comment add --work-item-id <id> \
 
 ```
 ### Code Review Report
-- Skill: {sahm-code-review-android v0.1.0 | 通用审查}
+- Skill: {project-code-review-android v0.1.0 | 通用审查}
 - Status: [APPROVED | CHANGES REQUESTED | BLOCKED]
 - Critical 🔴: {n}
 - Warning  🟡: {n}
