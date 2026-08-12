@@ -9,6 +9,7 @@
 <br/>
 
 <p align="center">
+  <a href="#零devflow-能解决-cursor-的哪些痛点">为什么用</a> ·
   <a href="#一安装">安装</a> ·
   <a href="#二升级">升级</a> ·
   <a href="#三初始化项目">初始化</a> ·
@@ -17,6 +18,93 @@
   <a href="#六可选集成">可选集成</a> ·
   <a href="#七常见问题">常见问题</a>
 </p>
+
+---
+
+## 零、DevFlow 能解决 Cursor 的哪些痛点
+
+Cursor 是很好的编码工具，但在实际项目里有几个问题很难绕过：
+
+---
+
+**痛点 1：每次新对话，AI 对代码库一无所知**
+
+新开一个 Chat，AI 重新从零理解代码——靠文本检索找不到调用关系，改一个函数不知道谁在用它，大型项目尤其严重。
+
+DevFlow 的解法：
+- `devflow continue` 读取 Checkpoint，直接恢复上次进度
+- CodeGraph 把代码库的符号关系持久化在图数据库里，任何新会话都能一次查询拿到完整调用链，不依赖 Cursor 的索引
+
+---
+
+**痛点 2：AI 改了代码，但不知道影响了什么**
+
+Agent 模式改多个文件时，很难判断改动是否安全，有没有破坏其他模块，往往只能靠编译报错事后发现。
+
+DevFlow 的解法：
+- `devflow design` 强制做**爆炸半径评估**，HIGH / CRITICAL 级别改动触发确认门禁，改之前就知道影响哪些符号
+- `devflow review` 用 CodeGraph 验证影响面，发现超出预期的改动直接阻断
+
+---
+
+**痛点 3：上下文窗口用完，对话开始混乱**
+
+一个长 Chat 接近上下文上限时，AI 开始遗忘早期信息，做出前后矛盾的修改，只能开新对话重新解释背景。
+
+DevFlow 的解法：
+- 每个工作项有 `progress.md`（Checkpoint），记录当前阶段、已完成任务、待办事项
+- `devflow continue` 一条命令恢复所有状态，需求文档、设计文档、任务清单都落地为文件，AI 读文件而不是靠记忆
+
+---
+
+**痛点 4：AI 直接动代码，跳过分析和设计**
+
+把需求丢给 AI，它往往直接开始写代码，跳过需求理解和设计阶段，写完才发现方向错了或遗漏了边界情况。
+
+DevFlow 的解法：
+- 强制走 `analyze → design → plan → code` 流水线，代码动之前必须有冻结的设计文档和任务清单
+- `devflow quick` 先评估影响范围再决定走哪条路径，小改动自动跳过，大改动不允许跳过
+
+---
+
+**痛点 5：Bug 修了表面，根因没找到**
+
+描述一个 Bug，AI 倾向于在出错的地方加判空或 try-catch，治标不治本，下次同样的 Bug 换个地方再出现。
+
+DevFlow 的解法：
+- `devflow fix` 强制走四阶段 CodeGraph 分析：入口定位 → 调用链追踪 → 爆炸半径 → 原子修复
+- 修复后强制 `retrospect` 把根因和修复方案提炼成经验卡入库，下次类似 Bug 自动召回
+
+---
+
+**痛点 6：团队 Review 标准不一致**
+
+每个人的 Cursor Rules 各自为政，同一个项目里不同成员让 AI 做 Code Review 的标准完全不同，质量全靠个人习惯。
+
+DevFlow 的解法：
+- `devflow init` 为项目生成专项 Review Skill，存在 `.ai/skills/` 下可以提交到 git
+- `devflow sync` 把团队公共规范同步到每个成员的工作区，所有人用同一套标准
+
+---
+
+**痛点 7：新成员上手慢**
+
+新加入项目，就算有 Cursor，也要花几天时间理解模块划分、历史 Bug 热点、接口约定。
+
+DevFlow 的解法：
+- `devflow onboard payment 模块` — CodeGraph 生成模块调用全景图，展示历史 Bug 热点和近期工作项，一条命令替代人工 onboarding
+
+---
+
+| Cursor 痛点 | DevFlow 对应能力 |
+|------------|----------------|
+| 新对话忘记代码库 | `continue` + CodeGraph 持久化 |
+| 改动影响范围不可见 | `design`（爆炸半径）+ `review` |
+| 上下文用完状态丢失 | `continue`（Checkpoint 恢复） |
+| 跳过分析直接写代码 | 强制流水线 `analyze → design → plan → code` |
+| Bug 治标不治本 | `fix`（四阶段根因）+ `retrospect`（经验入库） |
+| 团队 Review 标准不一 | 专项 Review Skill + `sync` |
+| 新成员上手慢 | `onboard` |
 
 ---
 
