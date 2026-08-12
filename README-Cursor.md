@@ -112,7 +112,20 @@ devflow start 用户头像上传 支持裁剪和预览
 AI 创建工作项后，依次执行：
 
 ```
-devflow analyze     # 需求分析：解析需求、读 Figma/接口文档、CodeGraph 反查现有实现
+devflow analyze
+```
+
+`devflow analyze` 进入**边录边析模式**——输入命令后，把你手头的需求内容直接贴进来就行，可以是：
+
+- PRD 文字段落（直接粘贴）
+- 截图（Cursor 支持直接粘贴图片）
+- Figma 链接（AI 自动读取设计稿）
+- YApi / 接口文档链接（AI 自动读取接口定义）
+- 以上任意组合，分多次粘贴也可以
+
+AI 边接收边解析，最后追问歧义点，生成 `spec/requirement.md`。确认无误后，继续下一步：
+
+```
 devflow design      # 技术设计：爆炸半径评估、生成设计文档（时序图/接口签名/验收清单）
 devflow estimate    # 工作量估算
 devflow plan        # 任务拆解：生成 tasks.md
@@ -120,8 +133,6 @@ devflow code        # 编码执行：按任务逐项实现，完成后自动编�
 devflow review      # 代码审查：专项 Skill 或通用四维度审查，CRITICAL 阻断合并
 devflow retrospect  # 复盘：经验入库，关闭工作项
 ```
-
-每个命令执行完后等 AI 完成再输入下一个，不要跳过步骤。
 
 ---
 
