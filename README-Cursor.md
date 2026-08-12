@@ -10,11 +10,12 @@
 
 <p align="center">
   <a href="#一安装">安装</a> ·
-  <a href="#二初始化项目">初始化</a> ·
-  <a href="#三日常开发">日常开发</a> ·
-  <a href="#四修复-bug">修复 Bug</a> ·
-  <a href="#五可选集成">可选集成</a> ·
-  <a href="#六常见问题">常见问题</a>
+  <a href="#二升级">升级</a> ·
+  <a href="#三初始化项目">初始化</a> ·
+  <a href="#四日常开发">日常开发</a> ·
+  <a href="#五修复-bug">修复 Bug</a> ·
+  <a href="#六可选集成">可选集成</a> ·
+  <a href="#七常见问题">常见问题</a>
 </p>
 
 ---
@@ -57,7 +58,36 @@ bash install.sh --platform cursor --dir ~/code/my-app
 
 ---
 
-## 二、初始化项目
+## 二、升级
+
+安装脚本会在项目的 `.devflow/.devflow-install.json` 中记录安装来源。后续升级只需两步：
+
+**第一步：拉取 DevFlow 仓库最新代码**
+
+```bash
+cd /path/to/devflow   # 你当初 clone 的目录
+git pull
+```
+
+**第二步：在项目目录执行更新**
+
+```bash
+bash /path/to/devflow/install.sh --update --dir /path/to/your-project
+```
+
+脚本会自动完成：
+
+- `git pull` 拉取最新命令文件
+- 覆盖 `.devflow/commands/` 下的所有命令文件
+- 覆盖 `.devflow/config/` 下的配置模板
+- 覆盖 `.cursor/rules/devflow.mdc` 适配器文件
+- **不会覆盖** `.devflow/workspace.json`（你的本地配置）
+
+> 安装时脚本末尾会打印完整的更新命令，直接复制备用即可。
+
+---
+
+## 三、初始化项目
 
 安装完成后，用 Cursor 打开你的项目，在 AI 对话框中输入：
 
@@ -99,7 +129,7 @@ AI 扫描项目文件识别技术栈，生成项目画像，保存到 `.devflow/
 
 ---
 
-## 三、日常开发
+## 四、日常开发
 
 ### 开发一个新功能
 
@@ -179,7 +209,7 @@ devflow switch        # 切换到另一个工作项
 
 ---
 
-## 四、修复 Bug
+## 五、修复 Bug
 
 `devflow fix` 支持三种输入方式，选最方便的：
 
@@ -220,7 +250,7 @@ Stage 4：原子修复     → 最小化修改，生成修复清单
 
 ---
 
-## 五、可选集成
+## 六、可选集成
 
 这些都是可选的，不配置也能完整使用 DevFlow，只是对应功能降级处理。
 
@@ -266,7 +296,7 @@ meegle auth login
 
 ---
 
-## 六、常见问题
+## 七、常见问题
 
 **Q：输入 `devflow start` 后 AI 说"找不到命令文件"怎么办？**
 
