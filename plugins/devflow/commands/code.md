@@ -167,10 +167,37 @@ devflow-cg impact  <涉及符号>
 - 已有测试命令（如 `./gradlew :module:test`）
 - 记录 lint/test 结果
 
+> 所有任务完成后额外执行编译验证（见步骤 f）。
+
 **f) 状态同步**
 立即将任务标记为 `- [x]`，不得批量完成后再统一标记。
 
-### 6. Context Checkpoint 更新
+### 6. 编译验证（所有任务完成后）
+
+所有任务完成后，按项目类型执行最快的编译命令，验证代码可构建，**不执行完整打包**：
+
+| 项目类型 | 编译命令 | 说明 |
+|---------|---------|------|
+| Android / KMP | `./gradlew compileDebugSources` | 只编译不打包，速度最快 |
+| iOS | `xcodebuild -workspace *.xcworkspace -scheme <Scheme> -sdk iphonesimulator build -configuration Debug` | 模拟器 build，不签名 |
+| KMP 公共模块 | `./gradlew :shared:compileKotlinIosArm64 :shared:compileKotlinAndroid` | 两端都验证 |
+| JS/TS | `tsc --noEmit`（或项目 `package.json` 中的 `build:check`） | 仅类型检查 |
+| 其他 | 按 `package.json` / `Makefile` 中最快的 compile 任务 | 自动识别 |
+
+**编译失败处理：**
+- 输出编译错误摘要（文件、行号、错误信息）
+- 标记为 `⛔ 编译未通过`，**阻断流程**，禁止进入 `devflow review`
+- 修复编译错误后，重新执行本步骤（不需要重新执行整个任务循环）
+
+**编译通过：**
+```
+✅ 编译验证通过
+  平台：{Android/iOS/KMP/JS}
+  命令：{实际执行的命令}
+  耗时：{秒}
+```
+
+### 7. Context Checkpoint 更新
 
 将本轮完成的任务摘要追加写入 `progress.md`。
 
@@ -204,6 +231,7 @@ meegle workflow transition-state --work-item-id <id> --transition-id <id>
   高风险暂停确认：{n} 次
   L0 仅建议（未直接写入）：{n} 处
   Lint/Test：{通过 | 失败项见下方}
+  编译验证：{通过 | ⛔ 未通过（需修复后重试）}
   Meegle 状态：{已流转至「{状态}」 | 未配置}
 
 下一步：使用 `devflow review` 进行代码审查。
