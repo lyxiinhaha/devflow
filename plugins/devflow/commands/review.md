@@ -35,46 +35,42 @@ description: DevFlow 代码审查阶段。优先委托项目配置的专项 revi
 {
   "reviewSkills": [
     {
-      "name": "my-review-android",
+      "name": "devflow-review-android",
       "triggerWhen": "diff 含 *.kt / *.java 且存在 AndroidManifest.xml",
-      "path": ".ai/skills/my-review-android"
+      "path": ".ai/skills/devflow-review-android"
     },
     {
-      "name": "my-review-vue",
-      "triggerWhen": "diff 含 *.vue / *.ts",
-      "path": "~/.claude/skills/my-review-vue"
+      "name": "devflow-review-frontend",
+      "triggerWhen": "diff 含 *.vue 或 *.ts",
+      "path": ".ai/skills/devflow-review-frontend"
     }
   ]
 }
 ```
 
-遍历 `reviewSkills` 列表，对当前 diff 逐条匹配 `triggerWhen` 描述的条件，找到第一个匹配的 skill。
+遍历 `reviewSkills` 列表，对当前 diff 逐条匹配 `triggerWhen` 描述的条件，**找到第一个匹配的 skill 后**：
 
-**第二优先级：通用路径扫描（workspace.json 无配置时）**
+1. 读取该条目 `path` 下的 `skill.meta.md`
+2. 提取 `core_checklist` 作为主要审查清单
+3. 提取 `domain_hit_rules`，扫描 diff 命中哪些领域规则，逐条加载
+4. 按上述 checklist 逐条审查，输出分级报告（🔴 / 🟡 / 🟢）
+5. 审查结束后跳至步骤 4（影响面验证）
 
-在以下路径中扫描所有包含 `skill.meta.md` 的目录，找到后读取其 `stack_detection` 字段，与当前 diff 特征对比，选出最匹配的：
+**第二优先级：通用路径扫描（`reviewSkills` 为空或无匹配时）**
+
+在以下路径中扫描所有包含 `skill.meta.md` 的目录，读取每个文件的 `stack_detection` 字段与当前 diff 特征对比，选出最匹配的：
 
 ```
-{项目根}/.claude/skills/
 {项目根}/.ai/skills/
+{项目根}/.claude/skills/
 ~/.claude/skills/
 ```
 
+找到匹配后，同样执行上述 1-5 步。
+
 **两种方式都未找到匹配 → 降级到步骤 2B 通用四维度审查。**
 
-> 如需注册专项 review skill，执行 `devflow init` 并选择"配置 Review Skill"，或直接编辑 `.devflow/workspace.json` 的 `reviewSkills` 字段。
-
----
-
-### 2A. 找到专项 skill → 委托执行
-
-读取该 skill 目录下的 `skill.meta.md`，按其定义的规则执行完整审查：
-
-- 加载 `skill.meta.md` 中的 `stack_detection`、`core_checklist`、`domain_hit_rules`
-- 按 `domain_hit_rules` 扫描 diff，命中则加载对应 `references/domains/*.md`
-- 按专项 checklist 逐条审查，输出分级报告（🔴 / 🟡 / 🟢）
-
-审查结束后跳至步骤 4（影响面验证）。
+> 如需配置专项 review skill，执行 `devflow init` 并选择"配置 Review Skill"。生成的规范文件在 `.ai/skills/devflow-review-{技术栈}/skill.meta.md`，可直接编辑自定义。
 
 ---
 

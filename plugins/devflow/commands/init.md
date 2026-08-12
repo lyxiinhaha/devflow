@@ -239,44 +239,277 @@ cat package.json | grep workspaces
 
 #### 2d. 配置 Review Skill（可选）
 
-技术栈画像确认后，告知用户可以为各技术栈注册专项 review skill：
+技术栈画像确认后，对每个检测到的技术栈逐一询问：
 
 ```
-检测到以下技术栈，您可以为它们配置专项 code review 规范：
+检测到技术栈：{技术栈名}（如 Android/Kotlin）
+请选择 code review 规范来源：
 
-  1. {技术栈 A}（如 Android/Kotlin）
-  2. {技术栈 B}（如 Vue 3 / TypeScript）
-  3. 跳过，全部使用通用四维度审查
-
-如需配置专项 skill，请提供 skill 目录路径（包含 skill.meta.md 的目录）。
-未配置时，devflow review 会自动扫描以下目录中现有的 skill：
-  {项目根}/.claude/skills/
-  {项目根}/.ai/skills/
-  ~/.claude/skills/
+  1. 生成默认规范文件（我来帮你创建，放到项目里，你可以随时修改）
+  2. 指定已有 skill 路径（你已经有了自己的规范文件）
+  3. 跳过，使用通用四维度审查
 ```
 
-**用户提供路径后，询问触发条件：**
+---
+
+**选择「1. 生成默认规范文件」时：**
+
+在 `{项目根}/.ai/skills/devflow-review-{技术栈标识}/` 下生成 `skill.meta.md`，内容包含该技术栈的通用 checklist，并预留用户自定义区域：
+
+各技术栈的默认模板如下（根据检测到的技术栈选对应模板生成，不生成不相关的）：
+
+---
+
+*Android / KMP Android 端：*
+
+```markdown
+<!-- @meta skill_name -->
+devflow-review-android
+<!-- @meta version -->
+1.0.0
+<!-- @meta platform_label -->
+Android (Kotlin / Java)
+<!-- @meta description -->
+Android 代码审查规范。由 devflow init 自动生成，可按项目实际情况修改。
+<!-- @meta stack_detection -->
+命中条件（满足任一即使用本规范）：
+- build.gradle / build.gradle.kts 含 com.android.application / com.android.library / kotlin-android
+- 存在 AndroidManifest.xml
+- diff 含 *.kt / *.java 且在 Android 模块目录下
+<!-- @meta core_checklist -->
+## 核心审查清单
+
+| 维度 | 检查项 |
+|------|--------|
+| 生命周期与泄漏 | Activity/Fragment 泄漏、监听器未解绑、Handler 匿名内部类 |
+| 协程 | viewModelScope/lifecycleScope 作用域、Dispatchers 选择、主线程阻塞 |
+| Kotlin 空安全 | `!!` 使用、来自 Java 的平台类型、lateinit 访问前未初始化 |
+| Jetpack | LiveData 粘性事件、ViewModel 状态管理、Navigation 使用 |
+| View | ViewBinding 泄漏、RecyclerView 复用、notifyDataSetChanged 滥用 |
+| 安全 | 敏感数据明文存储、WebView addJavascriptInterface、导出组件校验 |
+| 性能 | 主线程 IO、过度绘制、内存抖动 |
+
+<!-- 项目专项规则 —— 请在下方添加本项目特有的审查规则 -->
+<!-- @meta domain_hit_rules -->
+<!-- 示例：diff 含 price/amount/金额 → 检查 BigDecimal 精度 -->
+<!-- 在此添加本项目的领域命中规则 -->
+<!-- @meta end -->
 ```
+
+---
+
+*iOS / Swift：*
+
+```markdown
+<!-- @meta skill_name -->
+devflow-review-ios
+<!-- @meta version -->
+1.0.0
+<!-- @meta platform_label -->
+iOS (Swift / Objective-C)
+<!-- @meta description -->
+iOS 代码审查规范。由 devflow init 自动生成，可按项目实际情况修改。
+<!-- @meta stack_detection -->
+命中条件（满足任一即使用本规范）：
+- 存在 *.xcodeproj / *.xcworkspace / Podfile
+- diff 含 *.swift / *.m / *.h
+<!-- @meta core_checklist -->
+## 核心审查清单
+
+| 维度 | 检查项 |
+|------|--------|
+| 内存 | 循环引用（[weak self]）、delegate weak 声明、闭包强捕获 |
+| 线程安全 | 主线程 UI 操作、DispatchQueue 使用、async/await 上下文 |
+| 生命周期 | viewDidLoad/viewWillAppear 职责划分、NotificationCenter 未注销 |
+| 安全 | Keychain 存储敏感数据、ATS 配置、硬编码 URL/密钥 |
+| 性能 | 主线程 IO、图片内存、UITableView/CollectionView 复用 |
+| Swift | 强制解包 `!`、guard/if let 正确性、可选链完整性 |
+
+<!-- 项目专项规则 —— 请在下方添加本项目特有的审查规则 -->
+<!-- @meta domain_hit_rules -->
+<!-- 示例：diff 含 JSBridge/WKWebView → 检查 JS 注入安全 -->
+<!-- 在此添加本项目的领域命中规则 -->
+<!-- @meta end -->
+```
+
+---
+
+*Vue / React / 前端 TypeScript：*
+
+```markdown
+<!-- @meta skill_name -->
+devflow-review-frontend
+<!-- @meta version -->
+1.0.0
+<!-- @meta platform_label -->
+Frontend (Vue / React / TypeScript)
+<!-- @meta description -->
+前端代码审查规范。由 devflow init 自动生成，可按项目实际情况修改。
+<!-- @meta stack_detection -->
+命中条件（满足任一即使用本规范）：
+- diff 含 *.vue
+- diff 含 *.tsx / *.ts 且在 src/ 下
+- package.json 含 vue / react 依赖
+<!-- @meta core_checklist -->
+## 核心审查清单
+
+| 维度 | 检查项 |
+|------|--------|
+| 响应式 | Vue：ref/reactive 选择、watch 依赖声明；React：useState 闭包陈旧值、useEffect 依赖数组 |
+| 内存 | 事件监听器/定时器未清理、组件卸载后仍操作 DOM |
+| 类型安全 | any 使用、类型断言 as、非空断言 ! |
+| XSS | v-html / dangerouslySetInnerHTML 使用、用户输入直接插入 DOM |
+| 性能 | 组件不必要重渲染、大列表虚拟化、懒加载 |
+| 可访问性 | img alt、button aria-label、键盘可操作 |
+
+<!-- 项目专项规则 —— 请在下方添加本项目特有的审查规则 -->
+<!-- @meta domain_hit_rules -->
+<!-- 示例：diff 含 payment/checkout → 检查 XSS 和输入校验 -->
+<!-- 在此添加本项目的领域命中规则 -->
+<!-- @meta end -->
+```
+
+---
+
+*Java / Kotlin 后端（Spring Boot / 其他）：*
+
+```markdown
+<!-- @meta skill_name -->
+devflow-review-backend-java
+<!-- @meta version -->
+1.0.0
+<!-- @meta platform_label -->
+Backend (Java / Kotlin / Spring Boot)
+<!-- @meta description -->
+Java/Kotlin 后端代码审查规范。由 devflow init 自动生成，可按项目实际情况修改。
+<!-- @meta stack_detection -->
+命中条件（满足任一即使用本规范）：
+- 存在 src/main/java/ 或 src/main/kotlin/
+- diff 含 *.java / *.kt 且不在 Android 模块下
+- pom.xml 或 build.gradle 含 spring-boot
+<!-- @meta core_checklist -->
+## 核心审查清单
+
+| 维度 | 检查项 |
+|------|--------|
+| 安全 | SQL 注入（拼接字符串 SQL）、权限校验缺失、敏感数据日志打印 |
+| 事务 | @Transactional 边界正确性、事务嵌套与回滚 |
+| 并发 | 线程安全、锁范围、共享可变状态 |
+| 异常 | 异常被吞（空 catch）、统一异常处理缺失 |
+| 性能 | N+1 查询、大结果集未分页、全表扫描 |
+| 资源 | 连接/流未关闭、try-with-resources 使用 |
+
+<!-- 项目专项规则 —— 请在下方添加本项目特有的审查规则 -->
+<!-- @meta domain_hit_rules -->
+<!-- 示例：diff 含 amount/price → 检查 BigDecimal 精度 -->
+<!-- 在此添加本项目的领域命中规则 -->
+<!-- @meta end -->
+```
+
+---
+
+*Go：*
+
+```markdown
+<!-- @meta skill_name -->
+devflow-review-go
+<!-- @meta version -->
+1.0.0
+<!-- @meta platform_label -->
+Go
+<!-- @meta description -->
+Go 代码审查规范。由 devflow init 自动生成，可按项目实际情况修改。
+<!-- @meta stack_detection -->
+命中条件：
+- 存在 go.mod
+- diff 含 *.go
+<!-- @meta core_checklist -->
+## 核心审查清单
+
+| 维度 | 检查项 |
+|------|--------|
+| 错误处理 | error 未检查、错误被丢弃（_ = err）、panic 使用场景 |
+| 并发 | goroutine 泄漏、channel 未关闭、data race、mutex 锁范围 |
+| 资源 | defer 关闭文件/连接、context 取消传播 |
+| 内存 | 大切片引用导致内存无法回收、map 并发读写 |
+| 安全 | SQL 拼接、命令注入、敏感信息日志 |
+
+<!-- 项目专项规则 —— 请在下方添加本项目特有的审查规则 -->
+<!-- @meta domain_hit_rules -->
+<!-- 在此添加本项目的领域命中规则 -->
+<!-- @meta end -->
+```
+
+---
+
+*Python：*
+
+```markdown
+<!-- @meta skill_name -->
+devflow-review-python
+<!-- @meta version -->
+1.0.0
+<!-- @meta platform_label -->
+Python
+<!-- @meta description -->
+Python 代码审查规范。由 devflow init 自动生成，可按项目实际情况修改。
+<!-- @meta stack_detection -->
+命中条件：
+- 存在 requirements.txt / pyproject.toml / setup.py
+- diff 含 *.py
+<!-- @meta core_checklist -->
+## 核心审查清单
+
+| 维度 | 检查项 |
+|------|--------|
+| 安全 | SQL 注入（f-string 拼接）、eval/exec 使用、敏感数据硬编码 |
+| 异常 | 裸 except、异常被吞、重要错误未记录 |
+| 类型 | 类型注解缺失（函数签名）、Optional 未处理 None |
+| 资源 | 文件/连接未用 with 管理、生成器未关闭 |
+| 并发 | GIL 理解、asyncio await 遗漏、线程共享状态 |
+| 性能 | 列表推导替代 for 循环、不必要的全局变量 |
+
+<!-- 项目专项规则 —— 请在下方添加本项目特有的审查规则 -->
+<!-- @meta domain_hit_rules -->
+<!-- 在此添加本项目的领域命中规则 -->
+<!-- @meta end -->
+```
+
+---
+
+**文件生成后告知用户：**
+```
+✅ 已生成 Review Skill 文件：
+   .ai/skills/devflow-review-{技术栈标识}/skill.meta.md
+
+   这是基于 {技术栈} 的通用审查规范。
+   文件底部有「项目专项规则」区域，可按本项目特点添加。
+   devflow review 执行时会直接读取此文件。
+```
+
+将路径和触发条件写入 `workspace.json.reviewSkills`（触发条件从生成的 `stack_detection` 段提取）。
+
+---
+
+**选择「2. 指定已有 skill 路径」时：**
+
+```
+请输入 skill 目录路径（包含 skill.meta.md 的目录）：
+> 输入路径
+
 请描述此 skill 的触发条件（当 diff 满足什么特征时使用它）：
 示例：「diff 含 *.kt 且存在 AndroidManifest.xml」
       「diff 含 *.vue 或 *.ts」
-      「diff 含 src/main/java/ 下的文件」
+> 输入触发条件
 ```
 
-将配置写入 `workspace.json.reviewSkills`：
-```json
-{
-  "reviewSkills": [
-    {
-      "name": "{skill 目录名}",
-      "triggerWhen": "{用户描述的触发条件}",
-      "path": "{skill 目录绝对路径}"
-    }
-  ]
-}
-```
+读取该路径下的 `skill.meta.md` 验证文件存在，然后写入 `workspace.json.reviewSkills`。
 
-用户跳过时，`reviewSkills` 写入空数组 `[]`，`devflow review` 运行时自动扫描上述标准路径。
+---
+
+**选择「3. 跳过」时：**
+
+`reviewSkills` 写入 `[]`，`devflow review` 运行时降级为通用四维度审查。
 
 ---
 
