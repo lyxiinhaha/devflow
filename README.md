@@ -24,6 +24,7 @@
 
 <p align="center">
   <a href="#关于项目">关于</a> ·
+  <a href="#支持的-ai-平台">平台支持</a> ·
   <a href="#快速开始">快速开始</a> ·
   <a href="#完整工作流">工作流</a> ·
   <a href="#20-个命令">命令参考</a> ·
@@ -63,6 +64,64 @@ DevFlow 将这 8 个 SDLC 阶段映射为 20 个 AI 命令，并在每一个决�
 | **本地配置与仓库分离** | YApi 地址、专项 Skill 名等敏感配置写入 `.devflow/workspace.json`（已 gitignore），仓库保持干净 |
 
 <p align="right">(<a href="#关于项目">返回顶部</a>)</p>
+
+<a id="支持的-ai-平台"></a>
+
+## 支持的 AI 平台
+
+DevFlow 的核心是 20 个纯文本命令文件，任何能读取文件的 AI 工具都可以运行它。通过平台适配器（一个配置文件），AI 工具就能理解 `devflow <command>` 的路由规则。
+
+| 平台 | 适配方式 | 状态 |
+|------|---------|------|
+| **Claude Code** | 官方插件（`claude plugins install`） | ✅ 完整支持 |
+| **Cursor** | `.cursor/rules/devflow.mdc` | ✅ 完整支持 |
+| **Codex**（OpenAI） | `AGENTS.md` | ✅ 完整支持 |
+| **OpenCode** | `OPENCODE.md` | ✅ 完整支持 |
+| **Gemini CLI** | `GEMINI.md` | ✅ 完整支持 |
+| 其他兼容工具 | 手动复制命令文件 + 自定义路由配置 | ✅ 通用支持 |
+
+### Claude Code
+
+```bash
+claude plugins install devflow
+```
+
+### Cursor / Codex / OpenCode / Gemini CLI
+
+克隆仓库后，在目标项目目录运行安装脚本，按提示选择平台即可：
+
+```bash
+git clone https://github.com/lyxiinhaha/devflow.git
+cd devflow
+bash install.sh
+```
+
+或指定平台和目标目录，一行完成：
+
+```bash
+# 安装到当前目录，指定 Cursor 平台
+bash install.sh --platform cursor
+
+# 安装到指定目录，指定 Codex 平台
+bash install.sh --platform codex --dir /path/to/your-project
+```
+
+脚本会自动完成：将命令文件复制到 `.devflow/commands/`、写入平台适配配置、更新 `.gitignore`。
+
+安装完成后，在 AI 工具中打开项目，输入 `devflow init` 开始初始化。
+
+### 各平台适配文件说明
+
+| 平台 | 适配文件 | 作用 |
+|------|---------|------|
+| Cursor | `.cursor/rules/devflow.mdc` | Cursor Rules，每次对话自动加载，AI 识别 `devflow` 命令路由 |
+| Codex | `AGENTS.md`（追加） | OpenAI Codex Agent 配置，定义命令路由规则 |
+| OpenCode | `OPENCODE.md`（追加） | OpenCode 配置文件，定义命令路由规则 |
+| Gemini CLI | `GEMINI.md`（追加） | Gemini CLI 配置文件，定义命令路由规则 |
+
+> 适配文件的内容很简单：一张"用户说 X → 读取文件 Y"的映射表。命令的实际逻辑全部在 `.devflow/commands/*.md` 里，各平台共用同一套，不重复维护。
+
+<p align="right">(<a href="#支持的-ai-平台">返回顶部</a>)</p>
 
 <a id="快速开始"></a>
 
