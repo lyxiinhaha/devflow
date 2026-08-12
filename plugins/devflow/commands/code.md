@@ -174,14 +174,20 @@ devflow-cg impact  <涉及符号>
 
 ### 6. 编译验证（所有任务完成后）
 
-所有任务完成后，按项目类型执行最快的编译命令，验证代码可构建，**不执行完整打包**：
+所有任务完成后，执行编译验证，确认代码可构建，**不执行完整打包**。
+
+**优先**从 `workspace.json.techStack.compileCommands` 读取项目初始化时记录的命令；若未记录则按下表按特征文件自动识别：
 
 | 项目类型 | 编译命令 | 说明 |
 |---------|---------|------|
 | Android / KMP | `./gradlew compileDebugSources` | 只编译不打包，速度最快 |
 | iOS | `xcodebuild -workspace *.xcworkspace -scheme <Scheme> -sdk iphonesimulator build -configuration Debug` | 模拟器 build，不签名 |
 | KMP 公共模块 | `./gradlew :shared:compileKotlinIosArm64 :shared:compileKotlinAndroid` | 两端都验证 |
-| JS/TS | `tsc --noEmit`（或项目 `package.json` 中的 `build:check`） | 仅类型检查 |
+| JS/TS（前端） | `tsc --noEmit`（或项目 `package.json` 中的 `build:check`） | 仅类型检查 |
+| Java/Spring Boot | `mvn compile -q` 或 `./gradlew compileJava -q` | 静默编译 |
+| Go | `go build ./...` | 全包编译检查 |
+| Python | `python -m py_compile $(find src -name "*.py")` 或 `mypy src/` | 语法 + 类型检查 |
+| Rust | `cargo check` | 不链接，仅类型检查 |
 | 其他 | 按 `package.json` / `Makefile` 中最快的 compile 任务 | 自动识别 |
 
 **编译失败处理：**

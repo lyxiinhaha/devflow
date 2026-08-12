@@ -1,11 +1,11 @@
 ---
 name: devflow-init
-description: DevFlow 工作区初始化。检查并配置 CodeGraph 与 Meegle，自动检测项目类型（Android 壳工程/iOS CocoaPods/KMP 多仓库等），生成 CodeGraph 多根目录查询规则，建立 .devflow/ 目录结构，确认安全分级。当用户说「初始化 devflow」「devflow init」「初始化工作流」或在新项目首次使用 DevFlow 时触发。
+description: DevFlow 工作区初始化。检查并配置 CodeGraph 与 Meegle，自动检测技术栈（Android/iOS/KMP/Vue/React/Spring Boot/Go/Node.js 等任意栈），生成技术栈画像文档，建立 .devflow/ 目录结构，确认安全分级。当用户说「初始化 devflow」「devflow init」「初始化工作流」或在新项目首次使用 DevFlow 时触发。
 ---
 
 # devflow init — 初始化工作区
 
-**用途：** 在当前项目首次使用 DevFlow，建立 `.devflow/` 目录结构，配置 CodeGraph 与 Meegle，**自动检测多仓库架构并生成 CodeGraph 多根目录查询规则**，写入 `.gitignore`，确认安全分级。同一项目只需执行一次；`devflow start` 检测到未初始化时会自动触发本命令。
+**用途：** 在当前项目首次使用 DevFlow，建立 `.devflow/` 目录结构，**自动检测技术栈并生成项目画像**，配置 CodeGraph 与 Meegle，写入 `.gitignore`，确认安全分级。同一项目只需执行一次；`devflow start` 检测到未初始化时会自动触发本命令。
 
 ---
 
@@ -27,122 +27,210 @@ description: DevFlow 工作区初始化。检查并配置 CodeGraph 与 Meegle�
   请切换到项目根目录后重新执行 devflow init。
 ```
 
-### 2. 项目类型检测与多仓库分析
+### 2. 技术栈检测与项目画像
 
-**自动检测项目类型**，决定后续 CodeGraph 的索引策略：
+**自动扫描特征文件，识别技术栈，输出项目画像。** 这是 init 最核心的一步，结果决定后续 CodeGraph 索引策略、代码审查 skill 选择、编译验证命令等所有下游行为。
 
-#### Android / KMP 壳工程（含 submodules）
+#### 2a. 特征文件扫描
 
-特征：`build.gradle` 或 `settings.gradle` 存在，且有 `submodules/` 目录或 `.gitmodules` 文件。
+按下表逐类扫描，**一个项目可同时命中多个分类**（如 KMP 同时命中 Android + iOS + Kotlin）：
 
-策略：**单根索引**，`codegraph init` 在壳工程根目录运行即可，submodules 目录下的代码会被统一索引进同一个图谱。
+| 分类 | 特征文件 / 目录 | 进一步识别 |
+|------|----------------|------------|
+| **Android** | `build.gradle` / `build.gradle.kts` + `AndroidManifest.xml` | `apply plugin: 'com.android.application'` → 壳工程；`library` → 库模块 |
+| **iOS** | `*.xcodeproj` / `*.xcworkspace` / `Podfile` | 有 `Podfile` → CocoaPods；有 `Package.swift` → SPM |
+| **KMP（Kotlin Multiplatform）** | `build.gradle.kts` + `kotlin("multiplatform")` | 同时有 Android + iOS 特征 |
+| **Flutter** | `pubspec.yaml` + `lib/` + `flutter:` section | `android/` `ios/` 子目录 → 多端壳 |
+| **React / Next.js** | `package.json` + `react` in deps | `next.config.*` → Next.js；`vite.config.*` → Vite；`webpack.config.*` → Webpack |
+| **Vue / Nuxt** | `package.json` + `vue` in deps | `nuxt.config.*` → Nuxt；否则 → Vue CLI / Vite |
+| **Angular** | `angular.json` / `package.json` + `@angular/core` | — |
+| **Node.js 服务端** | `package.json` + `express` / `koa` / `fastify` / `nestjs` in deps | `src/app.ts` / `src/index.js` → 入口 |
+| **Spring Boot / Java** | `pom.xml` 或 `build.gradle` + `spring-boot` | `src/main/java/` / `src/main/kotlin/` → 源码根 |
+| **Go** | `go.mod` | `main.go` → 可执行程序；无 `main.go` → 库 |
+| **Python** | `requirements.txt` / `pyproject.toml` / `setup.py` | `Django` / `Flask` / `FastAPI` in deps → Web 框架；`Jupyter` → 数据科学 |
+| **Rust** | `Cargo.toml` | `[lib]` / `[[bin]]` → 库 / 可执行 |
+| **其他** | `Makefile` / `CMakeLists.txt` / `*.csproj` | C/C++ / C# / .NET |
 
-记录到 `workspace.json`：
-```json
-{
-  "codegraph": {
-    "strategy": "single-root",
-    "roots": [{ "path": ".", "covers": "壳工程 + 所有 submodules" }]
-  }
-}
-```
+对每个命中的分类，进一步检测：
 
-**pod update / submodule 更新后的处理**：索引可能过期，记录到 `devflow.json`：
-```json
-{
-  "codegraph": {
-    "rebuildTriggers": ["submodule update", "pod install", "pod update"]
-  }
-}
-```
+**数据库 / 存储**（扫描依赖声明文件和配置文件关键词）：
+
+| 关键词来源 | 识别目标 |
+|-----------|---------|
+| `pom.xml` / `build.gradle` / `package.json` / `requirements.txt` / `go.mod` / `Cargo.toml` | MySQL、PostgreSQL、MongoDB、Redis、SQLite、Elasticsearch、Cassandra、InfluxDB、DynamoDB |
+| `application.yml` / `application.properties` / `.env` / `docker-compose.yml` | 数据库连接字符串、端口（3306/5432/27017/6379 等） |
+
+**基础设施 / 部署**：
+
+| 特征文件 | 识别目标 |
+|---------|---------|
+| `Dockerfile` / `docker-compose.yml` | Docker 容器化 |
+| `k8s/` / `helm/` / `*.yaml` with `kind: Deployment` | Kubernetes |
+| `.github/workflows/` | GitHub Actions CI |
+| `.gitlab-ci.yml` | GitLab CI |
+| `Jenkinsfile` | Jenkins |
+| `terraform/` / `*.tf` | Terraform IaC |
+
+**测试框架**（从依赖声明识别）：
+JUnit / Espresso / XCTest / Jest / Vitest / Cypress / Playwright / pytest / Go test / RSpec 等
 
 ---
 
-#### iOS CocoaPods 壳工程
+#### 2b. 多仓库 / 多模块结构识别
 
-特征：`Podfile` 存在，且 `Pods/` 目录下有大量 Pod 源码。
+在技术栈检测基础上，额外识别代码组织方式：
 
-执行以下检测：
-
+**Android / KMP 含 submodules**：
 ```bash
-# 1. 统计 Pods/ 下的 Pod 数量
-ls Pods/ | wc -l
+ls .gitmodules 2>/dev/null && cat .gitmodules | grep path
+```
+有 submodules → 单根索引，记录 `rebuildTriggers: ["submodule update"]`
 
-# 2. 检查是否有本地 path 引用的 Pod
+**iOS CocoaPods 含本地 path Pod**：
+```bash
 grep -E "pod.*:path\s*=>" Podfile | head -20
-
-# 3. 列出所有本地 path Pod 的绝对路径
-grep -E "pod.*:path\s*=>" Podfile | grep -oE "'[^']+'" | tail -n +2
 ```
-
-**策略：多根索引**
-
-- **壳工程根目录**：`codegraph init`，覆盖壳工程源码 + `Pods/` 下所有 Pod 源码
-- **本地 path Pod（每一个）**：单独 `cd <pod-path> && codegraph init`，覆盖该 Pod 的本地最新源码
-
-若检测到本地 path Pod，逐一询问用户是否也为其初始化索引：
+有本地 path Pod → 多根索引，询问用户是否为各 Pod 建立独立索引：
 ```
-检测到以下本地 path Pod：
+检测到本地 path Pod：
   1. ../HSAccountKit  (pod 'HSAccountKit', :path => '../HSAccountKit')
   2. ../HSTradeKit    (pod 'HSTradeKit',   :path => '../HSTradeKit')
 
 是否为它们各自初始化 CodeGraph 索引？（推荐：是）
 ```
 
-记录到 `workspace.json`：
-```json
-{
-  "codegraph": {
-    "strategy": "multi-root",
-    "roots": [
-      {
-        "path": ".",
-        "covers": "壳工程源码 + Pods/ 下所有 Pod 源码",
-        "rebuildOn": ["pod install", "pod update"]
-      },
-      {
-        "path": "../HSAccountKit",
-        "covers": "本地联调 Pod：HSAccountKit",
-        "rebuildOn": ["本地修改后手动 sync"]
-      }
-    ],
-    "queryGuide": "查组件内部调用链 → 先在 ../HSAccountKit 查；查全局影响（谁调用了该组件）→ 在壳工程根目录查"
-  }
-}
+**前端 Monorepo**：
+```bash
+ls packages/ apps/ 2>/dev/null
+cat package.json | grep workspaces
 ```
+有 workspaces / packages/ → Monorepo，列出各子包
 
-**pod install / pod update 后的处理**：`Pods/` 目录文件全部替换，自动同步可能漏掉删除的旧文件。在项目 `CLAUDE.md` / `AGENTS.md` 中追加提醒（若文件已存在则在末尾追加，不覆盖原内容）：
-```markdown
-## CodeGraph 维护规则
+**后端多模块**：`pom.xml` 含 `<modules>` / `settings.gradle` 含 `include(":module")` → 模块化工程
 
-执行 pod install 或 pod update 后，必须重建壳工程索引：
-  cd {壳工程根目录} && codegraph index
-
-本地 path Pod 修改后，同步对应索引：
-  cd {pod路径} && codegraph sync
-```
-
----
-
-#### 多仓库（无 submodule，完全独立的多个仓库）
-
-特征：用户明确告知，或根目录存在 `.devflow/multi-repo.json`（上次配置留存）。
-
-询问用户：
+**多仓库（完全独立）**：用户明确告知，或根目录存在 `.devflow/multi-repo.json`（上次配置留存）：
 ```
 当前项目是否依赖其他本地仓库的源码（如共享库、平台层、基础组件）？
 如果是，请提供其他仓库的本地路径（一行一个，直接回车跳过）：
 ```
 
-用户输入后，为每个仓库单独执行 `codegraph init`，并生成多根目录查询规则。
+---
+
+#### 2c. 生成技术栈画像
+
+将检测结果写入 `.devflow/devflow-profile.md`，并在 `workspace.json` 中保存结构化摘要：
+
+**`.devflow/devflow-profile.md` 格式：**
+
+```markdown
+# 项目技术栈画像
+
+> 由 `devflow init` 自动生成，可手动补充修正。
+
+## 基本信息
+
+| 项 | 值 |
+|----|----|
+| 项目名 | {从 package.json/pom.xml/build.gradle/README 提取} |
+| 检测时间 | {ISO 时间戳} |
+| 仓库结构 | {单仓库 | Monorepo | 多仓库 | 壳工程+submodules | iOS+本地Pod} |
+
+## 技术栈
+
+| 层级 | 技术 | 版本（如可识别） |
+|------|------|----------------|
+| 语言 | {Kotlin / Swift / TypeScript / Java / Go / Python / ...} | {版本} |
+| 框架 | {Android SDK / SwiftUI / UIKit / Vue 3 / React 18 / Spring Boot / ...} | {版本} |
+| 构建工具 | {Gradle / Maven / Vite / Webpack / CocoaPods / SPM / ...} | {版本} |
+| 测试框架 | {JUnit / XCTest / Jest / pytest / ...} | {版本} |
+
+## 数据库 / 存储
+
+| 类型 | 组件 | 用途（如可识别） |
+|------|------|----------------|
+| 关系型 | {MySQL 8.0 / PostgreSQL 15 / SQLite / ...} | {用户数据 / 业务库 / 本地缓存} |
+| NoSQL | {MongoDB / Redis / Elasticsearch / ...} | {文档存储 / 缓存 / 全文搜索} |
+| 消息队列 | {Kafka / RabbitMQ / ...} | — |
+| 对象存储 | {OSS / S3 / ...} | — |
+
+（未检测到数据库依赖时本节省略）
+
+## 基础设施 / 部署
+
+| 组件 | 说明 |
+|------|------|
+| 容器化 | {Docker / Docker Compose | 未检测到} |
+| 编排 | {Kubernetes / Helm | 未检测到} |
+| CI/CD | {GitHub Actions / GitLab CI / Jenkins | 未检测到} |
+| IaC | {Terraform / CDK | 未检测到} |
+
+## CodeGraph 索引策略
+
+| 根目录 | 覆盖范围 | 重建触发条件 |
+|--------|---------|------------|
+| {路径} | {描述} | {条件} |
+
+查询指南：{根据仓库结构生成，如"单根直接查；多根时组件内查本地Pod，全局影响查壳工程根目录"}
+
+## 编译验证命令
+
+| 平台 | 命令 |
+|------|------|
+| {Android} | `./gradlew compileDebugSources` |
+| {iOS} | `xcodebuild -workspace *.xcworkspace -scheme <Scheme> -sdk iphonesimulator build -configuration Debug` |
+| {前端} | `tsc --noEmit` 或 `vite build --mode check` |
+| {后端} | `mvn compile -q` 或 `./gradlew compileJava` 或 `go build ./...` |
+
+## 代码审查 Skill 映射
+
+| 触发条件 | Skill |
+|---------|-------|
+| diff 含 Android/KMP 代码 | `sahm-code-review-android` |
+| diff 含 iOS/Swift/ObjC | `sahm-code-review-ios` |
+| diff 含 Vue/React/TS | {通用审查 | 项目专项 skill} |
+| diff 含 Java/Kotlin 后端 | {通用审查 | 项目专项 skill} |
+
+## 注意事项 / 特殊约定
+
+- {检测过程中发现的特殊结构，如：Monorepo apps/web 和 apps/api 共用 packages/ui}
+- {版本特殊性，如：使用 Vue 2，不是 Vue 3}
+- {未识别的部分，需用户手动补充}
+```
+
+**`workspace.json` 中增加 `techStack` 节点（结构化，供其他命令程序化读取）：**
+
+```json
+{
+  "techStack": {
+    "languages": ["Kotlin", "Swift"],
+    "frameworks": ["Android SDK", "SwiftUI"],
+    "buildTools": ["Gradle 8.x", "CocoaPods 1.x"],
+    "databases": ["MySQL", "Redis"],
+    "infrastructure": ["Docker", "GitHub Actions"],
+    "testFrameworks": ["JUnit 5", "XCTest"],
+    "repoStructure": "shell+submodules | monorepo | multi-root | single",
+    "compileCommands": {
+      "android": "./gradlew compileDebugSources",
+      "ios": "xcodebuild -workspace *.xcworkspace -scheme <Scheme> -sdk iphonesimulator build",
+      "shared": "./gradlew :shared:compileKotlinAndroid"
+    }
+  },
+  "codegraph": {
+    "strategy": "single-root | multi-root",
+    "roots": [...],
+    "queryGuide": "..."
+  }
+}
+```
 
 ---
 
-#### 单仓库项目
+**检测不确定时的处理原则：**
 
-特征：无 submodules、无 Podfile 本地 path 引用、无多仓库依赖。
-
-策略：**单根索引**，在根目录 `codegraph init` 即可。
+- 识别到技术栈但版本不确定 → 写 `未知版本`，不猜测
+- 依赖声明中存在某组件但配置文件无连接信息 → 注明"依赖中存在，连接配置未确认"
+- 完全无法识别某层技术 → 在画像中留空并注明"未检测到，请手动补充"
+- 检测完成后将画像摘要展示给用户，明确询问："以上技术栈信息是否准确？如有遗漏或错误，请告知，我会更新画像。"
 
 ---
 
@@ -152,7 +240,7 @@ grep -E "pod.*:path\s*=>" Podfile | grep -oE "'[^']+'" | tail -n +2
 codegraph --version
 ```
 
-- **已安装**：按步骤 2 确定的策略执行 `codegraph init`（各根目录依次执行）。
+- **已安装**：按步骤 2b 确定的索引策略执行 `codegraph init`（各根目录依次执行）。
   - 源码文件 > 500 个的根目录：后台运行，不阻塞后续流程。
   - 执行 `codegraph install` 注册 MCP（仅需执行一次）。
   - 执行 `codegraph status` 验证。
@@ -162,7 +250,7 @@ codegraph --version
 
 ### 4. 生成 CodeGraph 多根目录查询规则（CLAUDE.md 注入）
 
-**这是多仓库场景的关键步骤。** 将查询规则写入当前项目的 `CLAUDE.md`（若不存在则创建），让后续所有 AI 会话都知道如何跨仓查询：
+**多仓库或多根索引场景的关键步骤。** 将查询规则写入当前项目的 `CLAUDE.md`（若不存在则创建），让后续所有 AI 会话都知道如何跨仓查询。单根单仓库可跳过本步。
 
 ```markdown
 ## CodeGraph 多根目录查询规则
@@ -246,14 +334,27 @@ meegle --version
 
 ```
 ✅ DevFlow 初始化完成！
-  根目录：{path}
-  项目类型：{Android 壳工程 + submodules | iOS CocoaPods | KMP 多仓库 | 单仓库}
 
-  CodeGraph 索引策略：{单根 | 多根}
+  根目录：{path}
+
+  ── 技术栈画像 ────────────────────────────────
+  语言：{Kotlin + Swift | TypeScript | Java | Go | Python | ...}
+  框架：{Android SDK + SwiftUI | Vue 3 | Spring Boot | ...}
+  构建：{Gradle 8.x | Maven | Vite + pnpm | CocoaPods | ...}
+  数据库：{MySQL + Redis | PostgreSQL | MongoDB | 未检测到}
+  基础设施：{Docker + GitHub Actions | K8s | 未检测到}
+  测试：{JUnit 5 + XCTest | Jest + Cypress | pytest | 未检测到}
+  仓库结构：{单仓库 | Monorepo（apps/web, apps/api） | 壳工程+submodules | iOS+本地Pod}
+
+  完整画像：.devflow/devflow-profile.md
+
+  ── CodeGraph ─────────────────────────────────
+  索引策略：{单根 | 多根}
     {path1}：{已建立索引 | 后台执行中 | 已跳过}
     {path2}：{已建立索引 | 已跳过}（本地 Pod）
-  多根查询规则：已写入 CLAUDE.md
+  多根查询规则：{已写入 CLAUDE.md | 单根无需注入}
 
+  ── 配置 ──────────────────────────────────────
   Meegle：{已连接（用户：xxx）| 未配置}
   安全分级：{L0 | L1 | L2}
   .gitignore：已更新
