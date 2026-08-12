@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/version-3.3.0-63b3ed?style=flat-square" alt="version"></a>
-  <a href="#mcp-依赖"><img src="https://img.shields.io/badge/requires-CodeGraph%20MCP-f6ad55?style=flat-square" alt="requires CodeGraph"></a>
+  <a href="#codegraph-的角色"><img src="https://img.shields.io/badge/requires-CodeGraph%20MCP-f6ad55?style=flat-square" alt="requires CodeGraph"></a>
   <a href="#完整工作流"><img src="https://img.shields.io/badge/SDLC-8%20阶段全覆盖-68d391?style=flat-square" alt="SDLC"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-68d391?style=flat-square" alt="license"></a>
   <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/changelog-Keep%20a%20Changelog-f6ad55?style=flat-square" alt="changelog"></a>
@@ -27,8 +27,8 @@
   <a href="#快速开始">快速开始</a> ·
   <a href="#完整工作流">工作流</a> ·
   <a href="#20-个命令">命令参考</a> ·
+  <a href="#可选集成">可选集成</a> ·
   <a href="#codegraph-的角色">CodeGraph</a> ·
-  <a href="#mcp-依赖">MCP 依赖</a> ·
   <a href="#致谢">致谢</a>
 </p>
 
@@ -71,41 +71,94 @@ DevFlow 将这 8 个 SDLC 阶段映射为 20 个 AI 命令，并在每一个决�
 ### 前置依赖
 
 - **Claude Code** — DevFlow 基于 Claude Code 插件系统运行
-- **CodeGraph MCP** — 必须，代码知识图谱核心能力（见 [CodeGraph](https://github.com/nickseewald/codegraph)）
-- **Meegle MCP** — 可选，接入项目管理全生命周期联动
+- **CodeGraph MCP** — 必须安装，代码知识图谱核心能力（`devflow init` 会自动引导安装）
 
-### 安装
+### 安装插件
 
 ```bash
 claude plugins install devflow
 ```
 
-### 初始化项目（每个项目只需一次）
+---
 
-```
+### 已有项目
+
+在已有项目的根目录执行初始化，**每个项目只需一次**：
+
+```bash
+cd /path/to/your-project
 devflow init
 ```
 
-AI 自动完成：检测技术栈并生成项目画像、配置 CodeGraph / Meegle、建立 `.devflow/` 目录、写入 `.gitignore`、确认安全分级、配置专项 Review Skill，以及可选的外部集成（YApi 域名、验收清单 Skill）。
+init 会自动完成以下所有步骤，无需手动干预：
 
-支持两种场景：
+**1. 技术栈检测**
 
-- **已有项目** — 自动扫描特征文件识别技术栈
-- **全新项目** — 对话式引导选择技术栈，可生成 `.gitignore` / `README.md` 骨架
+扫描特征文件（`build.gradle` / `Podfile` / `package.json` / `pom.xml` / `go.mod` 等），自动识别技术栈并生成项目画像，写入 `.devflow/devflow-profile.md`。支持的技术栈：
 
-初始化后，所有本地敏感配置（YApi 地址、Skill 名称等）写入 `.devflow/workspace.json`，该文件已加入 `.gitignore`，不会提交到仓库。
+Android · iOS · KMP · Flutter · Vue · React / Next.js · Node.js · Spring Boot · Go · Python · Rust 等
 
-### 开始第一个需求
+**2. CodeGraph 索引**
+
+根据项目结构自动选择索引策略：
+
+| 项目类型 | 索引策略 |
+|---------|---------|
+| 单仓库 | 单根索引，一次 init 覆盖全部 |
+| Android / KMP 含 submodules | 单根索引，壳工程根目录统一覆盖 |
+| iOS CocoaPods 含本地 path Pod | 多根索引，壳工程 + 每个本地 Pod 分别建立索引 |
+| 完全独立多仓库 | 多根索引，逐一 init |
+
+**3. Review Skill 配置（可选）**
+
+对每个检测到的技术栈，询问是否生成专项代码审查规范。选择「生成」则在 `.ai/skills/` 下创建可自定义的规范文件；选择「跳过」则 `devflow review` 使用内置通用规范。
+
+**4. 外部集成配置（可选）**
+
+询问 YApi / Figma / Meegle 等外部服务地址，写入本地 `.devflow/workspace.json`（不提交仓库）。全部可跳过，详见[可选集成](#可选集成)。
+
+**5. 其他**
+
+建立 `.devflow/` 目录结构、写入 `.gitignore`、确认安全分级。
+
+初始化完成后，直接开始：
 
 ```bash
 devflow start 用户头像上传 支持裁剪和预览
-
-# 快速处理 Bug
-devflow fix https://project.feishu.cn/...
-
-# 新成员熟悉模块
-devflow onboard payment 模块
 ```
+
+---
+
+### 全新项目
+
+空目录或只有 `.git/` 时，init 自动切换为对话式引导：
+
+```bash
+mkdir my-new-project && cd my-new-project
+git init
+devflow init
+```
+
+AI 会逐步询问：
+
+```
+这是一个全新项目，我来帮你完成初始配置。
+
+请选择项目的主要技术栈：
+  1. Android（Kotlin / Java）
+  2. iOS（Swift / Objective-C）
+  3. Vue 3
+  4. React / Next.js
+  5. Node.js 服务端
+  6. Go
+  ...（更多选项）
+
+项目名称（直接回车跳过）：
+是否生成 .gitignore？
+是否生成 README.md 骨架？
+```
+
+收集完成后生成项目画像，并继续执行 Review Skill 配置和外部集成配置步骤（均可跳过）。
 
 <p align="right">(<a href="#快速开始">返回顶部</a>)</p>
 
@@ -169,11 +222,26 @@ refactor → review → retrospect
 | `devflow review` | 优先使用项目专项 Review Skill，未配置时降级通用四维度审查，CRITICAL 阻断合并 |
 | `devflow retrospect` | 经验卡去重入库，关闭 Meegle 工作项 |
 
-### Bug 与重构
+### Bug 修复
+
+`devflow fix` 支持三种输入方式：
+
+```bash
+# 方式一：直接描述 bug 现象（无需任何外部工具）
+devflow fix 点击提交按钮后页面白屏，控制台报 TypeError: Cannot read properties of null
+
+# 方式二：Meegle issue 链接（需配置 Meegle，见可选集成）
+devflow fix https://project.feishu.cn/...
+
+# 方式三：Meegle 工作项 ID
+devflow fix 12345678
+```
+
+AI 执行四阶段 CodeGraph 根因分析（定位入口 → 追踪调用链 → 评估爆炸半径 → 生成原子修复方案），90 分准入门禁，人工验证后提交，强制触发 `retrospect` 将修复经验入库。
 
 | 命令 | 功能说明 |
 |------|---------|
-| `devflow fix` | Meegle issue 批量处理，四阶段 CodeGraph 根因分析（含原子修复方案），90 分准入门禁，人工验证后提交 |
+| `devflow fix` | 支持直接描述 / Meegle issue / 批量视图，四阶段根因分析，最小修复原则 |
 | `devflow refactor` | 测试基线验证，重构后一致性断言 |
 
 ### 知识与协作
@@ -185,6 +253,81 @@ refactor → review → retrospect
 | `devflow knowledge` | Bug 经验卡查询 / 添加 / 健康检查，历史防坑手册 |
 
 <p align="right">(<a href="#20-个命令">返回顶部</a>)</p>
+
+<a id="可选集成"></a>
+
+## 可选集成
+
+DevFlow 只有 **CodeGraph MCP** 是必须的，其余外部服务全部可选。没有这些服务照样可以完整使用，只是对应功能会降级处理。
+
+执行 `devflow init` 时会逐一询问，直接回车跳过即可；也可以事后手动编辑 `.devflow/workspace.json` 补充配置。
+
+---
+
+### Meegle（飞书项目）
+
+**不配置的影响：** `devflow fix` 只能通过直接描述 bug 触发，无法读取 issue 详情；工作项状态不会同步到飞书项目；`devflow continue` 不展示 Meegle 状态。其余所有命令正常运行。
+
+**配置方式：** `devflow init` 时执行 `meegle auth login` 完成授权，或事后运行：
+
+```bash
+meegle auth login
+```
+
+授权成功后 init 会自动写入 `workspace.json.meegle.projectKey`。
+
+---
+
+### Figma
+
+**不配置的影响：** `devflow analyze` 收到 Figma 链接时无法自动读取设计稿，会标注「待手动核验」继续流程，不阻断分析。
+
+**配置方式：** 安装 [Figma Desktop MCP](https://help.figma.com/hc/en-us/articles/24028694536215)（官方插件），Claude Code 自动识别。降级方案：安装 Framelink MCP。
+
+---
+
+### YApi / Apifox（接口文档）
+
+**不配置的影响：** `devflow analyze` 和 `devflow design` 跳过 YApi 自动反查步骤，不影响核心分析流程；如需读取接口，直接粘贴完整 YApi 链接即可（AI 从 URL 提取 host，无需提前配置）。
+
+**配置方式：** `devflow init` 时填写 YApi 域名，或手动编辑：
+
+```json
+// .devflow/workspace.json
+{
+  "integrations": {
+    "yapiHost": "yapi.your-company.com"
+  }
+}
+```
+
+配置后 analyze / design 会在 CodeGraph 反查后自动补充接口定义，无需手动粘贴链接。
+
+降级方案：YApi 不可用时自动切换 Apifox MCP（名称「API 文档」）。
+
+---
+
+### 专项 Review Skill / 验收清单 Skill
+
+**不配置的影响：** `devflow review` 使用内置通用四维度审查规范；`devflow checklist` 使用内置通用验收清单格式。对大多数项目已足够。
+
+**配置方式：** `devflow init` 时选择「生成默认规范文件」，AI 会在 `.ai/skills/` 下生成可自定义的规范文件，并自动写入 `workspace.json`。也可以指定已有 skill 路径：
+
+```json
+// .devflow/workspace.json
+{
+  "reviewSkills": [
+    {
+      "name": "my-review-android",
+      "triggerWhen": "diff 含 *.kt 且存在 AndroidManifest.xml",
+      "path": ".ai/skills/my-review-android"
+    }
+  ],
+  "checklistSkill": "my-acceptance-checklist"
+}
+```
+
+<p align="right">(<a href="#可选集成">返回顶部</a>)</p>
 
 <a id="codegraph-的角色"></a>
 
@@ -206,8 +349,6 @@ refactor → review → retrospect
 
 ### DevFlow 中的关键节点
 
-DevFlow 在以下节点强制调用 CodeGraph：
-
 | 命令 | CodeGraph 调用 |
 |------|--------------|
 | `analyze` | 反查现有接口，避免重复实现 |
@@ -217,19 +358,6 @@ DevFlow 在以下节点强制调用 CodeGraph：
 | `onboard` | 新成员架构全景导览 |
 
 <p align="right">(<a href="#codegraph-的角色">返回顶部</a>)</p>
-
-<a id="mcp-依赖"></a>
-
-## MCP 依赖
-
-| 依赖 | 必须/可选 | 配置方式 | 说明 |
-|------|---------|---------|------|
-| `codegraph` MCP | **必须** | `devflow init` 自动安装 | 代码知识图谱，爆炸半径分析，调用链追踪 |
-| `meegle` MCP | 可选 | `devflow init` 引导配置 | 项目管理，工作项全生命周期联动 |
-| `figma` MCP | 可选 | Figma Desktop 官方插件 | 需求分析阶段读取设计稿，降级使用 Framelink MCP |
-| YApi | 可选 | `workspace.json` → `integrations.yapiHost` | WebFetch 直接读取接口定义（无需 MCP），降级使用 Apifox MCP |
-
-<p align="right">(<a href="#mcp-依赖">返回顶部</a>)</p>
 
 ## 目录结构
 
@@ -253,7 +381,7 @@ plugins/devflow/
 │   ├── skills/                      # 团队公共 skills（由团队维护，devflow sync 分发）
 │   └── agents/                      # 团队公共 agents（可选）
 ├── assets/
-│   ├── config/                      # devflow.json、ai-policy.json、分级配置
+│   ├── config/                      # workspace.tpl.json、ai-policy.json、分级配置
 │   └── templates/                   # 文档模板 + bug-experience-cards.csv（20 条内置经验）
 └── references/
     ├── codegraph-routing.md         # CodeGraph 多根目录查询规则
@@ -281,3 +409,4 @@ CodeGraph 是一个基于确定性 AST 解析的代码知识图谱引擎。它�
 <br/>
 
 <p align="center">Made with intent by <strong>Yeesin</strong></p>
+
