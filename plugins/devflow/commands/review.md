@@ -26,7 +26,33 @@ description: DevFlow 代码审查阶段。优先委托项目配置的专项 revi
 
 ### 1. 查找专项 review skill
 
-按以下路径顺序查找，找到第一个匹配即停止：
+**第一优先级：读取项目配置**
+
+从 `.devflow/workspace.json` 的 `reviewSkills` 字段读取已注册的专项 skill：
+
+```json
+// workspace.json 示例
+{
+  "reviewSkills": [
+    {
+      "name": "my-review-android",
+      "triggerWhen": "diff 含 *.kt / *.java 且存在 AndroidManifest.xml",
+      "path": ".ai/skills/my-review-android"
+    },
+    {
+      "name": "my-review-vue",
+      "triggerWhen": "diff 含 *.vue / *.ts",
+      "path": "~/.claude/skills/my-review-vue"
+    }
+  ]
+}
+```
+
+遍历 `reviewSkills` 列表，对当前 diff 逐条匹配 `triggerWhen` 描述的条件，找到第一个匹配的 skill。
+
+**第二优先级：通用路径扫描（workspace.json 无配置时）**
+
+在以下路径中扫描所有包含 `skill.meta.md` 的目录，找到后读取其 `stack_detection` 字段，与当前 diff 特征对比，选出最匹配的：
 
 ```
 {项目根}/.claude/skills/
@@ -34,25 +60,9 @@ description: DevFlow 代码审查阶段。优先委托项目配置的专项 revi
 ~/.claude/skills/
 ```
 
-**已知专项 skill 名称：**
+**两种方式都未找到匹配 → 降级到步骤 2B 通用四维度审查。**
 
-| Skill 名称 | 适用平台 | 判定特征 |
-|-----------|---------|---------|
-| `sahm-code-review-android` | Android / KMP Android 端 | `build.gradle` 中 apply 了 `com.android.application` / `com.android.library` / `kotlin-android`，**且**存在 `AndroidManifest.xml` |
-| `sahm-code-review-ios` | iOS | 存在 `*.xcodeproj` / `*.xcworkspace` / `Podfile`，或 diff 含 `*.swift` / `*.m` / `*.h` |
-
-**查找路径（按优先级，找到即停止）：**
-
-```
-{项目根}/.claude/skills/{skill-name}/skill.meta.md
-{项目根}/.ai/skills/{skill-name}/skill.meta.md
-~/.claude/skills/{skill-name}/skill.meta.md
-/Users/apple/work/workflow/app-agent-assets/src/skills/{skill-name}/skill.meta.md
-```
-
-最后一条是团队共享路径，兜底使用。实际路径：
-- Android：`/Users/apple/work/workflow/app-agent-assets/src/skills/sahm-code-review-android`
-- iOS：`/Users/apple/work/workflow/app-agent-assets/src/skills/sahm-code-review-ios`
+> 如需注册专项 review skill，执行 `devflow init` 并选择"配置 Review Skill"，或直接编辑 `.devflow/workspace.json` 的 `reviewSkills` 字段。
 
 ---
 

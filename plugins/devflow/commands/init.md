@@ -183,12 +183,15 @@ cat package.json | grep workspaces
 
 ## 代码审查 Skill 映射
 
+{根据 workspace.json.reviewSkills 和步骤 2d 的配置结果填写}
+
 | 触发条件 | Skill |
 |---------|-------|
-| diff 含 Android/KMP 代码 | `sahm-code-review-android` |
-| diff 含 iOS/Swift/ObjC | `sahm-code-review-ios` |
-| diff 含 Vue/React/TS | {通用审查 | 项目专项 skill} |
-| diff 含 Java/Kotlin 后端 | {通用审查 | 项目专项 skill} |
+| {用户配置的条件 1} | {skill 名} |
+| {用户配置的条件 2} | {skill 名} |
+| 其余情况 | 通用四维度审查 |
+
+（跳过配置时本节写「全部使用通用四维度审查」）
 
 ## 注意事项 / 特殊约定
 
@@ -234,7 +237,48 @@ cat package.json | grep workspaces
 
 ---
 
-### 3. 执行 CodeGraph 索引
+#### 2d. 配置 Review Skill（可选）
+
+技术栈画像确认后，告知用户可以为各技术栈注册专项 review skill：
+
+```
+检测到以下技术栈，您可以为它们配置专项 code review 规范：
+
+  1. {技术栈 A}（如 Android/Kotlin）
+  2. {技术栈 B}（如 Vue 3 / TypeScript）
+  3. 跳过，全部使用通用四维度审查
+
+如需配置专项 skill，请提供 skill 目录路径（包含 skill.meta.md 的目录）。
+未配置时，devflow review 会自动扫描以下目录中现有的 skill：
+  {项目根}/.claude/skills/
+  {项目根}/.ai/skills/
+  ~/.claude/skills/
+```
+
+**用户提供路径后，询问触发条件：**
+```
+请描述此 skill 的触发条件（当 diff 满足什么特征时使用它）：
+示例：「diff 含 *.kt 且存在 AndroidManifest.xml」
+      「diff 含 *.vue 或 *.ts」
+      「diff 含 src/main/java/ 下的文件」
+```
+
+将配置写入 `workspace.json.reviewSkills`：
+```json
+{
+  "reviewSkills": [
+    {
+      "name": "{skill 目录名}",
+      "triggerWhen": "{用户描述的触发条件}",
+      "path": "{skill 目录绝对路径}"
+    }
+  ]
+}
+```
+
+用户跳过时，`reviewSkills` 写入空数组 `[]`，`devflow review` 运行时自动扫描上述标准路径。
+
+---
 
 ```bash
 codegraph --version
@@ -287,7 +331,7 @@ meegle --version
 
 将插件包 `assets/config/` 复制到 `.devflow/config/`，`assets/templates/` 复制到 `.devflow/config/templates/`。
 
-初始化 `workspace.json`（合并步骤 2 生成的 codegraph 配置）：
+初始化 `workspace.json`（合并步骤 2 生成的 techStack / codegraph / reviewSkills 配置）：
 ```json
 {
   "currentWorkItem": null,
@@ -295,10 +339,18 @@ meegle --version
     "projectKey": null,
     "defaultWorkItemType": null
   },
+  "techStack": {
+    "languages": [],
+    "frameworks": [],
+    "databases": [],
+    "repoStructure": "single",
+    "compileCommands": {}
+  },
+  "reviewSkills": [],
   "codegraph": {
-    "strategy": "single-root | multi-root",
-    "roots": [...],
-    "queryGuide": "..."
+    "strategy": "single-root",
+    "roots": [],
+    "queryGuide": ""
   }
 }
 ```
@@ -345,8 +397,11 @@ meegle --version
   基础设施：{Docker + GitHub Actions | K8s | 未检测到}
   测试：{JUnit 5 + XCTest | Jest + Cypress | pytest | 未检测到}
   仓库结构：{单仓库 | Monorepo（apps/web, apps/api） | 壳工程+submodules | iOS+本地Pod}
-
   完整画像：.devflow/devflow-profile.md
+
+  ── 代码审查 ──────────────────────────────────
+  Review Skill：{已配置 n 个专项 skill | 未配置，将使用通用四维度审查}
+    {skill名} → {触发条件}
 
   ── CodeGraph ─────────────────────────────────
   索引策略：{单根 | 多根}
