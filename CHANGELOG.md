@@ -95,21 +95,20 @@ BLOCKED / CHANGES REQUESTED 时不触发，修复后重跑 review。
 - 判断前提条件复杂度，难以真实构造的状态自动生成 Mock 接口表格
 - 每条 AC 对应具体可观测的检查点（不允许「正确展示」这类模糊表述）
 - 清单末尾附回归验证表（结合 CodeGraph impact 识别影响范围）
-- 优先读取项目配置的专项 skill（`sahm-acceptance-checklist` 等），降级到通用规范
+- 优先读取项目配置的专项 skill（`project-acceptance-checklist` 等），降级到通用规范
 
 查找路径（按优先级）：
 ```
-{项目根}/.claude/skills/sahm-acceptance-checklist/
-{项目根}/.ai/skills/sahm-acceptance-checklist/
-~/.claude/skills/sahm-acceptance-checklist/
-/Users/apple/AndroidStudioProjects/hssa/.claude/skills/sahm-acceptance-checklist/
+{项目根}/.claude/skills/project-acceptance-checklist/
+{项目根}/.ai/skills/project-acceptance-checklist/
+~/.claude/skills/project-acceptance-checklist/
 ```
 
 清单写入 `spec/acceptance-checklist.md`。
 
 ### `devflow review` 委托专项 skill
 
-优先委托 `sahm-code-review-android` / `sahm-code-review-ios` 执行深度审查（平台特有的内存/并发/安全规则），降级通用四维度审查。兜底路径：`/Users/apple/work/workflow/app-agent-assets/src/skills/`。
+优先委托 `project-code-review-android` / `project-code-review-ios` 执行深度审查（平台特有的内存/并发/安全规则），降级通用四维度审查。
 
 ---
 
