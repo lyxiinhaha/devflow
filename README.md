@@ -165,29 +165,27 @@ claude plugins install devflow
 
 ### Cursor / Codex / OpenCode / Gemini CLI
 
-克隆仓库后，在目标项目目录运行安装脚本，按提示选择平台即可：
+在**项目目录**下运行一行命令，脚本自动下载安装并完成基础配置：
 
 ```bash
-git clone https://github.com/lyxiinhaha/devflow.git
-cd devflow
-bash install.sh
+bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/install.sh)
 ```
 
-或指定平台和目标目录，一行完成：
+脚本会交互式引导你完成：
 
-```bash
-# 安装到当前目录，指定 Cursor 平台
-bash install.sh --platform cursor
+1. **平台自动检测** — 识别 Cursor / Codex / Gemini CLI 等，直接确认即可
+2. **文件安装** — 命令文件、适配配置、模板、`.gitignore` 全部就位
+3. **基础配置** — 可选填写 YApi 域名、Meegle 项目 Key，直接回车跳过
 
-# 安装到指定目录，指定 Codex 平台
-bash install.sh --platform codex --dir /path/to/your-project
-```
-
-脚本会自动完成：将命令文件复制到 `.devflow/commands/`、写入平台适配配置、更新 `.gitignore`。
-
-安装完成后，在 AI 工具中打开项目，输入 `devflow init` 开始初始化。
+安装完成后，在 AI 工具中打开项目，输入 `devflow init` 完成技术栈检测和 CodeGraph 配置。
 
 > Cursor 用户请参阅 **[详细使用手册 →](./README-Cursor.md)**，包含从安装到日常开发的完整步骤说明。
+
+**升级已安装的 DevFlow：**
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/install.sh) --update
+```
 
 ### 各平台适配文件说明
 

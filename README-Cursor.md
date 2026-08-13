@@ -116,65 +116,84 @@ DevFlow 的解法：
 ### 前置要求
 
 - **Cursor** 已安装（[下载](https://www.cursor.com)）
-- **Node.js 18+** — CodeGraph 依赖，`devflow init` 会自动用 npm 安装 CodeGraph，确保 Node.js 可用即可
-- **Git** — 用于克隆仓库
+- **Node.js 18+** — CodeGraph 依赖，`devflow init` 会自动安装，确保 Node.js 可用即可
 
-### 第一步：克隆 DevFlow 仓库
+### 一行命令安装
 
-```bash
-git clone https://github.com/lyxiinnaha/devflow.git
-```
-
-### 第二步：运行安装脚本
+在**项目根目录**下运行：
 
 ```bash
-cd devflow
-bash install.sh --platform cursor --dir /path/to/your-project
+bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh)
 ```
 
-将 `/path/to/your-project` 替换为你的项目根目录，例如：
+脚本会自动检测到 Cursor 平台，交互式引导你完成：
 
-```bash
-bash install.sh --platform cursor --dir ~/code/my-app
+1. **平台确认** — 检测到 `.cursor/` 目录后直接确认，无需手动选择
+2. **文件安装** — 20 个命令文件、Cursor Rules、配置模板全部就位
+3. **基础配置** — 可选填写 YApi 域名、Meegle 项目 Key，直接回车跳过
+
+安装过程示例：
+
+```
+DevFlow v3.3.0 — AI 研发工作流
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  模式：远程安装（从 GitHub 下载）
+
+  检测到平台：cursor
+  使用此平台？[Y/n] Y
+
+  平台：cursor
+  目录：/path/to/your-project
+
+正在安装命令文件...
+  ✓ 命令文件 → .devflow/commands/ （20 个）
+  ✓ 配置模板 → .devflow/config/
+  ✓ workspace.json 已初始化
+
+正在安装平台适配器...
+  ✓ Cursor Rules → .cursor/rules/devflow.mdc
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  基础配置（可选，直接回车跳过）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [1/3] YApi 接口文档
+  YApi 域名（如 yapi.example.com）：
+
+  [2/3] Meegle（飞书项目）
+  Meegle 项目 Key（如 PROJ）：
+
+  [3/3] 专项验收清单 Skill
+  Skill 名称（如 my-acceptance-checklist）：
+
+  ✓ .gitignore 已追加 DevFlow 条目
+
+✅ DevFlow 安装完成！
+
+  下一步：
+  1. 用 Cursor 打开项目，输入：
+     devflow init
 ```
 
-脚本会自动完成：
-
-- 将 20 个命令文件复制到 `your-project/.devflow/commands/`
-- 写入 Cursor Rules 文件 `your-project/.cursor/rules/devflow.mdc`
-- 初始化 `your-project/.devflow/workspace.json`
-- 更新 `your-project/.gitignore`
-
-安装完成后，用 Cursor 打开项目，输入 `devflow init`——CodeGraph 的安装和索引构建会在 init 过程中自动完成。
+安装完成后，用 Cursor 打开项目，输入 `devflow init`——技术栈检测、CodeGraph 索引构建、Review Skill 生成会在 init 过程中完成。
 
 ---
 
 ## 二、升级
 
-安装脚本会在项目的 `.devflow/.devflow-install.json` 中记录安装来源。后续升级只需两步：
-
-**第一步：拉取 DevFlow 仓库最新代码**
+在项目目录执行一行命令：
 
 ```bash
-cd /path/to/devflow   # 你当初 clone 的目录
-git pull
-```
-
-**第二步：在项目目录执行更新**
-
-```bash
-bash /path/to/devflow/install.sh --update --dir /path/to/your-project
+bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh) --update
 ```
 
 脚本会自动完成：
 
-- `git pull` 拉取最新命令文件
+- 从 GitHub 拉取最新命令文件
 - 覆盖 `.devflow/commands/` 下的所有命令文件
 - 覆盖 `.devflow/config/` 下的配置模板
 - 覆盖 `.cursor/rules/devflow.mdc` 适配器文件
 - **不会覆盖** `.devflow/workspace.json`（你的本地配置）
-
-> 安装时脚本末尾会打印完整的更新命令，直接复制备用即可。
 
 ---
 
