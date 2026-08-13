@@ -36,6 +36,8 @@ description: DevFlow 任务拆解阶段。将技术设计拆解为原子任务�
 - 命中经验卡的「要求测试」→ 转化为**验收标准**，写入对应任务验收项
 - 未命中或知识库不可读 → 注明「未召回 Bug 经验」，正常继续
 
+**注入位置记录（供输出展示用）：** 每张命中的经验卡，记录其被注入的任务 ID 列表（如 T003、T007），格式：`{ cardId, severity, title, injectedTasks: [T001, ...] }`。用于步骤 5 输出时展示。
+
 ### 3. 拆解原子任务
 
 将设计方案拆解为最小可执行的原子任务，按模块分组。
@@ -55,7 +57,7 @@ description: DevFlow 任务拆解阶段。将技术设计拆解为原子任务�
   - **Technical Requirements**: {技术约束，如禁用 float 处理金额、必须加幂等键}
   - **Acceptance Criteria**:
     - [ ] {可检查的验收标准1}
-    - [ ] {来自 Bug 经验卡的验收项（如有）}
+    - [ ] {来自 Bug 经验卡的验收项，格式：`[KB-{id}]` 约束描述（如有）}
   - **Dependencies**: {前置任务 ID，如 T001；无则填 None}
   - **Risk**: {⚠️ [CodeGraph 前置检查] | 🔒 [人工审查必须] | 无}
 ```
@@ -65,6 +67,13 @@ description: DevFlow 任务拆解阶段。将技术设计拆解为原子任务�
 确认 `tasks.md` 包含必填章节：
 - 执行清单（至少一个任务模块）
 - Bug 经验编码禁令（来自经验卡的约束，无命中时写「无」）
+
+  格式示例：
+  ```markdown
+  ## Bug 经验编码禁令
+  - [KB-015] 禁止使用 Float/Double 处理金额，必须用 BigDecimal
+  - [KB-009] Token 刷新必须加锁，防止并发多次刷新
+  ```
 
 ### 5. 静默输出
 
@@ -93,6 +102,9 @@ meegle subtask update --work-item-id <id> --node-id <node_id>
   高风险任务（需前置检查）：{n} 个
   L0 人工审查任务：{n} 个
   召回 Bug 经验卡：{n} 条
+    · KB-{id}  [{severity}]  {title} → 注入 {T001, T002, ...}
+    · KB-{id}  [{severity}]  {title} → 注入 {T003}
+    （未命中时此列表不显示）
   Meegle 子任务：{已同步 n 个 | 未配置}
 
 下一步：使用 `devflow code` 开始编码。
