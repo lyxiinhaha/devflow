@@ -142,6 +142,19 @@ devflow-cg explore <symbol>
 - **强制要求人工审批**，AI 只输出方案建议，不得自行生成完整修改方案
 - 在文档中标注 `🔒 [L0 — 需人工审批]`
 
+#### 3.4 CodeGraph 调用统计
+
+Step 3 全部执行完成后，统计本次实际执行的 CG 查询次数（每次 `devflow-cg explore` 或 `devflow-cg impact` 调用各计 1）：
+
+1. 读取 `.devflow/workspace.json` 的 `stats` 字段（若字段不存在则初始化为 `{ "totalCgQueries": 0, "totalCgQueriesSaved": 0, "lastUpdated": null }`）
+2. `totalCgQueries += 本次查询次数`
+3. `totalCgQueriesSaved += 本次查询次数 × 10`
+4. `lastUpdated = 今日日期（YYYY-MM-DD）`
+5. 将更新后的 `stats` 写回 `.devflow/workspace.json`
+6. 将本次查询次数存入变量 `cgQueriesThisRun`，供最终输出使用
+
+CodeGraph 不可用（降级）时：`cgQueriesThisRun = 0`，不更新 stats。
+
 ---
 
 ### 4. 边设计边追问技术决策
@@ -627,6 +640,10 @@ meegle comment add --work-item-id <id> \
   接口变更：{已同步到 spec/api.md | 无}
   技术决策：{n} 个已在设计过程中确认
   Meegle 同步：{已同步 | 未配置}
+  ── CodeGraph 效率摘要 ────────────────────────
+  本次图查询：{cgQueriesThisRun} 次（节省 ≈ {cgQueriesThisRun × 10} 次 grep/read）
+  累计节省调用：{totalCgQueriesSaved} 次
+  （CodeGraph 不可用时此摘要不显示）
 
 下一步：使用 `devflow estimate` 或 `devflow plan`。
 ```
