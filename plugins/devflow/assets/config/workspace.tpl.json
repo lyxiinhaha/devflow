@@ -18,5 +18,10 @@
     ],
     "moduleRootMap": {},
     "lastRebuildAt": null
+  },
+  "stats": {
+    "totalCgQueries": 0,
+    "totalCgQueriesSaved": 0,
+    "lastUpdated": null
   }
 }
