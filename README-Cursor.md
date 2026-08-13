@@ -44,6 +44,7 @@ Agent 模式改多个文件时，很难判断改动是否安全，有没有破�
 DevFlow 的解法：
 - `devflow design` 强制做**爆炸半径评估**，HIGH / CRITICAL 级别改动触发确认门禁，改之前就知道影响哪些符号
 - `devflow review` 用 CodeGraph 验证影响面，发现超出预期的改动直接阻断
+- `devflow fix` / `devflow design` 每次执行后输出 **CodeGraph 效率摘要**，显示本次节省的 grep/read 调用次数，累计数字写入本地 `workspace.json`
 
 ---
 
@@ -105,6 +106,8 @@ DevFlow 的解法：
 | Bug 治标不治本 | `fix`（四阶段根因）+ `retrospect`（经验入库） |
 | 团队 Review 标准不一 | 专项 Review Skill + `sync` |
 | 新成员上手慢 | `onboard` |
+
+> 完整的 SDLC 闭环流程图（含 CodeGraph 调用节点标注）请见 [主 README → 关于项目](./README.md#关于项目)。
 
 ---
 
