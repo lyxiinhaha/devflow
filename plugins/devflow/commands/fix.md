@@ -153,6 +153,19 @@ devflow-cg explore "<根因方法名> 调用方 影响"
 
 CodeGraph 不可用时：降级 grep/find + Read 手动搜索，分析文件中注明"CodeGraph 不可用，使用手动搜索"。
 
+### CodeGraph 调用统计
+
+Step 2 全部执行完成后，统计本次实际执行的 CG 查询次数（每次 `devflow-cg explore` 或 `devflow-cg impact` 调用各计 1）：
+
+1. 读取 `.devflow/workspace.json` 的 `stats` 字段（若字段不存在则初始化为 `{ "totalCgQueries": 0, "totalCgQueriesSaved": 0, "lastUpdated": null }`）
+2. `totalCgQueries += 本次查询次数`
+3. `totalCgQueriesSaved += 本次查询次数 × 10`（每次 CG 查询等效节省约 10 次 grep/read）
+4. `lastUpdated = 今日日期（YYYY-MM-DD）`
+5. 将更新后的 `stats` 写回 `.devflow/workspace.json`
+6. 将本次查询次数存入变量 `cgQueriesThisRun`，供 Step 5 输出使用
+
+CodeGraph 不可用（降级为 grep/read）时：`cgQueriesThisRun = 0`，不更新 stats。
+
 ### 分析评分（修复准入门禁）
 
 对每个 Bug 的分析结论评分（0–100）：
@@ -349,6 +362,11 @@ fix: <bug 标题或短描述> #<issue_id>
 
 [1] fix: <subject> #<issue_id>
 [2] ...
+
+── CodeGraph 效率摘要 ──────────────────────────
+  本次图查询：{cgQueriesThisRun} 次（节省 ≈ {cgQueriesThisRun × 10} 次 grep/read）
+  累计节省调用：{totalCgQueriesSaved} 次
+  （CodeGraph 不可用时此摘要不显示）
 ```
 
 ---
