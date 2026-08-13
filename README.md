@@ -43,11 +43,88 @@
 
 当 AI Agent 面对一个真实需求时，它需要的不只是代码生成能力，而是一套覆盖完整研发生命周期的决策框架：
 
-```
-业务规划 → 需求分析 → 系统设计 → 开发实践 → 测试验证 → 上线交付 → 运维迭代
-   ↑                                                                      |
-   └──────────────────────── 新需求触发，闭环永不停止 ──────────────────────┘
-```
+<p align="center">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 740 210" width="740" height="210" role="img" aria-label="DevFlow SDLC 闭环流程图">
+  <defs>
+    <marker id="arrowGray" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#718096"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#63b3ed"/>
+    </marker>
+  </defs>
+
+  <!-- ── Row 1：阶段 1–6，左→右 ── -->
+
+  <!-- 1. 业务规划 -->
+  <rect x="10" y="24" width="96" height="44" rx="8" fill="none" stroke="#718096" stroke-width="1.5"/>
+  <text x="58" y="42" text-anchor="middle" font-size="11" font-family="sans-serif" fill="currentColor">业务规划</text>
+  <text x="58" y="57" text-anchor="middle" font-size="9" font-family="monospace" fill="#718096">start</text>
+  <line x1="106" y1="46" x2="118" y2="46" stroke="#718096" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- 2. 需求分析 🟠 -->
+  <rect x="119" y="24" width="96" height="44" rx="8" fill="none" stroke="#f6ad55" stroke-width="1.5"/>
+  <text x="167" y="42" text-anchor="middle" font-size="11" font-family="sans-serif" fill="currentColor">需求分析</text>
+  <text x="167" y="57" text-anchor="middle" font-size="9" font-family="monospace" fill="#f6ad55">analyze</text>
+  <line x1="215" y1="46" x2="227" y2="46" stroke="#718096" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- 3. 系统设计 🟠 -->
+  <rect x="228" y="24" width="96" height="44" rx="8" fill="none" stroke="#f6ad55" stroke-width="1.5"/>
+  <text x="276" y="42" text-anchor="middle" font-size="11" font-family="sans-serif" fill="currentColor">系统设计</text>
+  <text x="276" y="57" text-anchor="middle" font-size="9" font-family="monospace" fill="#f6ad55">design</text>
+  <line x1="324" y1="46" x2="336" y2="46" stroke="#718096" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- 4. 开发实践 -->
+  <rect x="337" y="24" width="96" height="44" rx="8" fill="none" stroke="#718096" stroke-width="1.5"/>
+  <text x="385" y="42" text-anchor="middle" font-size="11" font-family="sans-serif" fill="currentColor">开发实践</text>
+  <text x="385" y="57" text-anchor="middle" font-size="9" font-family="monospace" fill="#718096">plan / code</text>
+  <line x1="433" y1="46" x2="445" y2="46" stroke="#718096" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- 5. 测试验证 🟠 -->
+  <rect x="446" y="24" width="96" height="44" rx="8" fill="none" stroke="#f6ad55" stroke-width="1.5"/>
+  <text x="494" y="42" text-anchor="middle" font-size="11" font-family="sans-serif" fill="currentColor">测试验证</text>
+  <text x="494" y="57" text-anchor="middle" font-size="9" font-family="monospace" fill="#f6ad55">review</text>
+  <line x1="542" y1="46" x2="554" y2="46" stroke="#718096" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- 6. 上线交付 🟠 -->
+  <rect x="555" y="24" width="96" height="44" rx="8" fill="none" stroke="#f6ad55" stroke-width="1.5"/>
+  <text x="603" y="42" text-anchor="middle" font-size="11" font-family="sans-serif" fill="currentColor">上线交付</text>
+  <text x="603" y="57" text-anchor="middle" font-size="9" font-family="monospace" fill="#f6ad55">fix / release</text>
+
+  <!-- 上线交付 向下连到 Row 2 -->
+  <line x1="603" y1="68" x2="603" y2="118" stroke="#718096" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- ── Row 2：阶段 7–8，右→左 ── -->
+
+  <!-- 7. 运维迭代 🟠 -->
+  <rect x="555" y="119" width="96" height="44" rx="8" fill="none" stroke="#f6ad55" stroke-width="1.5"/>
+  <text x="603" y="137" text-anchor="middle" font-size="11" font-family="sans-serif" fill="currentColor">运维迭代</text>
+  <text x="603" y="152" text-anchor="middle" font-size="9" font-family="monospace" fill="#f6ad55">onboard</text>
+  <line x1="555" y1="141" x2="543" y2="141" stroke="#718096" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- 8. 经验沉淀 🔵 -->
+  <rect x="446" y="119" width="96" height="44" rx="8" fill="none" stroke="#63b3ed" stroke-width="1.5"/>
+  <text x="494" y="137" text-anchor="middle" font-size="11" font-family="sans-serif" fill="currentColor">经验沉淀</text>
+  <text x="494" y="152" text-anchor="middle" font-size="9" font-family="monospace" fill="#63b3ed">retrospect</text>
+  <line x1="446" y1="141" x2="434" y2="141" stroke="#63b3ed" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+
+  <!-- 知识库 🔵 -->
+  <rect x="337" y="119" width="96" height="44" rx="8" fill="none" stroke="#63b3ed" stroke-width="1.5"/>
+  <text x="385" y="137" text-anchor="middle" font-size="11" font-family="sans-serif" fill="currentColor">知识库</text>
+  <text x="385" y="152" text-anchor="middle" font-size="9" font-family="monospace" fill="#63b3ed">knowledge</text>
+
+  <!-- 知识库 → plan 自动召回（蓝色闭环箭头，绕过 Row 1 开发实践） -->
+  <line x1="385" y1="119" x2="385" y2="100" stroke="#63b3ed" stroke-width="1.5"/>
+  <line x1="385" y1="100" x2="385" y2="68" stroke="#63b3ed" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+  <text x="316" y="97" text-anchor="middle" font-size="9" font-family="sans-serif" fill="#63b3ed">plan 自动召回 ↑</text>
+
+  <!-- ── 图例 ── -->
+  <rect x="10" y="178" width="12" height="12" rx="2" fill="none" stroke="#f6ad55" stroke-width="1.5"/>
+  <text x="26" y="189" font-size="9" font-family="sans-serif" fill="#718096">CodeGraph 调用节点</text>
+  <rect x="175" y="178" width="12" height="12" rx="2" fill="none" stroke="#63b3ed" stroke-width="1.5"/>
+  <text x="191" y="189" font-size="9" font-family="sans-serif" fill="#718096">经验闭环（retrospect → knowledge → plan）</text>
+</svg>
+</p>
 
 DevFlow 将这 8 个 SDLC 阶段映射为 20 个 AI 命令，并在每一个决策节点深度集成 **CodeGraph 知识图谱**，让 AI 能精确感知代码结构、调用关系和改动的爆炸半径——而不是靠猜测。
 
