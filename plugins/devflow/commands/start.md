@@ -21,6 +21,12 @@ description: DevFlow 创建新工作项。支持 Feature / Bug / Tech 类型，�
 通过 `$ARGUMENTS` 传入，格式：
 - `{类型} {标题} {描述}` — 例：`feature 用户头像上传 支持裁剪和预览`
 - 直接描述，AI 推断类型并生成标题
+- 可附加 `worktree` 标志：工作项创建后立即从当前分支建立隔离 worktree，跳过等到编码阶段再建的等待
+
+```
+devflow start feature 用户头像上传           ← 默认，不建 worktree
+devflow start feature 用户头像上传 worktree  ← 创建工作项并立即建 worktree
+```
 
 ---
 
@@ -37,6 +43,7 @@ description: DevFlow 创建新工作项。支持 Feature / Bug / Tech 类型，�
 - `slug`：英文驼峰，如 `UserAvatarUpload`
 - `title`：中文简短标题
 - 生成 ID：`{YYYYMMDD}-{slug}`
+- `useWorktree`：`$ARGUMENTS` 中含 `worktree` 关键字则为 `true`，否则 `false`
 
 ### 3. 创建本地目录结构
 
@@ -66,6 +73,46 @@ description: DevFlow 创建新工作项。支持 Feature / Bug / Tech 类型，�
 { "currentWorkItem": "{YYYYMMDD}-{slug}" }
 ```
 
+### 4.5. 创建 Worktree（仅 `worktree` 参数启用时）
+
+`useWorktree` 为 `false` 时跳过此步骤。
+
+**规则与 `devflow code` 的 worktree 创建完全一致：**
+
+```bash
+# 检查 worktree 目录（优先级：.worktrees/ > worktrees/ > 默认用 .worktrees/）
+ls -d .worktrees 2>/dev/null || ls -d worktrees 2>/dev/null
+
+# 确认目录在 .gitignore 中，不在则追加并提交
+git check-ignore -q .worktrees || (echo '.worktrees/' >> .gitignore && git add .gitignore && git commit -m "chore: ignore .worktrees/")
+
+# 从当前分支创建 worktree（不切 main，保留当前改动基础）
+git worktree add .worktrees/{slug} -b feature/{YYYYMMDD}-{slug}
+
+# 自动初始化 worktree 环境（软链 local.properties / iOS pod install）
+bash <devflow-skill-dir>/devflow-worktree-setup/worktree-setup.sh .worktrees/{slug}
+```
+
+Worktree 路径写入 `meta.json`，同时注册到 `workspace.json.activeWorkItems`：
+
+```json
+{
+  "focus": "{YYYYMMDD}-{slug}",
+  "activeWorkItems": [
+    {
+      "id": "{YYYYMMDD}-{slug}",
+      "title": "{title}",
+      "status": "created",
+      "worktree": ".worktrees/{slug}",
+      "branch": "feature/{YYYYMMDD}-{slug}",
+      "startedAt": "{ISO时间戳}"
+    }
+  ]
+}
+```
+
+已有其他活跃工作项时，追加到 `activeWorkItems` 数组，不覆盖。
+
 ### 5. 可选：同步到 Meegle
 
 若 `workspace.json` 已配置 `meegle.projectKey`，询问是否同步创建 Meegle 工作项，返回 `linkedMeegleId` 写入 `meta.json`。
@@ -79,6 +126,7 @@ description: DevFlow 创建新工作项。支持 Feature / Bug / Tech 类型，�
 ```
 ✅ 工作项已创建：{YYYYMMDD}-{slug}
   类型：{type}  安全分级：{L0|L1|L2}  Meegle：{ID|未同步}
+  Worktree：.worktrees/{slug}（分支 feature/{YYYYMMDD}-{slug}）  ← 仅 worktree 参数时显示
 
 📋 已进入需求收集模式
   现在请逐段发送需求内容，每段收到后立即解析：
