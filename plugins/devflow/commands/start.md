@@ -63,9 +63,9 @@ devflow start feature 用户头像上传 worktree  ← 创建工作项并立即�
 │   ├── requirement.md ← 从 requirement.tpl.md 生成，Intake Mode 中逐步填充
 │   ├── design.md
 │   └── api.md
-├── tasks.md
-├── progress.md
-├── review.md
+├── tasks.md           ← Epic 类型跳过此文件
+├── progress.md        ← Epic 类型跳过此文件
+├── review.md          ← Epic 类型跳过此文件
 ├── open-issues.md     ← 从 open-issues.tpl.md 生成；开放问题持久化托管池（AI 后续追加条目，devflow:continue 优先读取）
 └── artifacts/         ← 图片、截图、附件存放于此
 ```
