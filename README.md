@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/DevFlow-3.3.0-63b3ed?style=for-the-badge&labelColor=0d1829" alt="DevFlow" />
+  <img src="https://img.shields.io/badge/DevFlow-3.4.0-63b3ed?style=for-the-badge&labelColor=0d1829" alt="DevFlow" />
 </p>
 
 <h1 align="center">DevFlow</h1>
@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/version-3.3.0-63b3ed?style=flat-square" alt="version"></a>
+  <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/version-3.4.0-63b3ed?style=flat-square" alt="version"></a>
   <a href="#codegraph-的角色"><img src="https://img.shields.io/badge/requires-CodeGraph%20MCP-f6ad55?style=flat-square" alt="requires CodeGraph"></a>
   <a href="#完整工作流"><img src="https://img.shields.io/badge/SDLC-8%20阶段全覆盖-68d391?style=flat-square" alt="SDLC"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-68d391?style=flat-square" alt="license"></a>
@@ -24,6 +24,7 @@
 
 <p align="center">
   <a href="#关于项目">关于</a> ·
+  <a href="#whats-new">新特性</a> ·
   <a href="#支持的-ai-平台">平台支持</a> ·
   <a href="#快速开始">快速开始</a> ·
   <a href="#完整工作流">工作流</a> ·
@@ -139,6 +140,13 @@ DevFlow 将这 8 个 SDLC 阶段映射为 20 个 AI 命令，并在每一个决�
 | **安全分级门禁** | CRITICAL 变更强制确认，90 分准入门禁，CRITICAL 阻断合并 |
 | **跨项目技术栈** | 自动识别 Android / iOS / KMP / Vue / React / Node.js / Spring Boot / Go / Python 等 |
 | **本地配置与仓库分离** | YApi 地址、专项 Skill 名等敏感配置写入 `.devflow/workspace.json`（已 gitignore），仓库保持干净 |
+| **🆕 不确定项门禁分类** | 分析阶段对每个歧义做四分类（HardBlocker / ControlledPass / Assumption / OptItem），假设结构化记录，不再只活在对话里 |
+| **🆕 开放问题持久化** | `open-issues.md` 跨会话托管未解决问题，新会话恢复时自动展示，「先放一放」的问题不再静默丢失 |
+| **🆕 任务验证状态细分** | 任务完成状态从二值扩展为四级：`code_done → locally_verified → runtime_verified`，「审查通过」不再等同于「做完了」 |
+| **🆕 完成门禁** | `review` APPROVED 后强制核查验证证据、未解除假设、跨模块回归义务，带已知风险合并需留记录 |
+| **🆕 变更回归传播** | `change` 执行后自动标记受影响的已完成任务，降级验证状态并写入回归义务条目 |
+| **🆕 Epic + 跨工作项依赖** | 大型需求可拆为 Epic（仅需求/设计，无编码）+ 多个子工作项，`list` 展示父子结构和共享模块冲突预警 |
+| **🆕 改动前必读原逻辑** | `code` 阶段修改已有文件前强制阅读现有实现，`review` 退步检查自动识别原有保护被删除的情况 |
 
 <p align="right">(<a href="#关于项目">返回顶部</a>)</p>
 
@@ -298,6 +306,140 @@ AI 会逐步询问：
 
 <p align="right">(<a href="#快速开始">返回顶部</a>)</p>
 
+<a id="whats-new"></a>
+
+## v3.4.0 新特性：需求控制层
+
+这次更新的核心是一个问题：**AI 在执行大型需求时，信息只活在对话里**。新会话开始、假设被遗忘、「先放一放」的问题消失，于是重复踩坑、遗漏回归、测试发现时才知道做错了。
+
+v3.4.0 把这些隐性状态显式化，落地为文件，让每个工作项的真实状态在任意会话都可以被还原。
+
+---
+
+### 不确定项门禁分类（analyze）
+
+分析阶段，每个未解决的问题不再只是「待确认」，而是被分到四个桶里：
+
+| 类型 | 含义 | 处理方式 |
+|------|------|---------|
+| **HardBlocker** | 核心目标/模块落地点不明确 | 🛑 停止，等确认后才能继续 |
+| **ControlledPass** | 影响范围明确，有默认策略和恢复触发器 | 记录后可推进 |
+| **Assumption** | 主动假设，记录四要素 | 结构化记录后允许推进 |
+| **OptItem** | 不阻主线的优化项 | 跟踪但不阻塞 |
+
+`requirement.md` 的歧义表格增加 `类型 / 当前假设/策略 / 影响范围 / 恢复触发器` 列，四要素留在文档里，不再只在对话里。
+
+---
+
+### 开放问题持久化（open-issues.md）
+
+每个工作项新增 `open-issues.md`——一个跨会话的开放问题托管池。
+
+- `analyze` Finalize 时，ControlledPass / Assumption 条目自动同步写入
+- `code` 阶段遇到新问题时追加
+- `change` 执行后自动追加回归义务条目
+- `continue` 新会话恢复时**优先展示** open/paused 条目，不再丢失
+
+```
+⚠️ 开放问题（2 条 open/paused）：
+   · OI-1：接口字段 X 语义假设（assumption，paused）
+   · OI-2：切片 02 与切片 01 共享模块兼容性（integration，open）
+```
+
+---
+
+### 任务验证状态四级（tasks.md）
+
+任务的 `Verification` 字段取代简单的 ✅ 勾选：
+
+```
+not_started → code_done → locally_verified → runtime_verified
+```
+
+- `code_done`：代码改完，未本地运行验证
+- `locally_verified`：本地运行通过，有截图/日志为证
+- `runtime_verified`：真实环境/用户验收通过
+
+`devflow review` APPROVED 只代表代码审查通过，不自动推进验证状态。
+
+---
+
+### 完成门禁（review）
+
+`review` 通过后，进入合并步骤前触发四问核查（满足以下任一条件时触发：任务数 ≥ 5 / open-issues 有 open 条目 / CodeGraph 影响面 ≥ 2 个模块）：
+
+```
+Q1 验证状态    — 有几个任务还是 code_done，本地验证通过了吗？
+Q2 未解除假设  — open-issues 还有几条 open/paused，不影响合并吗？
+Q3 跨模块回归  — CodeGraph 影响了哪些模块，回归验证通过了吗？
+Q4 回归义务   — 有几条 regression 条目还未核查？
+```
+
+可以回答「跳过 + 原因」，但原因必须记录进 `review.md`，不允许空过。
+
+---
+
+### 变更回归传播（change）
+
+`devflow change` 现在多做一步：CodeGraph 评估完成后，扫描所有已完成任务的文件范围，命中影响面的任务自动：
+
+- 降级 `Verification`（`locally_verified` → `code_done`）
+- 追加注释 `<!-- ⚠️ 回归义务：受变更影响，需重新验证 -->`
+- 在 `open-issues.md` 写入 `regression` 类型条目
+
+区分「需返工（实现要改）」和「需回归验证（实现不变但要重验）」，不混淆。
+
+---
+
+### Epic + 跨工作项依赖（start / list）
+
+大型需求不再只能靠一个超长 tasks.md 撑：
+
+```bash
+# 创建 Epic（只有需求和设计，无编码，工程映射节必填）
+devflow start epic 期权详情页适配
+
+# 创建子工作项，声明归属
+devflow start feature 详情页切换 --epic 20260818-OptionDetailEpic
+devflow start feature 盘前走势图 --epic 20260818-OptionDetailEpic
+```
+
+`devflow list` 展示父子结构和共享模块冲突预警：
+
+```
+[EPIC] 20260818-OptionDetailEpic   spec-only
+    └─ 20260818-DetailPageSwitch   coding    ✓
+    └─ 20260818-PremarketChart     designing  ⚠️ sharedWith: DetailPageSwitch → SharedDataLayer
+```
+
+---
+
+### 改动前必读原逻辑（code / review）
+
+`code` 阶段修改已有文件前，新增强制前置步骤：
+
+> 原有逻辑做了 X，本次改动只增加/修改 Y，不影响 Z。
+
+在动笔之前陈述这一句——这是防止「把原来功能搞丢」最有效的手段。
+
+`review` 退步检查增加三条原逻辑保留性审查：原有 null/空值保护是否仍在、原有异常捕获是否仍在、返回值语义变化时调用方是否同步更新。前两条未满足直接 🔴 CRITICAL。
+
+---
+
+### 大型需求切片模式（plan）
+
+`devflow plan` 检测到任务数 ≥ 8 时自动提示切片模式：
+
+```
+⚠️ 预估任务数 11 个，建议启用切片模式。
+切片模式：按功能聚合为 2-5 个切片，每个切片有独立验证路径。
+选择 [1=切片模式 / 2=标准模式，默认 2]：
+```
+
+切片模式下每个切片有独立的验证路径和切片状态，`devflow continue` 恢复时按切片展示进度。
+
+<p align="right">(<a href="#关于项目">返回顶部</a>)</p>
+
 <a id="完整工作流"></a>
 
 ## 完整工作流
@@ -306,6 +448,14 @@ AI 会逐步询问：
 
 ```
 start → analyze → design → estimate → plan → code → review → retrospect
+```
+
+### 大型需求（多模块 / 多切片）
+
+```
+start epic → analyze → design（工程映射）
+  ↓
+start feature --epic {id}  ×N  → analyze → design → plan（切片模式）→ code → review → retrospect
 ```
 
 ### Bug 修复
@@ -333,29 +483,29 @@ refactor → review → retrospect
 | 命令 | 使用方式 |
 |------|---------|
 | `devflow init` | 每个项目执行一次，自动检测技术栈、配置 CodeGraph、生成 Review Skill |
-| `devflow list` | 查看所有工作项，Active / Paused / Completed 分组显示 |
+| `devflow list` | 查看所有工作项；**Epic 父子结构可视化**，共享模块冲突预警 |
 | `devflow switch` | 多需求并行时切换焦点工作项，自动恢复上下文 |
-| `devflow continue` | 新会话 / 对话中断后恢复进度，AI 重新读取 Checkpoint |
+| `devflow continue` | 新会话 / 对话中断后恢复进度；**优先展示 open-issues.md 的未解决问题** |
 | `devflow sync` | 同步团队公共 skills / agents 到当前项目 |
 
 ### 需求主线
 
 | 命令 | 使用方式 |
 |------|---------|
-| `devflow start` | `devflow start 用户头像上传 支持裁剪和预览` — 创建工作项，描述写在命令后面 |
-| `devflow analyze` | 输入命令后，把需求内容直接贴进来（PRD 文字 / 截图 / Figma 链接 / 接口链接，可分多次贴）；AI 边接收边解析，追问歧义后生成需求文档 |
+| `devflow start` | `devflow start 用户头像上传 支持裁剪和预览` — 创建工作项；**支持 `epic` 类型和 `--epic {id}` 子工作项声明** |
+| `devflow analyze` | 输入命令后，把需求内容直接贴进来（PRD 文字 / 截图 / Figma 链接 / 接口链接，可分多次贴）；AI 边接收边解析；**歧义问题自动四分类，假设结构化记录** |
 | `devflow quick` | `devflow quick 登录按钮文案改为「登录」` — 小需求一条命令，AI 自动判断是否需要走完整流程 |
-| `devflow design` | 接续 analyze，AI 做爆炸半径评估，生成含时序图 / 接口签名 / 验收清单的技术方案 |
+| `devflow design` | 接续 analyze，AI 做爆炸半径评估，生成含时序图 / 接口签名 / 验收清单的技术方案；**多模块时提示填写工程映射和共享边界** |
 | `devflow estimate` | 三点置信区间估算，历史 Bug 密度因子，可更新 Meegle 排期 |
-| `devflow plan` | 将设计文档拆解为标准化原子任务，召回相关历史 Bug 经验，生成 tasks.md |
+| `devflow plan` | 将设计文档拆解为标准化原子任务；**任务数 ≥ 8 时自动提示切片模式，每切片独立验证路径** |
 
 ### 编码与交付
 
 | 命令 | 使用方式 |
 |------|---------|
-| `devflow code` | 按 tasks.md 逐项编码，lint / test 质量门禁，**所有任务完成后自动编译验证**；传 `noworktree` 参数可跳过独立分支 |
+| `devflow code` | 按 tasks.md 逐项编码，lint / test 质量门禁，所有任务完成后自动编译验证；**修改已有文件前强制阅读原逻辑**；`noworktree` 参数可跳过独立分支 |
 | `devflow checklist` | 生成可直接交付测试的验收清单：进入路径、Mock 数据构造、逐条 AC 检查点、回归验证表 |
-| `devflow review` | 代码审查，优先使用项目专项 Review Skill，CRITICAL 问题阻断合并；审查通过后可直接合并或提 MR/PR |
+| `devflow review` | 代码审查，优先使用项目专项 Review Skill，CRITICAL 问题阻断合并；**APPROVED 后触发四问完成门禁**；审查通过后可直接合并或提 MR/PR |
 | `devflow retrospect` | 提炼经验卡入库，关闭 Meegle 工作项，完成整个需求闭环 |
 
 ### Bug 修复
@@ -385,7 +535,7 @@ AI 执行四阶段 CodeGraph 根因分析（定位入口 → 追踪调用链 →
 | 命令 | 使用方式 |
 |------|---------|
 | `devflow onboard` | `devflow onboard payment 模块` — 新成员快速了解指定模块，CodeGraph 导览 + 历史 Bug 热点 |
-| `devflow change` | 需求中途变更时使用，Minor / Major 分级，状态机自动回退到正确阶段，受影响任务标记返工 |
+| `devflow change` | 需求中途变更时使用，Minor / Major 分级，状态机自动回退到正确阶段；**自动扫描已完成任务，命中影响面的任务降级验证状态，写入回归义务条目** |
 | `devflow knowledge` | 查询 / 添加 Bug 经验卡，历史防坑手册，`devflow plan` 会自动召回相关经验 |
 
 <p align="right">(<a href="#20-个命令">返回顶部</a>)</p>
@@ -502,12 +652,29 @@ plugins/devflow/
 ├── .claude-plugin/plugin.json       # 插件元数据
 ├── commands/                        # 20 个命令（含 frontmatter，支持自动触发）
 │   ├── init.md                      # 技术栈检测 + 项目画像 + Review Skill 配置
-│   ├── code.md                      # 编码执行 + 编译验证
-│   ├── review.md                    # 专项 Skill 委托 + 通用四维度审查
+│   ├── analyze.md                   # 需求分析 + 歧义四分类 + 假设记录
+│   ├── plan.md                      # 任务拆解 + 切片模式（≥8 任务自动触发）
+│   ├── code.md                      # 编码执行 + 改动前必读原逻辑 + 编译验证
+│   ├── review.md                    # 专项 Skill 委托 + 四问完成门禁 + 原逻辑保留审查
+│   ├── change.md                    # 变更处理 + 回归义务传播
+│   ├── start.md                     # 工作项创建 + Epic 类型 + 子工作项声明
+│   ├── list.md                      # 工作项列表 + Epic 父子展示 + 共享模块冲突预警
+│   ├── continue.md                  # 进度恢复 + open-issues.md 优先展示
 │   ├── checklist.md                 # 真机验收清单（含 Worktree 路径）
 │   ├── quick.md                     # 快速需求（三路径自动判断）
 │   ├── sync.md                      # 团队 AI 文件同步
-│   └── ...（其余 14 个命令）
+│   └── ...（其余 8 个命令）
+├── assets/templates/
+│   ├── requirement.tpl.md           # 需求模板（含歧义四分类表格）
+│   ├── tasks.tpl.md                 # 任务模板（含 Deviation + Verification 字段）
+│   ├── design.tpl.md                # 设计模板（含工程映射节）
+│   ├── open-issues.tpl.md           # 开放问题托管模板 🆕
+│   ├── meta.tpl.json                # 工作项元数据（含验证状态字段 + Epic 支持）
+│   └── ...
+├── references/
+│   ├── pressure-scenarios.md        # 压力场景参考文档（8 个边界场景）🆕
+│   ├── codegraph-routing.md         # CodeGraph 多根目录查询规则
+│   └── meegle-integration.md        # Meegle CLI 调用速查
 ├── skills/
 │   ├── devflow-cg/
 │   │   └── devflow-cg.sh            # CodeGraph 多根路由脚本
@@ -516,12 +683,7 @@ plugins/devflow/
 ├── ai-files/
 │   ├── skills/                      # 团队公共 skills（由团队维护，devflow sync 分发）
 │   └── agents/                      # 团队公共 agents（可选）
-├── assets/
-│   ├── config/                      # workspace.tpl.json、ai-policy.json、分级配置
-│   └── templates/                   # 文档模板 + bug-experience-cards.csv（20 条内置经验）
-└── references/
-    ├── codegraph-routing.md         # CodeGraph 多根目录查询规则
-    └── meegle-integration.md        # Meegle CLI 调用速查
+└── assets/config/                   # workspace.tpl.json、ai-policy.json、分级配置
 ```
 
 <p align="right">(<a href="#关于项目">返回顶部</a>)</p>
