@@ -65,6 +65,20 @@ stat -f "%m" Podfile.lock vs stat -f "%m" .codegraph/codegraph.db
 
 再补充读取 `meta.json` 获取状态和各阶段完成情况。
 
+**读取 open-issues.md（若存在）：**
+
+若工作项目录下存在 `open-issues.md`，检查 status=open 或 status=paused 的条目，在恢复上下文时优先展示：
+
+```
+⚠️ 开放问题（{n} 条 open/paused）：
+   · OI-1：{问题描述摘要}（{类型}，{状态}）
+   · OI-2：...
+   （最多展示 3 条，超出说明总数）
+   这些问题在继续推进前需要关注。
+```
+
+`open-issues.md` 不存在时静默跳过，不报错。
+
 ### 5. 状态机推荐
 
 根据 `devflow.json` 的状态转换配置推荐下一步：

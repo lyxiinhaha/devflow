@@ -146,7 +146,20 @@ codegraph_explore("<关键词 空格分隔>")
   文件：{实际修改的文件路径}
 ```
 
-**c) CodeGraph 前置检查门禁**
+**共享模块冲突检查（`sharedWith` 不为空时执行）：**
+
+读取当前工作项 `workspace.json` 的 `sharedWith` 字段，若不为空：
+- 读取 `sharedWith` 列表中每个工作项的 `tasks.md` 的 `Files` 字段
+- 若当前任务的 `Files` 与其有交集，输出冲突预警：
+
+```
+⚠️ 共享模块冲突预警
+   文件 {X} 同时被工作项 {Y}（任务 {TZ}）引用。
+   建议先确认双方修改方向，避免后续 merge 冲突。
+   是否继续？[y/n]
+```
+
+`sharedWith` 为空时完全静默，跳过此步骤。
 标注 `⚠️ [CodeGraph 前置检查]` → 必须执行：
 ```bash
 devflow-cg explore <涉及符号>
@@ -156,6 +169,20 @@ devflow-cg impact  <涉及符号>
 - 用户拒绝确认 → 标记任务为「等待确认」，跳过该任务
 
 **d) 编码实现**
+
+**改动前必读原逻辑（Understand Before Touch）**
+
+对 `Files` 字段中每个**已有文件**（非新建文件）在写任何代码之前必须先完整阅读现有实现，确认：
+1. 原有边界处理在哪里：null check、空值保护、异常分支、默认值
+2. 调用方依赖什么：该函数/方法的返回值、副作用、异常语义
+3. 历史约束是否存在：注释或 git message 中有无隐含约束（如「必须在主线程调用」）
+
+动笔前陈述一句：「原有逻辑做了 X，本次改动只增加/修改 Y，不影响 Z。」
+
+**禁止**仅凭任务描述或 `spec/design.md` 中的伪代码推断原有逻辑后直接开写。新建文件跳过此步骤。
+
+---
+
 - 只修改任务 `Files` 字段中指定的文件
 - 参照 `spec/design.md` 和 `spec/requirement.md` 实现
 - 遵守任务 `Technical Requirements` 中的编码约束

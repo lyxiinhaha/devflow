@@ -277,6 +277,28 @@ CodeGraph 不可用时：降级为 grep / find，注明。
 
 确认前禁止：自行假设 / 修改结论 / 生成最终版。
 
+**歧义问题四分类（对每个未解决问题运行以下判断树，在 requirement.md 歧义表格 `类型` 列标注）：**
+
+```
+→ 主目标 / 切片边界 / 核心模块落地点 / 验证路径不明确？
+    是 → HardBlocker
+         输出：🛑 Hard Blocker：{问题描述}
+               必须用户确认后才能继续设计阶段，不允许假设推进。
+
+→ 影响范围明确 + 当前默认策略明确 + 可以给出恢复触发器？
+    是 → ControlledPass
+         记录：影响范围 / 当前策略 / 恢复触发器，可继续
+
+→ 是否是"先这样，后面再改"式的主动假设？
+    是 → Assumption
+         必须记录四要素：假设内容 / 现在为何可接受 / 在哪里恢复 / 假设失效时影响什么
+
+→ 其他
+    → OptItem（跟踪但不阻塞主线）
+```
+
+HardBlocker 存在时，禁止进入步骤 5，必须等待用户明确答复。
+
 ### 5. 生成完整 `spec/requirement.md`
 
 将所有已解析内容整合为完整文档，必须包含以下章节：
@@ -292,9 +314,22 @@ CodeGraph 不可用时：降级为 grep / find，注明。
 | 现状背景核验 | CodeGraph 核验结果 |
 | 非功能需求 | 文字需求（无则写「暂无」） |
 | 验收标准 | 各来源综合 |
-| 歧义与待确认问题 | 整个 Intake 过程中未解决的问题 |
+| 歧义与待确认问题 | 整个 Intake 过程中未解决的问题（含类型列） |
 
 标记文档为「（最终版）」。
+
+### 5.5 同步写入 open-issues.md
+
+将 requirement.md「歧义与待确认问题」表格中类型为 **HardBlocker / ControlledPass / Assumption** 的条目同步写入工作项的 `open-issues.md`（从 `open-issues.tpl.md` 生成，若文件不存在则先创建）：
+
+- `类型` → open-issues 的 `类型` 列（HardBlocker→blocker，ControlledPass/Assumption→assumption）
+- `问题` → `问题描述`
+- `当前假设/策略` → `证据/来源`
+- `影响范围` → `影响范围`
+- `恢复触发器` → `恢复触发器`
+- 初始状态：HardBlocker → `open`，其余 → `open`
+
+OptItem 不写入 open-issues.md（不阻主线，只在 requirement.md 中跟踪）。
 
 ### 6. Context Checkpoint
 

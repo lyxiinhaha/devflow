@@ -2,7 +2,7 @@
   "id": "",
   "slug": "",
   "title": "",
-  "type": "feature|bug|tech|refactor",
+  "type": "feature|bug|tech|refactor|epic",
   "status": "created",
   "priority": "P0|P1|P2|P3",
   "securityLevel": "L0|L1|L2",
@@ -19,8 +19,14 @@
     "estimated": false,
     "planned": false,
     "coded": false,
+    "locallyVerified": false,
+    "waitingIntegration": false,
+    "waitingRegression": false,
+    "runtimeVerified": false,
     "reviewed": false,
     "retrospected": false
   },
-  "codegraphMaxRisk": "LOW|MEDIUM|HIGH|CRITICAL"
+  "codegraphMaxRisk": "LOW|MEDIUM|HIGH|CRITICAL",
+  "isEpic": false,
+  "childWorkItems": []
 }

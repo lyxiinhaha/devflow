@@ -39,11 +39,17 @@ devflow start feature 用户头像上传 worktree  ← 创建工作项并立即�
 ### 2. 解析输入
 
 提取：
-- `type`：feature / bug / tech / refactor
+- `type`：feature / bug / tech / refactor / **epic**
 - `slug`：英文驼峰，如 `UserAvatarUpload`
 - `title`：中文简短标题
 - 生成 ID：`{YYYYMMDD}-{slug}`
 - `useWorktree`：`$ARGUMENTS` 中含 `worktree` 关键字则为 `true`，否则 `false`
+- `epicId`：`$ARGUMENTS` 中含 `--epic {id}` 参数时提取；用于声明当前工作项是某 Epic 的子工作项
+
+**Epic 类型特殊处理：**
+- `type = epic` 时：不创建 `tasks.md`、`progress.md`、`review.md`，只创建 `requirement.md`、`design.md`、`open-issues.md`
+- Epic 不进入编码阶段，用于定义整体范围和共享边界约定
+- Epic 的 `spec/design.md` 中「工程映射」节为**必填**（普通工作项为多模块时必填）
 
 ### 3. 创建本地目录结构
 
@@ -60,6 +66,7 @@ devflow start feature 用户头像上传 worktree  ← 创建工作项并立即�
 ├── tasks.md
 ├── progress.md
 ├── review.md
+├── open-issues.md     ← 从 open-issues.tpl.md 生成；开放问题持久化托管池（AI 后续追加条目，devflow:continue 优先读取）
 └── artifacts/         ← 图片、截图、附件存放于此
 ```
 
@@ -72,6 +79,23 @@ devflow start feature 用户头像上传 worktree  ← 创建工作项并立即�
 ```json
 { "currentWorkItem": "{YYYYMMDD}-{slug}" }
 ```
+
+同时将新工作项追加到 `activeWorkItems`，含以下字段：
+
+```json
+{
+  "id": "{YYYYMMDD}-{slug}",
+  "title": "{title}",
+  "status": "created",
+  "worktree": null,
+  "branch": null,
+  "startedAt": "{ISO时间戳}",
+  "dependsOn": "{epicId | null}",
+  "sharedWith": []
+}
+```
+
+`epicId` 有值时：同时更新 Epic 工作项的 `meta.json.childWorkItems` 数组，追加当前子工作项 ID。
 
 ### 4.5. 创建 Worktree（仅 `worktree` 参数启用时）
 
