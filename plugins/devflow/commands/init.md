@@ -738,7 +738,7 @@ meegle --version
 
 ### 6.5 安装 Hook（仅 Claude Code 平台）
 
-检测当前平台（通过 `CLAUDE_CODE` 环境变量是否存在，或 `workspace.json.platform` 字段是否为 `claude-code` 来判断）：
+检测当前平台（通过以下方式检测（按优先级）：① `CLAUDE_CODE` 环境变量存在 → Claude Code 平台；② 环境变量不存在时，读取 `workspace.json.platform` 字段是否为 `claude-code`；③ 均无法判断时，默认视为非 Claude Code 平台）：
 
 **Claude Code 平台：**
 
@@ -760,10 +760,10 @@ meegle --version
      }
    }
    ```
-   若 `.claude/settings.json` 已存在 `hooks` 字段，则合并现有 hook 列表（不替换），而非覆盖整个文件。
+   若 `.claude/settings.json` 已存在 `PostToolUse` / `PreToolUse` 字段（数组类型），将新路径追加到对应数组末尾；追加前检查路径是否已存在，避免重复写入。不得将现有数组替换为只含 devflow 条目的新数组。
    若 `.claude/` 目录不存在，先 `mkdir -p .claude/` 再写入。
 
-3. 确保 `.devflow/hooks/` 已加入 `.gitignore`（hook 脚本属于本地安装产物）。
+3. `.devflow/hooks/` 的 gitignore 条目由步骤 7 统一写入（整个 `.devflow/` 目录已被排除），此处无需额外操作。
 
 4. 在 `devflow-profile.md` 末尾追加约束模式说明：
    ```
