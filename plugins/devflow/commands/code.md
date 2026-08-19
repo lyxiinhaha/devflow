@@ -286,8 +286,9 @@ meegle workflow transition-state --work-item-id <id> --transition-id <id>
 
 ## 执行日志规范（progress.md 追加）
 
-每个任务编码时即时追加，不要等全部完成后一次性写入：
+执行期间，按以下规范向 `progress.md` 追加日志条目，不得覆盖已有内容：
 
+每个任务编码时即时追加：
 ```
 [START]      {ISO时间戳} devflow code（任务：{任务ID} {任务名}）
 [READ]       {修改的现有文件路径}（改动前必读原逻辑）
@@ -298,8 +299,11 @@ meegle workflow transition-state --work-item-id <id> --transition-id <id>
 
 全部任务完成后追加：
 ```
-[TRANSITION] planning → coding ({触发本次跃迁的子命令名}, 依据 STATE_MACHINE 前驱合法)
+[TRANSITION] planning → coding (code, 依据 STATE_MACHINE 前驱合法)
 [COMPLETE]   devflow code（全部任务）— {ISO时间戳}
 ```
 
-异常退出时：`[ERROR] {原因}，命令中止`
+异常退出时追加：
+```
+[ERROR]      {原因}，命令中止
+```
