@@ -38,6 +38,28 @@ description: DevFlow 任务拆解阶段。将技术设计拆解为原子任务�
 
 **注入位置记录（供输出展示用）：** 每张命中的经验卡，记录其被注入的任务 ID 列表（如 T003、T007），格式：`{ cardId, severity, title, injectedTasks: [T001, ...] }`。用于步骤 5 输出时展示。
 
+### 召回日志写入
+
+每命中一张经验卡，向 `bug-experience-cards.csv` 同级目录的 `knowledge-usage.jsonl` 追加一条记录：
+
+```json
+{
+  "ts": "{ISO时间戳，如 2026-08-19T10:23:01Z}",
+  "card_id": "{命中卡片的 ID，如 KB-003}",
+  "work_item": "{workspace.json.currentWorkItem}",
+  "recalled_by": "plan",
+  "outcome": "unknown",
+  "outcome_ts": null,
+  "outcome_note": ""
+}
+```
+
+**写入规则：**
+- 每张命中卡独立追加一条记录，同一工作项对同一卡片多次命中各自独立记录
+- `knowledge-usage.jsonl` 不存在时先创建（从 `assets/templates/knowledge/knowledge-usage.jsonl` 复制），再追加
+- 未命中任何卡时不写入，注明「未召回 Bug 经验」即可
+- `fix.md` 步骤 2 若有显式召回，`recalled_by` 填 `"fix"`，其余规则相同
+
 ### 2.5 切片模式检测
 
 统计步骤 1 识别的原子任务预估总数：
