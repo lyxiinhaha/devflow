@@ -364,3 +364,38 @@ Meegle 同步：{已同步 | 未配置}
 
 下一步：使用 `devflow design` 开始技术设计。
 ```
+
+---
+
+## 状态验证（前置条件扩展）
+
+执行 Finalize 模式前，读取 `meta.json.status`，合法前驱状态为：`created`。
+
+非法时输出并中止：
+```
+✗ 状态机拦截：当前状态 [{status}] 不允许执行 devflow analyze。
+  合法前驱状态：created
+  如需重新分析需求，请执行 devflow change。
+```
+
+---
+
+## 执行日志规范（progress.md 追加）
+
+Finalize 模式执行期间，按以下规范向 `progress.md` 追加日志条目，不得覆盖已有内容：
+
+```
+[START]      {ISO时间戳} devflow analyze
+[READ]       context/sanitized.md
+[READ]       {每个读取的 Figma / 接口 / CodeGraph 来源，每行一条}
+[DECISION]   {歧义分类决策摘要，如：歧义 3 条，2 条 ControlledPass，1 条 HardBlocker 阻断} — 原因：{简述}
+[WRITE]      spec/requirement.md ({新建|修改})
+[WRITE]      open-issues.md ({新建|修改})（若有 open issue 写入）
+[TRANSITION] created → analyzing ({触发本次跃迁的子命令名}, 依据 STATE_MACHINE 前驱合法)
+[COMPLETE]   devflow analyze — {ISO时间戳}
+```
+
+异常退出时追加：
+```
+[ERROR]      {原因}，命令中止
+```
