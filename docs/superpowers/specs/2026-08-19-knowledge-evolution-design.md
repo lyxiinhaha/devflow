@@ -121,37 +121,53 @@ AI 起草合并卡需满足：
 
 ---
 
-## 四、outcome 回填（retrospect.md 新增步骤 0）
+## 四、outcome 自动推断（retrospect.md 新增步骤 0）
 
-### 前置步骤 0：召回效果回填
+### 前置步骤 0：AI 自动推断召回效果
 
-在 retrospect 步骤 1「读取复盘素材」之前执行：
+在 retrospect 步骤 1「读取复盘素材」之前执行，**全程不打扰用户**，AI 自行判断并静默写入。
+
+### 推断数据来源
 
 ```
-读取 knowledge-usage.jsonl，筛选：
-  work_item = 当前工作项 且 outcome = "unknown"
+1. 读取 knowledge-usage.jsonl，筛选：
+   work_item = 当前工作项 且 outcome = "unknown"
 
-若有记录，展示回填面板：
+2. 若无 unknown 记录，静默跳过整个步骤 0
 
-───────────────────────────────────────────
-本次任务召回了以下经验卡，请评价实际效果：
-
-[1] KB-003「Promise 未处理异常」→ 注入到 T004 实现约束
-    a. 用上了，有帮助   b. 召回了但没用上   c. 不确定
-
-[2] KB-007「金额精度 BigDecimal」→ 注入到 T009 验收项
-    a. 用上了，有帮助   b. 召回了但没用上   c. 不确定
-───────────────────────────────────────────
-
-用户逐条选择后批量更新对应记录：
-  a → outcome: "applied"，写入 outcome_ts
-  b → outcome: "irrelevant"，写入 outcome_ts
-  c → 保持 "unknown"，不写 outcome_ts
-
-同时写入可选的 outcome_note（用户输入，回车跳过）。
+3. 若有，读取本次工作项的代码变更范围：
+   - 从 progress.md 的 [WRITE] 条目提取本次修改的文件列表
+   - 读取对应文件的关键改动内容
 ```
 
-无 unknown 记录时静默跳过，不打断正常复盘流程。
+### 推断规则（逐卡执行）
+
+| outcome | 判断条件 |
+|---------|---------|
+| `applied` | 卡片 `module` 与修改文件模块重叠 **且** `required_tests` 关键词出现在新增测试文件中 |
+| `irrelevant` | 卡片 `module` 与本次所有修改文件无任何模块交集 |
+| `partial` | `module` 有交集，但 `required_tests` 未在测试文件中找到对应覆盖 |
+| `unknown` | 无法从代码变更中判断（文件列表为空、模块信息缺失等） |
+
+### 推断局限性说明
+
+AI **无法可靠判断反模式是否被主动避免**（absence of pattern），因此推断主要依赖 `required_tests` 的正向覆盖证据。`anti_patterns` 字段不参与自动推断，仅作为 `applied` 的辅助佐证（当 anti_patterns 描述的模式完全未出现在新增代码中时，可升级置信度，但不单独作为判据）。
+
+### 写入规则
+
+```
+自动推断完成后，批量更新对应的 knowledge-usage.jsonl 记录：
+  - outcome: 推断结果
+  - outcome_ts: 当前 ISO 时间戳
+  - outcome_note: "auto-inferred by retrospect"
+
+推断为 unknown 时不更新（保持原值，等待下次有更多数据时重新推断）。
+整个步骤 0 不输出任何提示，静默执行。
+```
+
+### 可查阅但不强制纠正
+
+用户可通过 `devflow knowledge check` 或 `devflow audit --decisions` 查看自动推断结果。如需纠正，可运行 `devflow knowledge query {card_id}` 后手动调用 `devflow knowledge add` 更新对应记录——但这不是必须步骤，系统设计接受一定比例的推断误差。
 
 ---
 
