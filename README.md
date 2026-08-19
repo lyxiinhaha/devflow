@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/DevFlow-3.4.0-63b3ed?style=for-the-badge&labelColor=0d1829" alt="DevFlow" />
+  <img src="https://img.shields.io/badge/DevFlow-3.5.0-63b3ed?style=for-the-badge&labelColor=0d1829" alt="DevFlow" />
 </p>
 
 <h1 align="center">DevFlow</h1>
@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/version-3.4.0-63b3ed?style=flat-square" alt="version"></a>
+  <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/version-3.5.0-63b3ed?style=flat-square" alt="version"></a>
   <a href="#codegraph-的角色"><img src="https://img.shields.io/badge/requires-CodeGraph%20MCP-f6ad55?style=flat-square" alt="requires CodeGraph"></a>
   <a href="#完整工作流"><img src="https://img.shields.io/badge/SDLC-8%20阶段全覆盖-68d391?style=flat-square" alt="SDLC"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-68d391?style=flat-square" alt="license"></a>
@@ -147,6 +147,9 @@ DevFlow 将这 8 个 SDLC 阶段映射为 20 个 AI 命令，并在每一个决�
 | **🆕 变更回归传播** | `change` 执行后自动标记受影响的已完成任务，降级验证状态并写入回归义务条目 |
 | **🆕 Epic + 跨工作项依赖** | 大型需求可拆为 Epic（仅需求/设计，无编码）+ 多个子工作项，`list` 展示父子结构和共享模块冲突预警 |
 | **🆕 改动前必读原逻辑** | `code` 阶段修改已有文件前强制阅读现有实现，`review` 退步检查自动识别原有保护被删除的情况 |
+| **🆕 独立审计日志** | PostToolUse hook 由宿主进程独立写入 `audit-log.jsonl`，记录每次工具调用，不依赖 AI 自述；`devflow audit` 子命令提供操作历史和决策轨迹查询 |
+| **🆕 状态机硬拦截** | PreToolUse hook 在文件写入前校验 meta.json 状态，非法跃迁被宿主进程直接拦截（Claude Code 平台），非 Claude Code 平台自动降级为 AI 自述软约束 |
+| **🆕 断点 Checkpoint 回滚** | 每次状态跃迁前 hook 自动快照 meta.json；`devflow continue` 检测中断后提供继续 / 回滚 / 查看 audit 三选项，中断状态不再需要手动恢复 |
 
 <p align="right">(<a href="#关于项目">返回顶部</a>)</p>
 
