@@ -472,3 +472,38 @@ meegle comment add --work-item-id <id> \
 - 编译验证失败且无法自动修复
 
 **失败分析文件必须包含**：issue URL、已读取到的信息、失败原因、缺失项、下一步建议。
+
+---
+
+## 状态验证（前置条件扩展）
+
+合法前驱状态：`done` 或 `coding`（已完成工作项也可触发 Bug 修复）。
+
+非法时：
+```
+✗ 状态机拦截：当前状态 [{status}] 不允许执行 devflow fix。
+  合法前驱状态：done / coding
+```
+
+**注：** Bug 类型工作项（`meta.json.type = "bug"`）的 state-guard hook 会自动跳过 spec 文件拦截，允许在 `coding` 状态下直接写入 `spec/requirement.md`。
+
+---
+
+## 执行日志规范（progress.md 追加）
+
+执行期间，按以下规范向 `progress.md` 追加日志条目，不得覆盖已有内容：
+
+```
+[START]      {ISO时间戳} devflow fix（issue: {issue_id}）
+[READ]       context/sanitized.md
+[DECISION]   {根因定位，如：根因在 XxxClass.method() 第 42 行，评分 93/100} — 原因：{简述}
+[DECISION]   {修复方案，如：最小改动：修改 null 判断逻辑，影响面 LOW}
+[WRITE]      {修改的文件路径} (修改)
+[TRANSITION] {done|coding} → coding (fix, 依据 STATE_MACHINE 前驱合法)
+[COMPLETE]   devflow fix — {ISO时间戳}
+```
+
+异常退出时（如评分 < 90）追加：
+```
+[ERROR]      评分 {score}/100 低于准入门禁（90分），命令中止
+```
