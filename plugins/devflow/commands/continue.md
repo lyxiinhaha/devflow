@@ -63,7 +63,7 @@ stat -f "%m" Podfile.lock vs stat -f "%m" .codegraph/codegraph.db
 
 **4a. 中断检测（优先执行）**
 
-读取当前工作项的 `progress.md` **最后 25 条**结构化日志条目（不读全文，控制 Token 消耗）。
+读取当前工作项的 `progress.md` **最后 25 条**结构化日志条目（每条条目以 `[TAG] ` 起始行为单元，如 `[START]`、`[COMPLETE]`、`[ERROR]` 等；取文件中末尾 25 个此类起始行对应的条目）。
 
 检查末尾条目类型：
 - 末尾为 `[COMPLETE]` → 正常结束，跳过恢复模式，继续步骤 4b
@@ -72,7 +72,7 @@ stat -f "%m" Podfile.lock vs stat -f "%m" .codegraph/codegraph.db
 
 **恢复模式流程：**
 
-1. 读取 `.devflow/work-items/{id}/checkpoints/` 下文件名最新的 `meta-*.json` 快照
+1. 读取 `.devflow/work-items/{id}/checkpoints/` 下文件名格式为 `meta-{YYYYMMDDTHHmmSSZ}.json`（如 `meta-20260819T143022Z.json`），取文件名字典序最大的一份（即时间戳最新的快照）
 2. 与当前 `meta.json` 对比 `status` 字段
 3. 展示中断现场摘要：
 
@@ -83,7 +83,7 @@ stat -f "%m" Podfile.lock vs stat -f "%m" .codegraph/codegraph.db
   中断位置：{最后一条 [START] 对应的命令}（{时间戳}）
   最后操作：{最后一条非 [START]/[COMPLETE] 的条目内容}
   当前状态：{meta.json.status}
-  上一稳定快照：{checkpoint 的 status}（{快照时间戳，从文件名提取}）
+  上一稳定快照：{checkpoint 的 status}（{快照时间戳，从文件名 meta-{时间戳}Z.json 中提取，格式化为 YYYY-MM-DD HH:MM}）
 
   可选操作：
   1. 继续完成 devflow {command}（从当前状态恢复）
@@ -94,7 +94,7 @@ stat -f "%m" Podfile.lock vs stat -f "%m" .codegraph/codegraph.db
 ```
 
 选择处理逻辑：
-- 选择 **1**：保持当前 meta.json 状态，继续步骤 4b 恢复上下文后提示重新执行中断的命令
+- 选择 **1**：保持当前 meta.json 状态，继续步骤 4b；步骤 5 的状态机推荐以中断命令为准（如中断命令为 `devflow design`，则推荐「继续执行 `devflow design`」，不另外推荐其他命令）
 - 选择 **2**：将 checkpoint 的 `meta-*.json` 内容覆写到 `meta.json`，告知用户「已回滚到 {status} 状态」，继续步骤 4b
 - 选择 **3**：展示 `devflow audit --tail 25` 输出后重新展示三选项，等待用户再次选择
 - checkpoints/ 目录不存在或为空时：跳过步骤 1-2，直接告知「未找到 checkpoint 快照，无法自动回滚，建议手动检查」，继续步骤 4b
