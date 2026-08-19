@@ -106,7 +106,9 @@ Meegle 排期：{已更新 | 未配置}
 ```
 [START]      {ISO时间戳} devflow estimate
 [READ]       spec/design.md
-[DECISION]   {工作量估算结论，如：总计 5 个工作日，高风险任务 2 个} — 原因：{简述}
+[READ]       tasks.md（若已生成）
+[READ]       bug-experience-cards.csv（若存在）
+[DECISION]   {工作量估算结论，如：总计 ~40h，高风险任务 2 个（含三点估算）} — 原因：{简述}
 [WRITE]      spec/estimate.md ({新建|修改})
 [TRANSITION] designing → estimating ({触发本次跃迁的子命令名}, 依据 STATE_MACHINE 前驱合法)
 [COMPLETE]   devflow estimate — {ISO时间戳}
