@@ -333,8 +333,8 @@ Meegle 状态：{已流转 | 未配置}
 ```
 [START]      {ISO时间戳} devflow review
 [READ]       tasks.md
-[READ]       {审查的主要代码文件路径，每行一条}
-[DECISION]   {审查结论，如：发现 2 处 CRITICAL 问题，1 处 HIGH，已阻断合并} — 原因：{简述}
+[READ]       {审查的代码文件路径}（每个文件各占一行，可多条）
+[DECISION]   {审查结论，如：发现 2 处 CRITICAL 问题，1 处 HIGH，已阻断合并}
 [DECISION]   {回归义务判断，如：变更影响 PaymentModule，需补充回归测试}
 [WRITE]      review.md ({新建|修改})
 [TRANSITION] coding → reviewing (review, 依据 STATE_MACHINE 前驱合法)
