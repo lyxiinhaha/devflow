@@ -6,6 +6,12 @@
 DEVFLOW_DIR=".devflow"
 AUDIT_LOG="$DEVFLOW_DIR/audit-log.jsonl"
 
+# jq 不存在时静默跳过（避免无意义的报错）
+if ! command -v jq &>/dev/null; then
+  echo "devflow-audit: jq not found, skipping" >&2
+  exit 0
+fi
+
 # 未初始化时静默跳过
 if [[ ! -f "$DEVFLOW_DIR/workspace.json" ]]; then exit 0; fi
 
@@ -13,9 +19,12 @@ WORK_ITEM=$(jq -r '.currentWorkItem // "none"' "$DEVFLOW_DIR/workspace.json" 2>/
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
 # TOOL_INPUT 可能为空，兜底为 {}
-# 注意：不能用 ${TOOL_INPUT:-{}}，bash 不跟踪默认值内的 {} 嵌套，会在结果末尾多出一个 }
+# bash 参数展开默认值中不能含未转义的 }，故拆为两步
 INPUT="${TOOL_INPUT}"
 [[ -z "$INPUT" ]] && INPUT="{}"
 
-echo "{\"ts\":\"$TS\",\"tool\":\"$TOOL_NAME\",\"workItem\":\"$WORK_ITEM\",\"input\":$INPUT}" \
+# 使用 jq -n 构造 JSON，避免 TOOL_NAME/WORK_ITEM 含特殊字符时的注入风险
+jq -n --arg ts "$TS" --arg tool "$TOOL_NAME" \
+      --arg workItem "$WORK_ITEM" --argjson input "$INPUT" \
+      '{"ts":$ts,"tool":$tool,"workItem":$workItem,"input":$input}' \
   >> "$AUDIT_LOG"
