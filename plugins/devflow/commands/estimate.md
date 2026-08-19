@@ -84,3 +84,32 @@ Meegle 排期：{已更新 | 未配置}
 ─────────────────────────────────────────
 下一步：使用 `devflow plan` 进行任务拆解。
 ```
+
+---
+
+## 状态验证（前置条件扩展）
+
+合法前驱状态：`designing`。
+
+非法时：
+```
+✗ 状态机拦截：当前状态 [{status}] 不允许执行 devflow estimate。
+  合法前驱状态：designing
+```
+
+---
+
+## 执行日志规范（progress.md 追加）
+
+执行期间，按以下规范向 `progress.md` 追加日志条目，不得覆盖已有内容：
+
+```
+[START]      {ISO时间戳} devflow estimate
+[READ]       spec/design.md
+[DECISION]   {工作量估算结论，如：总计 5 个工作日，高风险任务 2 个} — 原因：{简述}
+[WRITE]      spec/estimate.md ({新建|修改})
+[TRANSITION] designing → estimating ({触发本次跃迁的子命令名}, 依据 STATE_MACHINE 前驱合法)
+[COMPLETE]   devflow estimate — {ISO时间戳}
+```
+
+异常退出时：`[ERROR] {原因}，命令中止`
