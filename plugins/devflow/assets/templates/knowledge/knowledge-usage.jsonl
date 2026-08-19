@@ -1,0 +1,4 @@
+# DevFlow 知识库使用日志
+# 格式：每行一条 JSON 记录，追加写入，禁止修改已有行
+# 字段：ts / card_id / work_item / recalled_by / outcome / outcome_ts / outcome_note
+# outcome 枚举：unknown | applied | irrelevant | partial
