@@ -311,3 +311,37 @@ Meegle 状态：{已流转 | 未配置}
 
 下一步：使用 `devflow retrospect` 沉淀本次开发经验。
 ```
+
+---
+
+## 状态验证（前置条件扩展）
+
+合法前驱状态：`coding`。
+
+非法时：
+```
+✗ 状态机拦截：当前状态 [{status}] 不允许执行 devflow review。
+  合法前驱状态：coding
+```
+
+---
+
+## 执行日志规范（progress.md 追加）
+
+执行期间，按以下规范向 `progress.md` 追加日志条目，不得覆盖已有内容：
+
+```
+[START]      {ISO时间戳} devflow review
+[READ]       tasks.md
+[READ]       {审查的主要代码文件路径，每行一条}
+[DECISION]   {审查结论，如：发现 2 处 CRITICAL 问题，1 处 HIGH，已阻断合并} — 原因：{简述}
+[DECISION]   {回归义务判断，如：变更影响 PaymentModule，需补充回归测试}
+[WRITE]      review.md ({新建|修改})
+[TRANSITION] coding → reviewing (review, 依据 STATE_MACHINE 前驱合法)
+[COMPLETE]   devflow review — {ISO时间戳}
+```
+
+异常退出时追加：
+```
+[ERROR]      {原因}，命令中止
+```
