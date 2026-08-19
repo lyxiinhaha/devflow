@@ -269,3 +269,37 @@ meegle workflow transition-state --work-item-id <id> --transition-id <id>
 
 下一步：使用 `devflow review` 进行代码审查。
 ```
+
+---
+
+## 状态验证（前置条件扩展）
+
+合法前驱状态：`planning`（已在前置条件中说明）。
+
+非法时：
+```
+✗ 状态机拦截：当前状态 [{status}] 不允许执行 devflow code。
+  合法前驱状态：planning
+```
+
+---
+
+## 执行日志规范（progress.md 追加）
+
+每个任务编码时即时追加，不要等全部完成后一次性写入：
+
+```
+[START]      {ISO时间戳} devflow code（任务：{任务ID} {任务名}）
+[READ]       {修改的现有文件路径}（改动前必读原逻辑）
+[DECISION]   {实现决策，如：复用现有 XxxUtil 而非新建} — 原因：{简述}
+[WRITE]      {修改的文件路径} ({新建|修改})
+[COMPLETE]   devflow code 任务 {任务ID} — {ISO时间戳}
+```
+
+全部任务完成后追加：
+```
+[TRANSITION] planning → coding ({触发本次跃迁的子命令名}, 依据 STATE_MACHINE 前驱合法)
+[COMPLETE]   devflow code（全部任务）— {ISO时间戳}
+```
+
+异常退出时：`[ERROR] {原因}，命令中止`
