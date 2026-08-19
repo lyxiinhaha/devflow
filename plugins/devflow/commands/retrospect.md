@@ -108,3 +108,36 @@ meegle workflow transition-state --work-item-id <id> --transition-id <id>
 
 这将在未来的 devflow plan 中自动召回。
 ```
+
+---
+
+## 状态验证（前置条件扩展）
+
+合法前驱状态：`reviewing`。
+
+非法时：
+```
+✗ 状态机拦截：当前状态 [{status}] 不允许执行 devflow retrospect。
+  合法前驱状态：reviewing
+```
+
+---
+
+## 执行日志规范（progress.md 追加）
+
+执行期间，按以下规范向 `progress.md` 追加日志条目，不得覆盖已有内容：
+
+```
+[START]      {ISO时间戳} devflow retrospect
+[READ]       context/sanitized.md
+[READ]       review.md
+[DECISION]   {经验卡核心内容，如：根因为 XX 反模式，新增 KB-{N}} — 原因：{简述}
+[WRITE]      bug-experience-cards.csv (修改)
+[TRANSITION] reviewing → done (retrospect, 依据 STATE_MACHINE 前驱合法)
+[COMPLETE]   devflow retrospect — {ISO时间戳}
+```
+
+异常退出时追加：
+```
+[ERROR]      {原因}，命令中止
+```
