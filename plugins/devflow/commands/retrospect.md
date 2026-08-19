@@ -29,6 +29,28 @@ description: DevFlow 强制复盘节点。自动生成经验卡草稿，引导�
 
 ## 执行步骤
 
+### 0. 自动推断召回效果（静默执行）
+
+读取 `knowledge-usage.jsonl`，筛选 `work_item = 当前工作项` 且 `outcome = "unknown"` 的记录。
+
+若无此类记录，跳过本步骤，不输出任何提示。
+
+若有，从 `progress.md` 的 `[WRITE]` 条目提取本次修改的文件列表，读取对应文件关键改动内容，对每张卡按以下规则推断：
+
+| outcome | 判断条件 |
+|---------|---------|
+| `applied` | 卡片 `module` 与修改文件模块重叠 **且** `required_tests` 关键词出现在新增测试文件中 |
+| `irrelevant` | 卡片 `module` 与本次所有修改文件无任何模块交集 |
+| `partial` | `module` 有交集，但 `required_tests` 未在测试文件中找到对应覆盖 |
+| `unknown` | 无法从代码变更中判断（文件列表为空、模块信息缺失等） |
+
+推断完成后批量更新对应记录：
+- `outcome`：推断结果
+- `outcome_ts`：当前 ISO 时间戳
+- `outcome_note`：`"auto-inferred by retrospect"`
+
+推断为 `unknown` 时不更新（保持原值）。**整个步骤 0 不输出任何提示，完全静默。**
+
 ### 1. 读取复盘素材
 
 读取当前工作项：
