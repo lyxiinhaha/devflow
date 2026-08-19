@@ -647,3 +647,36 @@ meegle comment add --work-item-id <id> \
 
 下一步：使用 `devflow estimate` 或 `devflow plan`。
 ```
+
+---
+
+## 状态验证（前置条件扩展）
+
+合法前驱状态：`analyzing`（已在前置条件中说明）。
+
+非法时统一错误格式：
+```
+✗ 状态机拦截：当前状态 [{status}] 不允许执行 devflow design。
+  合法前驱状态：analyzing
+  如需修改需求，请执行 devflow change。
+```
+
+---
+
+## 执行日志规范（progress.md 追加）
+
+执行期间，按以下规范向 `progress.md` 追加日志条目，不得覆盖已有内容：
+
+```
+[START]      {ISO时间戳} devflow design
+[READ]       spec/requirement.md
+[READ]       context/sanitized.md
+[DECISION]   {技术方案选择，如：选方案 A，原因：现有架构已有 Redis，方案 B 引入新依赖} — 原因：{简述}
+[DECISION]   {爆炸半径评估，如：影响 N 个调用方，风险等级 MEDIUM}
+[WRITE]      spec/design.md ({新建|修改})
+[WRITE]      spec/api.md ({新建|修改})（若有接口设计）
+[TRANSITION] analyzing → designing ({触发本次跃迁的子命令名}, 依据 STATE_MACHINE 前驱合法)
+[COMPLETE]   devflow design — {ISO时间戳}
+```
+
+异常退出时：`[ERROR] {原因}，命令中止`
