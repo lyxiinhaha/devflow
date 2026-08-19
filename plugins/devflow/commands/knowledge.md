@@ -74,6 +74,94 @@ query <自然语言关键词>
 ]
 ```
 
+### 清理 `prune`
+
+**候选规则（满足任一即列出）：**
+
+| 类型 | 条件 |
+|------|------|
+| A「低效卡」 | 召回 ≥ 2 次 且 `applied` 率 = 0% |
+| B「沉睡卡」 | 90 天内零召回 |
+| C「未验证卡」 | 创建超 60 天且从未被召回 |
+
+`knowledge-usage.jsonl` 不存在时输出「暂无使用数据，无法生成候选列表」并退出。
+
+**交互流程：**
+
+逐张展示候选卡，等待用户逐条决定，不自动删除：
+
+```
+Knowledge Prune — 候选清理列表（共 {n} 张）
+
+[{类型}] {card_id} {title}（{候选原因简述}）
+  根因：{root_cause}
+  决定：1.删除  2.保留  3.更新内容后保留  4.归档
+```
+
+**选项执行逻辑：**
+
+| 选项 | 执行内容 |
+|------|---------|
+| 1. 删除 | 从 `bug-experience-cards.csv` 移除该行；向 `knowledge-usage.jsonl` 追加 `{"ts":"...","card_id":"...","action":"pruned","reason":"user_confirmed"}` |
+| 2. 保留 | 不做任何变更 |
+| 3. 更新后保留 | 进入 knowledge add 编辑流程；完成后向 `knowledge-usage.jsonl` 追加 `{"ts":"...","card_id":"...","action":"reset","reason":"content_updated"}`；check 统计从该事件之后重新开始（历史记录保留不删除） |
+| 4. 归档 | 在 `tags` 字段末尾追加 `,#archived`；check 质量面板不再统计此卡，记录保留供查阅 |
+
+**输出摘要：**
+
+```
+Prune 完成：已删除 {n} 张 · 已归档 {n} 张 · 已更新 {n} 张 · 已保留 {n} 张
+```
+
+### 去重合并 `dedupe`
+
+扫描所有非归档（`tags` 不含 `#archived`）卡片，两两比较，检测候选重复组。
+
+**三维检测规则（与 retrospect 步骤 4 一致）：**
+
+| 维度 | 命中阈值 |
+|------|---------|
+| `title` 关键词重叠 | > 60% |
+| `root_cause` + `module` 同时匹配 | 两字段都命中 |
+| `anti_patterns` 关键词重叠 | > 50% |
+
+任一维度命中 → 标记为候选重复组。卡片数 > 100 时提示「扫描可能需要较长时间，建议按 module 分批运行：`devflow knowledge dedupe module=async`」。
+
+**逐组处理流程：**
+
+```
+发现 {n} 组候选重复，逐组处理：
+
+组 {i}/{n}：{card_id_A} vs {card_id_B}（{命中维度描述}）
+
+  {card_id_A}（{created_at}，{severity}，{module}）
+    根因：{root_cause}
+    反模式：{anti_patterns}
+
+  {card_id_B}（{created_at}，{severity}，{module}）
+    根因：{root_cause}
+    反模式：{anti_patterns}
+
+处理方式：
+  1. 合并（AI 起草合并版本）
+  2. 保留两者（差异足够大）
+  3. 跳过本组（稍后再决定）
+```
+
+**选择 1（合并）时执行逻辑：**
+
+AI 起草合并卡（规则同 retrospect 步骤 4 合并规则）展示给用户确认。用户确认后：
+1. 用合并内容覆写 ID 较小的卡（如 `KB-003`）
+2. 从 `bug-experience-cards.csv` 删除 ID 较大的卡（如 `KB-019`）
+3. 将 `knowledge-usage.jsonl` 中 `KB-019` 的历史记录 `card_id` 字段更新为 `KB-003`
+4. 向 `knowledge-usage.jsonl` 追加合并事件：`{"ts":"...","card_id":"KB-019","action":"merged_into","target":"KB-003"}`
+
+**输出摘要：**
+
+```
+Dedupe 完成：扫描 {n} 张 · 发现 {n} 组候选 · 已合并 {n} 组 · 知识库净减少 {n} 张
+```
+
 ---
 
 ## 经验卡完整结构
