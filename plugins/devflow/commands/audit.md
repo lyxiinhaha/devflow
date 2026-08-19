@@ -42,6 +42,8 @@ devflow audit {workItemId}       # 指定工作项摘要
 ✗ 工作项 {id} 不存在，请检查 ID 是否正确。
 ```
 
+`currentWorkItem` 字段不存在或为 null 时，提示：「当前无活跃工作项，请传入 workItemId 参数。」
+
 ### 2. 读取数据源
 
 **来源 A：** `.devflow/audit-log.jsonl`（hook 写入，每行一条 JSON）
@@ -54,11 +56,16 @@ devflow audit {workItemId}       # 指定工作项摘要
 
 **来源 B：** `.devflow/work-items/{workItemId}/progress.md`
 
-提取所有以 `[DECISION]`、`[TRANSITION]`、`[ERROR]` 开头的行。
+提取所有以 `[DECISION]`、`[TRANSITION]`、`[ERROR]`、`[COMPLETE]` 开头的行。
+
+`progress.md` 不存在时静默跳过来源 B，仅使用来源 A 数据。
 
 ### 3. 合并并展示
 
 按时间戳升序合并两个来源。
+
+若两个来源均无有效内容，输出：
+「{workItemId} 暂无审计记录。该工作项可能尚未开始执行，或当前平台不支持 hook 且 progress.md 无结构化条目。」
 
 #### 默认摘要输出格式
 
@@ -82,6 +89,8 @@ DevFlow Audit — {workItemId}
 **阶段判断逻辑：**
 - 某状态有对应 `[TRANSITION]` 条目，且后续存在 `[COMPLETE]` → ✅
 - 某状态有 `[TRANSITION]` 但后续无 `[COMPLETE]`，或末尾条目为 `[ERROR]` → ⚠️（异常中断）
+
+（默认摘要使用 [HH:MM] 短格式增强可读性，--tail 25 使用完整 ISO 时间戳）
 
 #### `--tail 25` 原始输出格式
 
@@ -108,7 +117,7 @@ DevFlow Audit — {workItemId}
 
 ```
 AI 决策记录（共 {n} 条）：
-{timestamp}  {DECISION 内容}
+{ISO时间戳}  {DECISION 内容}
 ```
 
 （无决策记录时输出：「未找到 [DECISION] 条目。」）
