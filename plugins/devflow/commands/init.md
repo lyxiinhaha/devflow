@@ -736,6 +736,50 @@ meegle --version
 }
 ```
 
+### 6.5 安装 Hook（仅 Claude Code 平台）
+
+检测当前平台（通过 `CLAUDE_CODE` 环境变量是否存在，或 `workspace.json.platform` 字段是否为 `claude-code` 来判断）：
+
+**Claude Code 平台：**
+
+1. 从插件包 `assets/hooks/` 复制 hook 脚本到项目 `.devflow/hooks/`：
+   ```bash
+   mkdir -p .devflow/hooks
+   cp {插件根目录}/assets/hooks/devflow-audit.sh .devflow/hooks/
+   cp {插件根目录}/assets/hooks/devflow-state-guard.sh .devflow/hooks/
+   chmod +x .devflow/hooks/devflow-audit.sh
+   chmod +x .devflow/hooks/devflow-state-guard.sh
+   ```
+
+2. 检查 `.claude/settings.json` 是否存在，追加 hooks 配置（不覆盖已有内容）：
+   ```json
+   {
+     "hooks": {
+       "PostToolUse": [".devflow/hooks/devflow-audit.sh"],
+       "PreToolUse":  [".devflow/hooks/devflow-state-guard.sh"]
+     }
+   }
+   ```
+   若 `.claude/settings.json` 已存在 `hooks` 字段，则合并现有 hook 列表（不替换），而非覆盖整个文件。
+   若 `.claude/` 目录不存在，先 `mkdir -p .claude/` 再写入。
+
+3. 确保 `.devflow/hooks/` 已加入 `.gitignore`（hook 脚本属于本地安装产物）。
+
+4. 在 `devflow-profile.md` 末尾追加约束模式说明：
+   ```
+   ## 约束模式
+   硬约束模式（Claude Code + hook 已安装）
+   ```
+
+**非 Claude Code 平台（Cursor / Codex / Gemini / OpenCode 等）：**
+
+跳过 hook 安装，在 `devflow-profile.md` 末尾追加：
+```
+## 约束模式
+软约束模式（当前平台不支持 hook，状态校验依赖 AI 自述）
+devflow audit 仍可用，但 audit-log.jsonl 为空，仅展示 progress.md 决策记录。
+```
+
 ### 7. 写入 `.gitignore`
 
 确保以下条目存在（不重复写入）：
