@@ -145,3 +145,34 @@ meegle subtask update --work-item-id <id> --node-id <node_id>
 
 下一步：使用 `devflow code` 开始编码。
 ```
+
+---
+
+## 状态验证（前置条件扩展）
+
+合法前驱状态：`designing` 或 `estimating`（estimate 阶段可跳过）。
+
+非法时：
+```
+✗ 状态机拦截：当前状态 [{status}] 不允许执行 devflow plan。
+  合法前驱状态：designing / estimating
+```
+
+---
+
+## 执行日志规范（progress.md 追加）
+
+执行期间，按以下规范向 `progress.md` 追加日志条目，不得覆盖已有内容：
+
+```
+[START]      {ISO时间戳} devflow plan
+[READ]       spec/design.md
+[READ]       spec/requirement.md
+[DECISION]   {切片模式选择，如：启用切片模式，共 3 个切片} — 原因：任务数 {n} ≥ 8
+[DECISION]   {Bug 经验召回结果，如：召回 KB-003 KB-007，注入 T004 T009}
+[WRITE]      tasks.md ({新建|修改})
+[TRANSITION] {designing|estimating} → planning ({触发本次跃迁的子命令名}, 依据 STATE_MACHINE 前驱合法)
+[COMPLETE]   devflow plan — {ISO时间戳}
+```
+
+异常退出时：`[ERROR] {原因}，命令中止`
