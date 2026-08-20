@@ -1,5 +1,41 @@
 # Changelog
 
+## v3.6.0 — 2026-08-20
+
+### 知识自进化机制
+
+本版本为知识库引入**完整的可观测性闭环**，从「只有入库」升级为「入库 → 使用统计 → 效果反馈 → 质量整理」的完整链路。
+
+#### 使用日志
+
+- 新增 `knowledge-usage.jsonl` 追加日志：每次 `devflow plan` 或 `devflow fix` 召回经验卡时，自动向此文件追加一条记录（card_id / work_item / recalled_by / outcome / 时间戳），追加写入，禁止修改历史行
+
+#### AI 自动效果推断
+
+- `devflow retrospect` 新增步骤 0：静默读取本次工作项的 `progress.md [WRITE]` 条目和召回记录，自动推断每张卡的 outcome（applied / irrelevant / partial / unknown），批量回写日志；整个步骤完全静默，不打扰用户
+
+#### knowledge check 质量信号面板
+
+- `devflow knowledge check` 在原有字段完整性检查之后，新增质量信号面板：
+  - **高价值卡**：召回 ≥ 3 次 且 有效率 ≥ 60%
+  - **待观察卡**：召回 ≥ 1 次 但 有效率 < 30%
+  - **沉睡卡**：从未召回或 90 天内无召回
+  - 整体有效率统计（unknown 不计入分母）
+
+#### knowledge prune — 交互式清理
+
+- 新增 `devflow knowledge prune`：按低效卡（召回≥2次 applied率=0%）/ 沉睡卡（90天无召回）/ 未验证卡（创建超60天从未召回）三类生成候选列表，逐张等待用户确认，支持删除 / 保留 / 更新后保留 / 归档四种处置
+
+#### knowledge dedupe — 批量去重合并
+
+- 新增 `devflow knowledge dedupe`：扫描所有非归档卡片，两两比较三维相似度（标题 > 60% / root_cause+module 双命中 / anti_patterns > 50%），逐组展示候选，AI 起草合并版本，用户确认后覆写小 ID 卡、删除大 ID 卡、历史使用记录自动迁移
+
+#### 写入时三维增强去重
+
+- `devflow retrospect` 步骤 4 去重从「关键词重叠 > 70%」升级为三维检测（同上），发现相似卡时提供合并 / 独立新增 / 放弃草稿三选项，选择合并时 AI 按完整字段规则起草合并卡
+
+---
+
 ## v3.5.0 — 2026-08-19
 
 ### 工程化鲁棒性增强
