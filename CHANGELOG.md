@@ -1,5 +1,42 @@
 # Changelog
 
+## v3.7.0 — 2026-08-20
+
+### 易用性增强
+
+本版本为 DevFlow 新增面向新用户的完整入门路径，将「不知道从哪里开始」的问题从根本上解决。
+
+#### `devflow doctor` — 环境诊断命令
+
+- 新增 `devflow doctor`：一键检查 DevFlow 运行环境，输出两级问题清单
+  - 🔴 **必须修复**（5 项）：workspace.json 完整性、CodeGraph 安装、knowledge 模板文件
+  - 🟡 **建议修复**（5 项）：Hook 脚本/注册、Meegle 授权、YApi 可达性、CodeGraph 索引新鲜度
+- 支持 `--fix` 模式：展示修复命令列表，用户确认后逐项自动执行
+- 支持 `--quick` 模式：仅检查 🔴 必须修复项，快速诊断
+- 无前置依赖，即使 DevFlow 未初始化也可运行
+
+#### `devflow tour` — 新手向导命令
+
+- 新增 `devflow tour`：5 步向导带用户用真实需求走完 start → analyze → design 三个关键阶段
+  - 步骤 0：环境预检（调用 `devflow doctor --quick`）
+  - 步骤 1：选择自己的需求或示例需求
+  - 步骤 2-4：依次执行 start / analyze / design，与独立命令逻辑完全一致
+  - 步骤 5：完成引导 + 下一步操作提示
+- 支持 `--skip` 跳过环境预检
+- Ctrl+C 退出后工作项保留，可用 `devflow continue` 恢复
+
+#### `devflow start` 新用户感知
+
+- 首次创建工作项时（work-items 目录为空 + tourPromptCount < 3），自动弹出引导提示
+- 提供「继续创建 / 先运行 devflow tour」两个选项，5 秒超时自动选 1（不打扰老用户）
+- 计数达 3 次后永不再提示，避免骚扰
+
+#### README 快速上手
+
+- 「快速开始」章节顶部新增「⚡ 3 行命令上手」框：install → doctor → tour，最短路径明确
+
+---
+
 ## v3.6.0 — 2026-08-20
 
 ### 知识自进化机制

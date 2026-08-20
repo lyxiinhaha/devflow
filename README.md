@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/DevFlow-3.6.0-63b3ed?style=for-the-badge&labelColor=0d1829" alt="DevFlow" />
+  <img src="https://img.shields.io/badge/DevFlow-3.7.0-63b3ed?style=for-the-badge&labelColor=0d1829" alt="DevFlow" />
 </p>
 
 <h1 align="center">DevFlow</h1>
@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/version-3.6.0-63b3ed?style=flat-square" alt="version"></a>
+  <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/version-3.7.0-63b3ed?style=flat-square" alt="version"></a>
   <a href="#codegraph-的角色"><img src="https://img.shields.io/badge/requires-CodeGraph%20MCP-f6ad55?style=flat-square" alt="requires CodeGraph"></a>
   <a href="#完整工作流"><img src="https://img.shields.io/badge/SDLC-8%20阶段全覆盖-68d391?style=flat-square" alt="SDLC"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-68d391?style=flat-square" alt="license"></a>
