@@ -30,8 +30,8 @@ devflow doctor --quick  # 仅检查 🔴 必须修复项，跳过 🟡 建议修
 | `.devflow/workspace.json` 存在 | 检查文件是否存在 | `devflow init` |
 | `workspace.json` 字段完整 | 检查 `techStack`、`codegraph` 节点存在 | `devflow init`（重新初始化） |
 | CodeGraph 已安装 | 执行 `codegraph --version`，命令不存在则标记失败 | `npm install -g @colbymchenry/codegraph` |
-| `bug-experience-cards.csv` 存在 | 检查 `.devflow/config/templates/knowledge/bug-experience-cards.csv` | 从插件模板目录复制 |
-| `knowledge-usage.jsonl` 存在 | 检查 `.devflow/config/templates/knowledge/knowledge-usage.jsonl` | 从插件模板目录复制 |
+| `bug-experience-cards.csv` 存在 | 检查 `.devflow/config/templates/knowledge/bug-experience-cards.csv` | `devflow init` |
+| `knowledge-usage.jsonl` 存在 | 检查 `.devflow/config/templates/knowledge/knowledge-usage.jsonl` | `devflow init` |
 
 ### 🟡 建议修复（影响体验但不阻塞）
 
