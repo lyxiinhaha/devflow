@@ -218,6 +218,23 @@ bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/inst
 
 ## 快速开始
 
+## ⚡ 3 行命令上手
+
+```bash
+# 1. 安装（Claude Code）
+claude plugins install devflow
+
+# 2. 检查环境
+devflow doctor
+
+# 3. 开始向导
+devflow tour
+```
+
+> 遇到问题随时运行 `devflow doctor` 诊断环境。熟悉后直接用 `devflow start` 创建你的第一个需求。
+
+---
+
 ### 前置依赖
 
 - **Claude Code** — DevFlow 基于 Claude Code 插件系统运行
