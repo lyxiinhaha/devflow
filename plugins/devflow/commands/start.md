@@ -36,6 +36,35 @@ devflow start feature 用户头像上传 worktree  ← 创建工作项并立即�
 
 检查 `.devflow/workspace.json` 是否存在，不存在则自动执行 `devflow init`。
 
+### 1.5 新用户感知（首次使用引导）
+
+检查以下条件是否**同时满足**：
+1. `.devflow/work-items/` 目录为空或不存在
+2. `workspace.json.tourPromptCount` < 3（字段不存在时视为 0）
+3. `$ARGUMENTS` 不含 `--no-guide`
+
+三个条件同时满足时，展示以下提示并等待选择：
+
+```
+检测到这是你的第一个工作项。
+建议先运行 devflow tour 获得完整的向导体验（约 10 分钟）。
+
+直接继续创建工作项，还是先做个导览？
+1. 继续创建（跳过导览）
+2. 先运行 devflow tour
+
+选择 [1/2，默认 1，5 秒后自动选 1]：
+```
+
+**选择处理逻辑：**
+- 选择 **2**：将 `workspace.json.tourPromptCount += 1`，然后转入 `devflow tour` 流程，不继续执行 start 后续步骤
+- 选择 **1** 或超时：将 `workspace.json.tourPromptCount += 1`，正常继续步骤 2；命令末尾（步骤 6 之后）追加一条提示：
+  ```
+  💡 遇到问题可运行 devflow doctor 检查环境，或 devflow tour 获取向导。
+  ```
+
+条件不满足时（已有工作项、计数已达 3、传入 --no-guide）：静默跳过本步骤，直接进入步骤 2。
+
 ### 2. 解析输入
 
 提取：
