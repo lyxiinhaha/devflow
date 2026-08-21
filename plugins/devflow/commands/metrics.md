@@ -70,11 +70,14 @@ devflow metrics --push           # 终端报告 + 推送飞书群消息
 使用步骤 2 筛选后的 records 计算（降级时使用步骤 3 的推导数据）：
 
 **交付概况：**
+
+> **注意：** `work_item_done` 事件（用于交付周期、缺陷率计算）需在工作项完成时由 `devflow retrospect` 或后续 `devflow close` 命令写入，当前版本尚未实现自动写入。在此之前，依赖 `work_item_done` 的指标（交付周期均值/P90、缺陷率、完成工作项数）将持续显示 `--`，或由降级模式从 `meta.json` 粗略推导。
+
 - **完成工作项数**：`event = work_item_done` 的记录数（降级时：`status = done` 的 meta.json 数量）
 - **类型分布**：按 `type` 字段分组计数（feature / bug / tech / 其他）
 - **交付周期均值**：所有 `work_item_done` 记录的 `totalDays` 均值，保留一位小数（无数据显示 `--`）
 - **交付周期 P90**：对 `totalDays` 数组排序，取第 90 百分位，保留一位小数（记录数 < 10 时显示 `--`，样本不足）
-- **缺陷率**：`type = bug` 记录数 / 总完成数 × 100%，整数（无数据显示 `--`）
+- **缺陷率**：`type = bug` 的 `work_item_done` 记录数 / 所有 `work_item_done` 记录总数 × 100%，整数（无数据显示 `--`）
 
 **AI 提效：**
 - **AI 代码贡献比**：`event = code_complete` 且 `aiGeneratedPct != null` 的记录的 `aiGeneratedPct` 均值，保留整数（无数据显示 `--`）
@@ -83,11 +86,19 @@ devflow metrics --push           # 终端报告 + 推送飞书群消息
 
 **阶段瓶颈（补充计算，可能不完整）：**
 
-对时间范围内 `status = done` 的工作项，读取各自 `progress.md`，提取相邻 `[TRANSITION]` 行的时间差，按阶段分组计算均值。
+对时间范围内 `status = done` 的工作项，读取各自 `progress.md`，按阶段提取时长：
 
-条件：至少 3 个工作项有完整 `[TRANSITION]` 记录，否则该节显示 `--`。
+**每个阶段的时长 = 该阶段对应命令的 `[COMPLETE]` 时间戳 - `[START]` 时间戳。**
 
-取均值最长的两个阶段作为「最长停留阶段」和「其次」。
+`[START]` 和 `[COMPLETE]` 行格式为：
+- `[START]      {ISO时间戳} devflow {命令名}`
+- `[COMPLETE]   devflow {命令名} — {ISO时间戳}`
+
+提取各命令的 START/COMPLETE 时间对，按阶段（analyze / design / plan / coding / review）分组计算均值（天数）。
+
+条件：至少 3 个工作项有完整 START/COMPLETE 记录，否则该节显示 `--`。
+
+取均值最长的两个阶段作为「最长停留阶段」和「其次」。若有效阶段数 = 1，「其次」显示 `--`。
 
 ### 5. 渲染终端输出
 
