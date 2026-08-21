@@ -29,6 +29,12 @@ description: DevFlow 任务拆解阶段。将技术设计拆解为原子任务�
 
 阅读 `spec/requirement.md` 识别所有功能性需求，阅读 `spec/design.md` 识别所有核心模块和依赖关系。
 
+### 1.5 风险扫描（主动预警）
+
+加载并执行 `devflow-risk-scanner` skill 逻辑，针对当前工作项完成三类扫描：延期风险、高风险变更、依赖阻塞。
+
+有风险时输出警告块（见 devflow-risk-scanner 输出格式规范），无风险时静默，不影响后续任务拆解步骤。
+
 ### 2. Bug 经验召回
 
 读取 `bug-experience-cards.csv`，匹配与当前需求涉及模块、接口、字段相关的经验卡：

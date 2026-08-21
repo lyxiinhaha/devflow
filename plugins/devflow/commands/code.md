@@ -86,6 +86,12 @@ Worktree 路径写入 `meta.json`，同时注册到 `workspace.json.activeWorkIt
 
 ---
 
+### 1.5 风险扫描（主动预警）
+
+加载并执行 `devflow-risk-scanner` skill 逻辑，针对当前工作项完成三类扫描：延期风险、高风险变更、依赖阻塞。
+
+有风险时输出警告块（见 devflow-risk-scanner 输出格式规范），无风险时静默，不影响后续编码步骤。
+
 ### 2. 执行范围确认
 
 读取 `tasks.md`，展示未完成任务摘要，询问用户本次执行范围（除非用户已明确指定）：

@@ -24,6 +24,12 @@ description: DevFlow 进度恢复。新会话或 /clear 后读取 Context Checkp
 - 文件不存在 → 提示用户先执行 `devflow init` 或 `devflow start`
 - `focus` 和 `activeWorkItems` 均为空 → 提示执行 `devflow list` 或 `devflow start`
 
+### 1.5 风险扫描（主动预警）
+
+加载并执行 `devflow-risk-scanner` skill 逻辑，针对当前焦点工作项完成三类扫描：延期风险、高风险变更、依赖阻塞。
+
+有风险时输出警告块（见 devflow-risk-scanner 输出格式规范），无风险时静默，不影响后续步骤。
+
 ### 2. 展示所有活跃工作项
 
 读取 `workspace.json.activeWorkItems`，展示并行中的所有工作项：
