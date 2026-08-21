@@ -56,10 +56,13 @@ devflow dashboard --sheet      # 终端看板 + 更新飞书多维表格
 - 每个工作项的最高风险等级（无风险为 ✓）
 - 全局风险汇总：HIGH 数量、MEDIUM 数量及分类标注
 
+skill 已定义于 `plugins/devflow/skills/devflow-risk-scanner/index.md`。
+扫描结果按工作项收集：最高风险等级（🔴 HIGH / 🟡 MEDIUM / ✓ 无风险）和风险类型描述（延期 / 冲突 / 高影响），用于步骤 5 的活跃工作项行和步骤 5 风险汇总渲染。
+
 ### 4. 识别待办看板条目
 
 - **需评审**：`meta.json.status = coding` 且 `.devflow/work-items/{workItemId}/review.md` 不存在的工作项（即编码完成但未开始审查）
-- **待部署**：`meta.json.status = reviewing` 且对应 `review.md` 中最后一次 `review_result` 事件的 `passed = true` 的工作项
+- **待部署**：`meta.json.status = reviewing` 且 `.devflow/metrics.jsonl` 中该工作项最后一条 `event = review_result` 的 `passed = true`；若 metrics.jsonl 不存在或该工作项无 review_result 记录，则不列入待部署
 
 ### 5. 渲染终端输出
 
@@ -73,7 +76,7 @@ DevFlow 项目看板   {YYYY-MM-DD HH:MM}
   本周交付  {n} 个    平均周期  {x.x}d
 
 活跃工作项                    阶段      风险      耗时
-  {workItemId 末段（最多20字符）} {status}  {风险图标}  {耗时d}
+  {workItemId（超过20字符时截断末尾）} {status}  {风险图标}  {耗时d}
   ...
 
 风险汇总
@@ -87,6 +90,8 @@ DevFlow 项目看板   {YYYY-MM-DD HH:MM}
   （对应类别无条目时该行不显示）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
+
+若无活跃工作项，「活跃工作项」区块显示：`  （暂无活跃工作项）`
 
 **活跃工作项行风险图标规则：**
 - 🔴 含风险类型简述（如"延期"）
@@ -107,10 +112,7 @@ DevFlow 项目看板   {YYYY-MM-DD HH:MM}
    可在 workspace.json 中设置 dashboardFeishuChatId 后重试。
 ```
 
-已配置时：将步骤 5 的终端输出作为消息文本发送。调用：
-```bash
-lark-cli im send --chat-id {dashboardFeishuChatId} --text "{看板内容}"
-```
+已配置时：将步骤 5 的终端输出作为消息文本发送。使用 lark-im skill 向 {dashboardFeishuChatId} 发送消息，消息内容为步骤 5 的完整终端输出文本。
 
 #### `--sheet`：更新多维表格
 
@@ -124,6 +126,8 @@ lark-cli im send --chat-id {dashboardFeishuChatId} --text "{看板内容}"
 
 已配置时：将活跃工作项列表全量写入指定多维表格，覆盖名为 `活跃工作项` 的工作表。使用 `lark-base` 或 `lark-sheets` skill 完成写入，字段如下：
 
+写入方式：先清空 `活跃工作项` 工作表的已有数据行（保留表头），再全量插入当前活跃工作项。
+
 | 字段 | 值 |
 |---|---|
 | 工作项ID | workItemId |
@@ -132,6 +136,8 @@ lark-cli im send --chat-id {dashboardFeishuChatId} --text "{看板内容}"
 | 风险等级 | HIGH / MEDIUM / 无风险 |
 | 耗时（天） | 当前时间 - meta.json.startedAt，向下取整至 0.5d |
 | 更新时间 | 当前时间（ISO格式） |
+
+若同时传入 `--push` 和 `--sheet`，依次执行 `--push` 和 `--sheet` 两个操作。
 
 ---
 
