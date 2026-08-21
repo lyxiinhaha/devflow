@@ -819,11 +819,21 @@ devflow audit 仍可用，但 audit-log.jsonl 为空，仅展示 progress.md 决
 
 4. **看板飞书推送配置**（可选）：
 
-   询问用户：「是否配置飞书看板推送？配置后 `devflow dashboard --push` 可自动发送看板到指定群，`devflow dashboard --sheet` 可自动更新飞书多维表格。」
+   **飞书群 ID（`--push` 推送目标）：**
+   ```
+   是否配置飞书看板推送？配置后 `devflow dashboard --push` 可自动发送看板到指定群。
+   请输入飞书群 ID（如：oc_xxxxxxxx，可在群设置中查看），跳过请直接回车：
+   > 
+   ```
+   有输入则写入 `workspace.json.dashboardFeishuChatId`；留空则跳过。
 
-   - 用户提供飞书群 ID → 写入 `workspace.json.dashboardFeishuChatId`
-   - 用户提供多维表格 token → 写入 `workspace.json.dashboardSheetToken`
-   - 留空则跳过，可后续手动在 `workspace.json` 中配置。
+   **多维表格 token（`--sheet` 写入目标）：**
+   ```
+   是否配置飞书多维表格自动写入？配置后 `devflow dashboard --sheet` 可自动更新进度表格。
+   请输入多维表格 token（如：shtcnXXXXXXX），跳过请直接回车：
+   > 
+   ```
+   有输入则写入 `workspace.json.dashboardSheetToken`；留空则跳过。
 
 ---
 
