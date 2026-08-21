@@ -181,6 +181,21 @@ meegle workflow transition-state --work-item-id <id> --transition-id <id>
 [DECISION]   {经验卡核心内容，如：根因为 XX 反模式，新增 KB-{N}} — 原因：{简述}
 [WRITE]      bug-experience-cards.csv (修改)
 [TRANSITION] reviewing → done (retrospect, 依据 STATE_MACHINE 前驱合法)
+```
+
+**metrics.jsonl 写入（完成时）：**
+向 `.devflow/metrics.jsonl` 追加一条记录（若文件不存在则新建）：
+```json
+{
+  "ts": "{ISO时间戳}",
+  "workItemId": "{当前工作项ID，从 workspace.json.focus 读取}",
+  "event": "work_item_done",
+  "totalDays": "{meta.json.startedAt 到当前时间的天数，向下取整至 0.5d}",
+  "type": "{meta.json.type，如 feature / bug / tech}"
+}
+```
+
+```
 [COMPLETE]   devflow retrospect — {ISO时间戳}
 ```
 
