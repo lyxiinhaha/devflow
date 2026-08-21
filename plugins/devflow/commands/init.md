@@ -732,7 +732,10 @@ meegle --version
     "strategy": "single-root",
     "roots": [],
     "queryGuide": ""
-  }
+  },
+  "checklistSkill": null,
+  "dashboardFeishuChatId": null,
+  "dashboardSheetToken": null
 }
 ```
 
@@ -813,6 +816,14 @@ devflow audit 仍可用，但 audit-log.jsonl 为空，仅展示 progress.md 决
    > 
    ```
    有输入则写入 `workspace.json.checklistSkill`；留空则 devflow checklist 使用内置通用规范。
+
+4. **看板飞书推送配置**（可选）：
+
+   询问用户：「是否配置飞书看板推送？配置后 `devflow dashboard --push` 可自动发送看板到指定群，`devflow dashboard --sheet` 可自动更新飞书多维表格。」
+
+   - 用户提供飞书群 ID → 写入 `workspace.json.dashboardFeishuChatId`
+   - 用户提供多维表格 token → 写入 `workspace.json.dashboardSheetToken`
+   - 留空则跳过，可后续手动在 `workspace.json` 中配置。
 
 ---
 

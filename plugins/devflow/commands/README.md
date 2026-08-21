@@ -60,7 +60,7 @@ refactor → review → retrospect
 
 ---
 
-## 17 个命令说明
+## 19 个命令说明
 
 | 命令 | 触发语 | 核心能力 |
 |------|--------|---------|
@@ -79,6 +79,8 @@ refactor → review → retrospect
 | `devflow continue` | 恢复进度 | 读取 Checkpoint，展示 Meegle 最新状态 |
 | `devflow switch` | 切换工作项 | 切换工作项 + 自动恢复上下文 |
 | `devflow list` | 查看工作项 | 状态总览 + 可选同步 Meegle 状态 |
+| `devflow dashboard` | 全局进度看板 | 展示项目进度总览、风险汇总、待办看板，支持飞书推送 |
+| `devflow metrics` | 效能度量报告 | 统计交付周期、缺陷率、AI 贡献比、评审通过率等指标 |
 | `devflow change` | 需求变更 | 状态回退 + CodeGraph 重新评估 + Meegle 更新 |
 | `devflow knowledge` | 知识库 | 经验卡查询 / 添加 / 健康检查 |
 
