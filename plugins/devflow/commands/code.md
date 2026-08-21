@@ -306,6 +306,19 @@ meegle workflow transition-state --work-item-id <id> --transition-id <id>
 全部任务完成后追加：
 ```
 [TRANSITION] planning → coding (code, 依据 STATE_MACHINE 前驱合法)
+**metrics.jsonl 写入（全部任务完成时）：**
+向 `.devflow/metrics.jsonl` 追加一条记录（若文件不存在则新建）：
+```json
+{
+  "ts": "{ISO时间戳}",
+  "workItemId": "{当前工作项ID，从 workspace.json.focus 读取}",
+  "event": "code_complete",
+  "aiGeneratedPct": "{本次编码中由 AI 直接生成并被采纳的代码行占总变更行数的百分比（0-100整数），无法估算时填 null}",
+  "filesChanged": "{本次编码修改的文件数量}"
+}
+```
+
+`aiGeneratedPct` 由 AI 根据本次编码过程自估，粗估即可，无需精确。
 [COMPLETE]   devflow code（全部任务）— {ISO时间戳}
 ```
 

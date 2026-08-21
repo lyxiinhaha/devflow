@@ -338,6 +338,17 @@ Meegle 状态：{已流转 | 未配置}
 [DECISION]   {回归义务判断，如：变更影响 PaymentModule，需补充回归测试}
 [WRITE]      review.md ({新建|修改})
 [TRANSITION] coding → reviewing (review, 依据 STATE_MACHINE 前驱合法)
+**metrics.jsonl 写入（完成时）：**
+向 `.devflow/metrics.jsonl` 追加一条记录（若文件不存在则新建）：
+```json
+{
+  "ts": "{ISO时间戳}",
+  "workItemId": "{当前工作项ID，从 workspace.json.focus 读取}",
+  "event": "review_result",
+  "passed": "{true 表示审查通过，false 表示存在阻断问题需修复}",
+  "iterationCount": "{本次 review 是第几次迭代，首次填 1}"
+}
+```
 [COMPLETE]   devflow review — {ISO时间戳}
 ```
 

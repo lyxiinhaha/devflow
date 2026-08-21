@@ -200,6 +200,17 @@ meegle subtask update --work-item-id <id> --node-id <node_id>
 [DECISION]   {Bug 经验召回结果，如：召回 KB-003 KB-007，注入 T004 T009}
 [WRITE]      tasks.md ({新建|修改})
 [TRANSITION] {designing|estimating} → planning ({触发本次跃迁的子命令名}, 依据 STATE_MACHINE 前驱合法)
+**metrics.jsonl 写入（完成时）：**
+向 `.devflow/metrics.jsonl` 追加一条记录（若文件不存在则新建）：
+```json
+{
+  "ts": "{ISO时间戳}",
+  "workItemId": "{当前工作项ID，从 workspace.json.focus 读取}",
+  "event": "stage_complete",
+  "stage": "plan",
+  "durationMin": "{从本命令 [START] 到 [COMPLETE] 的分钟数，无法计算时填 null}"
+}
+```
 [COMPLETE]   devflow plan — {ISO时间戳}
 ```
 

@@ -392,6 +392,17 @@ Finalize 模式执行期间，按以下规范向 `progress.md` 追加日志条�
 [WRITE]      spec/requirement.md ({新建|修改})
 [WRITE]      open-issues.md ({新建|修改})（若有 open issue 写入）
 [TRANSITION] created → analyzing ({触发本次跃迁的子命令名}, 依据 STATE_MACHINE 前驱合法)
+**metrics.jsonl 写入（完成时）：**
+向 `.devflow/metrics.jsonl` 追加一条记录（若文件不存在则新建）：
+```json
+{
+  "ts": "{ISO时间戳}",
+  "workItemId": "{当前工作项ID，从 workspace.json.focus 读取}",
+  "event": "stage_complete",
+  "stage": "analyze",
+  "durationMin": "{从本命令 [START] 到 [COMPLETE] 的分钟数，无法计算时填 null}"
+}
+```
 [COMPLETE]   devflow analyze — {ISO时间戳}
 ```
 
