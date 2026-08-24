@@ -2,3 +2,6 @@
 # 格式：每行一条 JSON 记录，追加写入，禁止修改已有行
 # 字段：ts / card_id / work_item / recalled_by / outcome / outcome_ts / outcome_note
 # outcome 枚举：unknown | applied | irrelevant | partial
+# action 枚举补充：
+#   rule_distilled : 卡被蒸馏为项目规则（附 rule_ref 字段：规则标题）
+#   rule_violated  : 出现了已有规则本应防住的同类问题（附 rule_ref 字段）

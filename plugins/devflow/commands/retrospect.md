@@ -123,11 +123,49 @@ id,created_at,last_reviewed,issue_type,module,title,root_cause,anti_patterns,req
 
 起草完成后展示给用户确认，确认后覆写原卡（保留其 ID），当前草稿不入库。
 
+### 4.5 规则匹配检查
+
+仅当 `.devflow/config/templates/knowledge/project-rules.md` 存在且非空时执行，否则跳过本步骤。
+
+1. 提取新卡草稿的 `tags` 字段（逗号分隔，trim 空格）
+2. 对每个 tag 在 `project-rules.md` 全文做 **case-insensitive 完整词匹配**（前后为空白/标点/行首尾）
+3. **未命中任何 tag** → 跳过，继续步骤 5
+4. **命中时展示：**
+
+```
+⚠️ 发现匹配规则：「{匹配到的规则标题}」
+  该规则已覆盖 tag「{tag}」相关约束。本次新卡可能是：
+    A. 规则存在但未被执行（个例，规则内容仍正确）
+    B. 规则措辞不够明确（需强化）
+    C. 新卡覆盖了规则未涵盖的边界条件（需扩展）
+
+选择：
+  1. 个例，不修订规则（照常入库本卡）
+  2. 修订规则（展示规则原文，等待编辑后确认）
+  3. 取消入库（规则已完全覆盖，无需新卡）
+```
+
+**选择 1（个例）：**
+- 继续步骤 5 照常入库
+- 步骤 5 分配 ID 后，向 `knowledge-usage.jsonl` 追加（card_id 用步骤 5 分配的真实 ID）：
+  ```json
+  {"ts":"...","card_id":"KB-{实际分配的N+1}","work_item":"...","action":"rule_violated","rule_ref":"{规则标题}"}
+  ```
+
+**选择 2（修订）：**
+- 展示 `project-rules.md` 中匹配章节的完整内容（定位方式：`## {rule_ref}` 标题行至下一个 `##` 之间）
+- 等待用户直接编辑规则文本，确认后覆写对应章节
+- 继续步骤 5 照常入库当前新卡
+
+**选择 3（取消）：**
+- 中止入库，输出：`已放弃本次经验卡入库（规则已覆盖）`
+
 ### 5. 用户确认与入库
 
 用户确认后，将经验卡追加到 `bug-experience-cards.csv`，分配递增 ID（`KB-{N+1}`）。
 
 更新 `meta.json`：`stages.retrospected = true`，`status → done`。
+
 
 ### 6. 可选：关闭 Meegle 工作项
 

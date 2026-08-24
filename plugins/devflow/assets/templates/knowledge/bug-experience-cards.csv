@@ -1,4 +1,4 @@
-id,created_at,last_reviewed,issue_type,module,title,root_cause,anti_patterns,required_tests,severity,tags
+id,created_at,last_reviewed,issue_type,module,title,root_cause,anti_patterns,required_tests,severity,tags,distilled,rule_ref
 KB-001,2024-01-10,2024-07-01,race_condition,async,"Promise 并发修改共享状态导致数据错乱","多个并发 Promise 共同写入同一个对象字段，未加锁","直接 await 多个 Promise 后写入同一变量；使用全局变量存储异步中间结果","并发写入压测；相同参数并发调用 10 次验证结果一致性",HIGH,"async,promise,race"
 KB-002,2024-01-15,2024-07-01,null_reference,api,"接口返回 null 未处理导致页面白屏","后端接口在边界条件下返回 null，前端未做防御性判断","直接访问 response.data.xxx 而不判断 response.data 是否存在","null 值 mock 测试；接口返回空数组/null/undefined 的 UI 展示",MEDIUM,"null,api,frontend"
 KB-003,2024-02-01,2024-07-01,state_mutation,react,"直接 mutate Redux state 导致视图不更新","在 reducer 外部直接修改 state 对象引用","state.list.push(item)；state.user.name = 'xxx'","Redux DevTools 验证 action 前后 state diff；不可变性单元测试",HIGH,"react,redux,immutable"

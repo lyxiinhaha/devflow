@@ -27,5 +27,8 @@
     "checkpointInterval": "per-stage"
   },
   "retrospect": { "mandatory": true, "triggerAfter": ["fix","review","refactor"] },
+  "knowledge": {
+    "distillThreshold": 3
+  },
   "integrations": { "issueTracker": "feishu|jira|github|none", "designTool": "figma|none" }
 }
