@@ -45,6 +45,9 @@
     "mandatory": true,
     "triggerAfter": ["fix", "review", "refactor"]
   },
+  "knowledge": {
+    "distillThreshold": 3
+  },
   "integrations": {
     "issueTracker": "meegle|none",
     "designTool": "figma|none"

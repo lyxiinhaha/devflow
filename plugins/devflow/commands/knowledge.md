@@ -164,6 +164,89 @@ Dedupe 完成：扫描 {n} 张 · 发现 {n} 组候选 · 已合并 {n} 组 · �
 
 ---
 
+### 蒸馏 `distill [tag=xxx | module=xxx | --force]`
+
+将积累到阈值的同类经验卡提炼为项目级规则，写入 `project-rules.md`，并标记参与卡为 `distilled=true`。
+
+**执行步骤：**
+
+**Step 1：读取候选卡**
+
+读取 `bug-experience-cards.csv`，过滤条件：`tags` 不含 `#archived` 且 `distilled` 列不为 `"true"`。
+
+- 有指定 `tag=xxx` 或 `module=xxx`：按该条件筛选
+- 无参数：扫描所有 tag，统计各 tag 下的候选卡数，列出 ≥ threshold 的 tag 供用户选择
+
+**Step 2：阈值检查**
+
+读取 `.devflow/config/devflow.json` 中的 `knowledge.distillThreshold`（字段不存在时使用默认值 `3`）。
+
+命中卡数 < threshold 且无 `--force` 参数：
+
+```
+当前 tag={tag} 有 {n} 张候选卡，低于蒸馏阈值（{threshold}）。
+建议继续积累经验卡后再蒸馏，或使用 --force 强制执行。
+```
+
+**Step 3：规则冲突检查**
+
+读取 `.devflow/config/templates/knowledge/project-rules.md`（不存在则跳过本步骤）。
+
+提取新卡的 `tags` 字段（逗号分隔，trim 空格），对每个 tag 在规则文件全文做 **case-insensitive 完整词匹配**（前后为空白/标点/行首尾，非简单子字符串）。
+
+- 命中任一 tag → 输出：
+  ```
+  ⚠️ 发现已有规则匹配 tag「{tag}」，当前 project-rules.md 中可能已覆盖此内容。
+  建议先执行 devflow knowledge check 查看规则失效预警，再决定是否修订已有规则。
+  如需强制新建规则，使用 --force 参数继续。
+  ```
+  无 `--force` 时退出；有 `--force` 时继续 Step 4。
+- 未命中 → 继续 Step 4
+
+**Step 4：AI 起草规则草稿**
+
+汇总候选卡的字段，提炼共性内容：
+- `anti_patterns` → 去重合并，提取禁令列表
+- `required_tests` → 去重合并，提取必须项列表
+
+起草规则草稿，格式如下：
+
+```markdown
+## {规则标题}（来源：{card_id_1}、{card_id_2}...，创建：{YYYY-MM-DD}）
+
+{2-3 句描述原则和适用范围}
+
+**禁止：**
+- {合并各卡 anti_patterns 的共性禁令，每条一行}
+
+**必须：**
+- {合并各卡 required_tests 的共性要求，每条一行}
+```
+
+规则标题命名约定：`{模块/领域} + 核心约束动词 + 对象`，例：「埋点必须收口到模块级 object」
+
+展示草稿，等待用户确认或修改后继续。
+
+**Step 5：写入（用户确认后执行）**
+
+1. 读取 `.devflow/config/templates/knowledge/project-rules.md`
+   - 不存在：从 `plugins/devflow/assets/templates/knowledge/project-rules.tpl.md` 复制到运行时路径，再追加
+   - 存在：直接追加规则章节到文件末尾
+2. 逐行更新参与蒸馏的各卡：`distilled` 列 = `"true"`，`rule_ref` 列 = 规则标题
+3. 向 `knowledge-usage.jsonl` 追加事件（每张参与卡一条）：
+   ```json
+   {"ts":"...","card_id":"{KB-xxx}","work_item":"...","action":"rule_distilled","rule_ref":"{规则标题}"}
+   ```
+4. 输出摘要：
+   ```
+   ✅ 规则已写入 project-rules.md
+     规则标题：{标题}
+     参与卡：{card_id 列表}（已标记 distilled=true）
+     知识库中 distilled 卡数：{n} 张（不再参与 plan 阶段召回）
+   ```
+
+---
+
 ## 经验卡完整结构
 
 ```csv
@@ -230,7 +313,18 @@ KB-001,2024-01-10,2024-07-01,race_condition,async,"标题",根因,反模式,测�
 
 整体：{n} 次历史召回 · 整体有效率 {n}%（-表示暂无反馈数据）
 
+── 蒸馏建议（同 tag 未蒸馏卡 ≥ distillThreshold）───────────────────────
+  {tag}    {n} 张卡可蒸馏   → devflow knowledge distill tag={tag}
+  （无候选时省略本节；候选条件：非归档 + distilled != "true" + 同 tag 数量 ≥ distillThreshold
+    且 project-rules.md 中无对应 tag 的规则）
+
+── 规则失效预警（已有规则出现同类新卡）────────────────────────────────
+  规则「{rule_ref}」自建立后出现 {n} 次同类新卡
+    最新：{card_id}（{created_at}）→ 建议复查规则是否需要加强
+  （无失效预警时省略本节；读取 knowledge-usage.jsonl 中 action="rule_violated" 按 rule_ref 分组统计）
+
 建议操作：
-  devflow knowledge prune   ← 清理沉睡卡和低效卡
-  devflow knowledge dedupe  ← 扫描重复卡
+  devflow knowledge prune    ← 清理沉睡卡和低效卡
+  devflow knowledge dedupe   ← 扫描重复卡
+  devflow knowledge distill  ← 蒸馏同类卡为项目规则（蒸馏建议节有候选时显示）
 ```
