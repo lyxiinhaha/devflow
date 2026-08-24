@@ -758,12 +758,32 @@ meegle --version
    ```json
    {
      "hooks": {
-       "PostToolUse": [".devflow/hooks/devflow-audit.sh"],
-       "PreToolUse":  [".devflow/hooks/devflow-state-guard.sh"]
+       "PostToolUse": [
+         {
+           "matcher": "",
+           "hooks": [
+             {
+               "type": "command",
+               "command": ".devflow/hooks/devflow-audit.sh"
+             }
+           ]
+         }
+       ],
+       "PreToolUse": [
+         {
+           "matcher": "",
+           "hooks": [
+             {
+               "type": "command",
+               "command": ".devflow/hooks/devflow-state-guard.sh"
+             }
+           ]
+         }
+       ]
      }
    }
    ```
-   若 `.claude/settings.json` 已存在 `PostToolUse` / `PreToolUse` 字段（数组类型），将新路径追加到对应数组末尾；追加前检查路径是否已存在，避免重复写入。不得将现有数组替换为只含 devflow 条目的新数组。
+   若 `.claude/settings.json` 已存在 `PostToolUse` / `PreToolUse` 字段（数组类型），将新条目对象追加到对应数组末尾；追加前检查 `command` 路径是否已存在，避免重复写入。不得将现有数组替换为只含 devflow 条目的新数组。
    若 `.claude/` 目录不存在，先 `mkdir -p .claude/` 再写入。
 
 3. `.devflow/hooks/` 的 gitignore 条目由步骤 7 统一写入（整个 `.devflow/` 目录已被排除），此处无需额外操作。
