@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/DevFlow-3.7.0-63b3ed?style=for-the-badge&labelColor=0d1829" alt="DevFlow" />
+  <img src="https://img.shields.io/badge/DevFlow-3.8.0-63b3ed?style=for-the-badge&labelColor=0d1829" alt="DevFlow" />
 </p>
 
 <h1 align="center">DevFlow</h1>
@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/version-3.7.0-63b3ed?style=flat-square" alt="version"></a>
+  <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/version-3.8.0-63b3ed?style=flat-square" alt="version"></a>
   <a href="#codegraph-的角色"><img src="https://img.shields.io/badge/requires-CodeGraph%20MCP-f6ad55?style=flat-square" alt="requires CodeGraph"></a>
   <a href="#完整工作流"><img src="https://img.shields.io/badge/SDLC-8%20阶段全覆盖-68d391?style=flat-square" alt="SDLC"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-68d391?style=flat-square" alt="license"></a>
@@ -150,6 +150,8 @@ DevFlow 将这 8 个 SDLC 阶段映射为 20 个 AI 命令，并在每一个决�
 | **🆕 独立审计日志** | PostToolUse hook 由宿主进程独立写入 `audit-log.jsonl`，记录每次工具调用，不依赖 AI 自述；`devflow audit` 子命令提供操作历史和决策轨迹查询 |
 | **🆕 状态机硬拦截** | PreToolUse hook 在文件写入前校验 meta.json 状态，非法跃迁被宿主进程直接拦截（Claude Code 平台），非 Claude Code 平台自动降级为 AI 自述软约束 |
 | **🆕 断点 Checkpoint 回滚** | 每次状态跃迁前 hook 自动快照 meta.json；`devflow continue` 检测中断后提供继续 / 回滚 / 查看 audit 三选项，中断状态不再需要手动恢复 |
+| **🆕 知识蒸馏（v3.8）** | `devflow knowledge distill` 将积累的同类经验卡提炼为项目级规则（project-rules.md），`plan`/`code`/`review` 自动注入始终生效；三层知识体系：项目规则 → 经验卡 → 历史案例 |
+| **🆕 规则失效检测（v3.8）** | `retrospect` 写入新卡时自动检测 tags 是否命中已有规则，提示「个例/修订/放弃」；`knowledge check` 新增规则失效预警面板，量化规则被违反次数 |
 | **🆕 知识库使用统计** | 每次召回自动写入 `knowledge-usage.jsonl`，`devflow knowledge check` 新增质量信号面板：高价值卡、待观察卡、沉睡卡三维分级，有效率可见 |
 | **🆕 知识库自进化** | `retrospect` AI 自动推断召回效果（applied/irrelevant/partial），无需人工逐条评价；`devflow knowledge prune` 交互式清理低效卡，`devflow knowledge dedupe` 批量扫描合并重复卡 |
 | **🆕 三维增强去重** | 写入经验卡时从「关键词 > 70%」升级为标题相似 / 根因双字段 / 反模式三维检测，从源头防止重复入库 |
@@ -559,7 +561,7 @@ AI 执行四阶段 CodeGraph 根因分析（定位入口 → 追踪调用链 →
 |------|---------|
 | `devflow onboard` | `devflow onboard payment 模块` — 新成员快速了解指定模块，CodeGraph 导览 + 历史 Bug 热点 |
 | `devflow change` | 需求中途变更时使用，Minor / Major 分级，状态机自动回退到正确阶段；**自动扫描已完成任务，命中影响面的任务降级验证状态，写入回归义务条目** |
-| `devflow knowledge` | 查询 / 添加 Bug 经验卡，历史防坑手册，`devflow plan` 会自动召回相关经验 |
+| `devflow knowledge` | 查询 / 添加 / 蒸馏 Bug 经验卡；`distill` 子命令将同类卡提炼为项目级规则（始终生效）；`check` 展示质量面板和规则失效预警；`devflow plan` 自动召回相关经验 |
 
 <p align="right">(<a href="#20-个命令">返回顶部</a>)</p>
 

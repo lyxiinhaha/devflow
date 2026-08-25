@@ -1,5 +1,52 @@
 # Changelog
 
+## v3.8.0 — 2026-08-25
+
+### 知识蒸馏：从经验卡到项目规则
+
+本版本完成知识体系的第三层——**项目级规则（project-rules.md）**，将原本「被动召回」的知识库升级为三层架构：
+
+```
+Layer 1 — 项目规则（始终生效，plan/code/review 自动注入）
+Layer 2 — 经验卡（模块匹配时召回，distilled 后默认跳过）
+Layer 3 — Bug 修复清单（历史案例，按需查询）
+```
+
+#### `devflow knowledge distill` — 新增蒸馏子命令
+
+- 将积累到阈值的同类经验卡提炼为项目级规则，写入 `.devflow/config/templates/knowledge/project-rules.md`
+- 阈值可配置：`devflow.json` 新增 `knowledge.distillThreshold`（默认 3）
+- 三步安全机制：阈值检查 → 规则冲突检查（避免重复创建已有规则）→ AI 起草草稿等待用户确认
+- 参与蒸馏的经验卡自动标记 `distilled=true`，`devflow plan` 阶段不再重复召回（规则已覆盖）
+- 支持 `--force` 跳过阈值检查强制蒸馏
+
+#### `devflow knowledge check` 新增蒸馏建议面板
+
+- 质量信号面板末尾新增两节：
+  - **蒸馏建议**：同 tag 未蒸馏卡 ≥ threshold 时提示并给出命令
+  - **规则失效预警**：已有规则建立后出现同类新卡时告警，提示复查规则是否需要加强
+- 规则失效次数通过 `knowledge-usage.jsonl` 中 `action="rule_violated"` 事件统计
+
+#### `devflow retrospect` 步骤 4.5 规则修订检测
+
+- 写入新经验卡前，自动检测其 tags 是否命中 `project-rules.md` 中已有规则
+- 命中时提供三选项：个例（照常入库 + 记录 rule_violated）/ 修订规则 / 放弃入库
+- 未配置 project-rules.md 时完全静默，不影响现有流程
+
+#### `devflow plan` / `code` / `review` 统一注入步骤 0.5
+
+- 三个命令执行前自动读取 `project-rules.md`，以「── 项目规则（始终生效）──」区块置顶输出
+- 文件不存在时静默跳过，零副作用
+
+#### 数据结构变更（向后兼容）
+
+- `bug-experience-cards.csv` 表头新增 `distilled`、`rule_ref` 两列
+- 旧行读取时缺失列视为空值，现有项目无感知
+- `knowledge-usage.jsonl` 新增 `rule_distilled` 和 `rule_violated` 两种 action 类型
+- `plugins/devflow/assets/templates/knowledge/project-rules.tpl.md` 新增初始化模板
+
+---
+
 ## v3.7.0 — 2026-08-20
 
 ### 易用性增强
