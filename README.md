@@ -168,6 +168,7 @@ DevFlow 的核心是 20 个纯文本命令文件，任何能读取文件的 AI �
 |------|---------|------|
 | **Claude Code** | 官方插件（`claude plugins install`） | ✅ 完整支持 |
 | **Cursor** | `.cursor/rules/devflow.mdc` | ✅ 完整支持 · [使用手册](./README-Cursor.md) |
+| **Kiro** | `.kiro/steering/devflow.md` | ✅ 完整支持 · [使用手册](./README-Kiro.md) |
 | **Codex**（OpenAI） | `AGENTS.md` | ✅ 完整支持 |
 | **OpenCode** | `OPENCODE.md` | ✅ 完整支持 |
 | **Gemini CLI** | `GEMINI.md` | ✅ 完整支持 |
@@ -179,7 +180,7 @@ DevFlow 的核心是 20 个纯文本命令文件，任何能读取文件的 AI �
 claude plugins install devflow
 ```
 
-### Cursor / Codex / OpenCode / Gemini CLI
+### Cursor / Kiro / Codex / OpenCode / Gemini CLI
 
 在**项目目录**下运行一行命令，脚本自动下载安装并完成基础配置：
 
@@ -189,13 +190,14 @@ bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/inst
 
 脚本会交互式引导你完成：
 
-1. **平台自动检测** — 识别 Cursor / Codex / Gemini CLI 等，直接确认即可
+1. **平台自动检测** — 识别 Cursor / Kiro / Codex / Gemini CLI 等，直接确认即可
 2. **文件安装** — 命令文件、适配配置、模板、`.gitignore` 全部就位
 3. **基础配置** — 可选填写 YApi 域名、Meegle 项目 Key，直接回车跳过
 
 安装完成后，在 AI 工具中打开项目，输入 `devflow init` 完成技术栈检测和 CodeGraph 配置。
 
 > Cursor 用户请参阅 **[详细使用手册 →](./README-Cursor.md)**，包含从安装到日常开发的完整步骤说明。
+> Kiro 用户请参阅 **[详细使用手册 →](./README-Kiro.md)**，包含 Kiro Steering 机制和 MCP 配置说明。
 
 **升级已安装的 DevFlow：**
 
@@ -208,6 +210,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/inst
 | 平台 | 适配文件 | 作用 |
 |------|---------|------|
 | Cursor | `.cursor/rules/devflow.mdc` | Cursor Rules，每次对话自动加载，AI 识别 `devflow` 命令路由 |
+| Kiro | `.kiro/steering/devflow.md` | Kiro Steering File，`inclusion: always`，每次对话自动加载，AI 识别 `devflow` 命令路由 |
 | Codex | `AGENTS.md`（追加） | OpenAI Codex Agent 配置，定义命令路由规则 |
 | OpenCode | `OPENCODE.md`（追加） | OpenCode 配置文件，定义命令路由规则 |
 | Gemini CLI | `GEMINI.md`（追加） | Gemini CLI 配置文件，定义命令路由规则 |

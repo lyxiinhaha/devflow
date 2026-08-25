@@ -11,13 +11,13 @@
 #   bash install.sh --update [--dir <project-dir>]
 #   或：bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/install.sh) --update
 #
-# platform 可选值：cursor | codex | opencode | gemini | claude
+# platform 可选值：cursor | codex | opencode | gemini | claude | kiro
 
 set -e
 
 # ── 常量 ──────────────────────────────────────────────────────────────────────
 
-DEVFLOW_VERSION="3.3.0"
+DEVFLOW_VERSION="3.4.0"
 GITHUB_REPO="lyxiinhaha/devflow"
 RAW_BASE="https://raw.githubusercontent.com/${GITHUB_REPO}/main"
 
@@ -200,7 +200,7 @@ if [[ "$UPDATE_MODE" == true ]]; then
   copy_files_from_manifest "$ASSETS_KNOWLEDGE_MANIFEST" "${ASSETS_DST}/templates/knowledge"
   step "配置模板已更新"
 
-  # 更新适配器（仅 cursor 支持无损更新）
+  # 更新适配器（cursor 和 kiro 支持无损更新）
   if [[ "$INSTALLED_PLATFORM" == "cursor" ]]; then
     local_or_remote_copy() {
       if [[ "$LOCAL_MODE" == true ]]; then
@@ -211,6 +211,16 @@ if [[ "$UPDATE_MODE" == true ]]; then
     }
     local_or_remote_copy
     step "Cursor Rules 已更新"
+  elif [[ "$INSTALLED_PLATFORM" == "kiro" ]]; then
+    local_or_remote_copy() {
+      if [[ "$LOCAL_MODE" == true ]]; then
+        cp "${DEVFLOW_ROOT}/adapters/kiro/devflow.md" "${TARGET_DIR}/.kiro/steering/devflow.md"
+      else
+        download_file "adapters/kiro/devflow.md" "${TARGET_DIR}/.kiro/steering/devflow.md"
+      fi
+    }
+    local_or_remote_copy
+    step "Kiro Steering 已更新"
   else
     warn "${INSTALLED_PLATFORM} 适配器为追加写入，跳过自动更新（如需更新请手动替换）"
   fi
@@ -239,6 +249,7 @@ fi
 
 detect_platform() {
   # 按优先级自动检测已有配置
+  [[ -d "${TARGET_DIR}/.kiro" ]]                                      && echo "kiro"     && return
   [[ -d "${TARGET_DIR}/.cursor" ]]                                    && echo "cursor"   && return
   [[ -f "${TARGET_DIR}/AGENTS.md" ]]                                  && echo "codex"    && return
   [[ -f "${TARGET_DIR}/OPENCODE.md" ]]                                && echo "opencode" && return
@@ -266,19 +277,21 @@ if [[ -z "$PLATFORM" ]]; then
     echo "  请选择 AI 平台："
     echo "    1) Claude Code（推荐）"
     echo "    2) Cursor"
-    echo "    3) Codex（OpenAI）"
-    echo "    4) OpenCode"
-    echo "    5) Gemini CLI"
+    echo "    3) Kiro"
+    echo "    4) Codex（OpenAI）"
+    echo "    5) OpenCode"
+    echo "    6) Gemini CLI"
     echo ""
     while true; do
-      read -rp "  请输入编号 [1-5]：" choice
+      read -rp "  请输入编号 [1-6]：" choice
       case $choice in
         1) PLATFORM="claude"   ; break ;;
         2) PLATFORM="cursor"   ; break ;;
-        3) PLATFORM="codex"    ; break ;;
-        4) PLATFORM="opencode" ; break ;;
-        5) PLATFORM="gemini"   ; break ;;
-        *) echo "  请输入 1-5" ;;
+        3) PLATFORM="kiro"     ; break ;;
+        4) PLATFORM="codex"    ; break ;;
+        5) PLATFORM="opencode" ; break ;;
+        6) PLATFORM="gemini"   ; break ;;
+        *) echo "  请输入 1-6" ;;
       esac
     done
     echo ""
@@ -380,6 +393,10 @@ case $PLATFORM in
   cursor)
     install_adapter_file "adapters/cursor/devflow.mdc" "${TARGET_DIR}/.cursor/rules/devflow.mdc"
     step "Cursor Rules → .cursor/rules/devflow.mdc"
+    ;;
+  kiro)
+    install_adapter_file "adapters/kiro/devflow.md" "${TARGET_DIR}/.kiro/steering/devflow.md"
+    step "Kiro Steering → .kiro/steering/devflow.md"
     ;;
   codex)
     append_adapter_file "adapters/codex/AGENTS.md" "${TARGET_DIR}/AGENTS.md"
@@ -511,6 +528,11 @@ if [[ "$PLATFORM" == "claude" ]]; then
   echo ""
   echo -e "  ${CYAN}2.${NC} 用 Claude Code 打开项目，输入："
   echo -e "     ${BOLD}devflow init${NC}"
+elif [[ "$PLATFORM" == "kiro" ]]; then
+  echo -e "  ${CYAN}1.${NC} 用 Kiro 打开项目，输入："
+  echo -e "     ${BOLD}devflow init${NC}"
+  echo ""
+  echo -e "  DevFlow Steering 文件已写入 ${BOLD}.kiro/steering/devflow.md${NC}，Kiro 会自动加载。"
 else
   echo -e "  ${CYAN}1.${NC} 用 ${PLATFORM^} 打开项目，输入："
   echo -e "     ${BOLD}devflow init${NC}"
