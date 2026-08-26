@@ -2,3 +2,4 @@
 .claude/settings.local.json
 .devflow/
 .worktrees/
+sync-internal.sh
