@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevFlow × Kiro Crew 使用手册</title>
+<style>
+  :root {
+    --blue:   #63b3ed;
+    --amber:  #f6ad55;
+    --green:  #68d391;
+    --red:    #fc8181;
+    --purple: #b794f4;
+    --bg:     #0d1117;
+    --bg2:    #161b22;
+    --bg3:    #21262d;
+    --border: #30363d;
+    --text:   #e6edf3;
+    --muted:  #7d8590;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'SF Pro Display', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(13,17,23,.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px; height: 56px;
+  }
+  .nav-logo { font-weight: 700; font-size: 15px; color: var(--purple); letter-spacing: .5px; }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 13px; transition: color .2s; }
+  .nav-links a:hover { color: var(--text); }
+
+  .wrap { max-width: 860px; margin: 0 auto; padding: 96px 24px 80px; }
+  .wrap.wide { max-width: 1020px; }
+
+  .section { padding: 72px 0 48px; }
+  .section-divider { border: none; border-top: 1px solid var(--border); margin: 0 auto; max-width: 860px; }
+
+  .eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.8px;
+    text-transform: uppercase; color: var(--purple);
+    margin-bottom: 14px;
+  }
+  h1 { font-size: clamp(32px, 5vw, 54px); font-weight: 800; line-height: 1.15; margin-bottom: 20px; }
+  h2 { font-size: clamp(22px, 3vw, 34px); font-weight: 700; line-height: 1.25; margin-bottom: 18px; }
+  h3 { font-size: 18px; font-weight: 600; margin-bottom: 10px; color: var(--text); }
+  h4 { font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 8px; }
+  p  { color: #b4bcc8; margin-bottom: 14px; font-size: 16px; }
+  .lead { font-size: 19px; color: var(--text); margin-bottom: 24px; }
+  em  { color: var(--amber); font-style: normal; }
+  strong { color: var(--text); font-weight: 600; }
+
+  pre, code { font-family: 'SF Mono', 'Fira Code', Consolas, monospace; font-size: 13px; }
+  code { background: var(--bg3); padding: 2px 7px; border-radius: 5px; color: var(--blue); }
+  pre {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px;
+    overflow-x: auto; line-height: 1.75; margin: 16px 0;
+  }
+  pre .c   { color: var(--muted); }
+  pre .ok  { color: var(--green); font-weight: 600; }
+  pre .err { color: var(--red); }
+  pre .hi  { color: var(--amber); }
+  pre .hl  { color: var(--blue); }
+  pre .url { color: var(--purple); }
+
+  .card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px 28px; margin-bottom: 16px;
+  }
+  .card.blue   { border-left: 3px solid var(--blue); }
+  .card.amber  { border-left: 3px solid var(--amber); }
+  .card.green  { border-left: 3px solid var(--green); }
+  .card.purple { border-left: 3px solid var(--purple); }
+  .card.red    { border-left: 3px solid var(--red); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media(max-width:680px) { .grid2,.grid3 { grid-template-columns: 1fr; } }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 9px 14px; background: var(--bg3); color: var(--muted); font-size: 11px; letter-spacing: .8px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; letter-spacing: .3px;
+  }
+  .badge-blue   { background: rgba(99,179,237,.15); color: var(--blue); }
+  .badge-green  { background: rgba(104,211,145,.15); color: var(--green); }
+  .badge-amber  { background: rgba(246,173,85,.15);  color: var(--amber); }
+  .badge-purple { background: rgba(183,148,244,.15); color: var(--purple); }
+  .badge-red    { background: rgba(252,129,129,.15); color: var(--red); }
+
+  /* numbered steps */
+  .steps { margin: 20px 0; }
+  .step { display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start; }
+  .step-num {
+    flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(183,148,244,.12); border: 1.5px solid var(--purple);
+    color: var(--purple); display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; margin-top: 2px;
+  }
+  .step-body { flex: 1; }
+
+  /* UI mockup */
+  .ui-mock {
+    background: #1c2128; border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden; margin: 16px 0;
+  }
+  .ui-mock-bar {
+    background: var(--bg3); padding: 8px 14px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--border); font-size: 12px; color: var(--muted);
+  }
+  .ui-mock-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .ui-mock-content { padding: 16px 20px; font-size: 13px; }
+
+  /* chat bubble */
+  .chat { display: flex; flex-direction: column; gap: 10px; padding: 16px 20px; }
+  .bubble {
+    max-width: 88%; padding: 10px 14px; border-radius: 10px;
+    font-size: 13px; line-height: 1.6;
+  }
+  .bubble.user { align-self: flex-end; background: rgba(99,179,237,.15); border: 1px solid rgba(99,179,237,.3); color: var(--text); }
+  .bubble.agent { align-self: flex-start; background: var(--bg3); border: 1px solid var(--border); color: #b4bcc8; }
+  .bubble.agent strong { color: var(--green); }
+  .bubble-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+
+  /* pill tags */
+  .pill {
+    display: inline-block; background: var(--bg3);
+    border: 1px solid var(--border); border-radius: 20px;
+    padding: 3px 12px; font-size: 12px; color: var(--muted); margin: 2px;
+  }
+
+  /* callout */
+  .callout {
+    display: flex; gap: 12px; padding: 14px 18px;
+    border-radius: 8px; margin: 16px 0; font-size: 14px;
+  }
+  .callout.tip    { background: rgba(104,211,145,.07); border: 1px solid rgba(104,211,145,.25); }
+  .callout.warn   { background: rgba(246,173,85,.07);  border: 1px solid rgba(246,173,85,.25); }
+  .callout.info   { background: rgba(99,179,237,.07);  border: 1px solid rgba(99,179,237,.25); }
+  .callout-icon   { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .callout-body   { color: #b4bcc8; }
+  .callout-body strong { color: var(--text); }
+
+  /* flow arrows */
+  .flow { display: flex; align-items: center; gap: 0; margin: 24px 0; overflow-x: auto; }
+  .flow-node {
+    flex-shrink: 0; background: var(--bg3); border: 1.5px solid var(--border);
+    border-radius: 8px; padding: 10px 16px; text-align: center; min-width: 90px;
+  }
+  .flow-node.active { border-color: var(--purple); background: rgba(183,148,244,.08); }
+  .flow-node .label { font-size: 12px; font-weight: 600; color: var(--text); }
+  .flow-node .sub   { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .flow-arrow { flex-shrink: 0; color: var(--muted); font-size: 18px; padding: 0 4px; }
+  .flow-arrow.hl { color: var(--purple); }
+
+  /* footer */
+  footer { text-align: center; padding: 36px 20px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">DevFlow × Kiro Crew</span>
+  <div class="nav-links">
+    <a href="#install">安装</a>
+    <a href="#init">初始化</a>
+    <a href="#feature">开发新功能</a>
+    <a href="#taskrunner">Task Runner</a>
+    <a href="#bugfix">修复 Bug</a>
+    <a href="#knowledge">知识库查询</a>
+    <a href="#cheatsheet">速查表</a>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<div class="wrap" style="padding-top:140px; padding-bottom:40px;">
+  <div class="eyebrow">DevFlow × Kiro Crew · 操作手册</div>
+  <h1>在 Kiro Crew 里<br>跑完整研发流程</h1>
+  <p class="lead">从安装到第一次写代码，每一步的具体操作。<br>
+  让 Kiro Crew 成为有工程记忆的 AI 开发伙伴。</p>
+  <div>
+    <span class="pill">安装教程</span>
+    <span class="pill">完整工作流</span>
+    <span class="pill">Task Runner</span>
+    <span class="pill">知识库查询</span>
+    <span class="pill">Bug 修复</span>
+  </div>
+</div>
+
+<!-- ══ OVERVIEW ══ -->
+<hr class="section-divider">
+<div class="wrap section">
+  <div class="eyebrow">整体架构</div>
+  <h2>DevFlow 在 Kiro Crew 里的<em>三层集成</em></h2>
+
+  <div class="grid3" style="margin-top:24px;">
+    <div class="card purple">
+      <span class="badge badge-purple">Layer 1</span>
+      <h3 style="margin-top:10px;">Skills 命令路由</h3>
+      <p style="font-size:14px;">说「devflow start」等命令，Kiro Crew 自动触发 DevFlow Skill，读取命令文件执行 SDLC 流程。</p>
+    </div>
+    <div class="card blue">
+      <span class="badge badge-blue">Layer 2</span>
+      <h3 style="margin-top:10px;">Task Runner 编码执行</h3>
+      <p style="font-size:14px;"><code>devflow plan</code> 生成 tasks.md 后，交给 Kiro Crew Task Runner 无人值守执行，支持断点续跑。</p>
+    </div>
+    <div class="card amber">
+      <span class="badge badge-amber">Layer 3</span>
+      <h3 style="margin-top:10px;">Knowledge Library</h3>
+      <p style="font-size:14px;">经验卡文件夹加入 Kiro Crew 知识图谱，自然语言查询历史踩坑，向量检索比关键词更准。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ INSTALL ══ -->
+<hr class="section-divider">
+<div class="wrap section" id="install">
+  <div class="eyebrow">第一步</div>
+  <h2>安装 <em>Kiro Crew</em> 和 DevFlow</h2>
+
+  <h3 style="margin-bottom:16px; margin-top:8px;">1-A　安装 Kiro Crew</h3>
+  <p>如果还没有安装 Kiro Crew，在终端运行一行命令：</p>
+  <pre><code style="background:transparent;padding:0;color:var(--text);">curl -fsSL https://download.crew.kiro.dev/cli.sh | sh</code></pre>
+
+  <p>安装完成后启动 Gateway，打开浏览器访问控制台：</p>
+  <pre><code style="background:transparent;padding:0;color:var(--text);">kirocrew service start          <span class="c"># 后台启动 Gateway</span>
+<span class="c"># 浏览器打开：</span>http://localhost:5476</code></pre>
+
+  <div class="ui-mock" style="margin-bottom:24px;">
+    <div class="ui-mock-bar">
+      <div class="ui-mock-dot" style="background:#fc8181;"></div>
+      <div class="ui-mock-dot" style="background:#f6ad55;"></div>
+      <div class="ui-mock-dot" style="background:#68d391;"></div>
+      <span style="margin-left:8px;">http://localhost:5476</span>
+    </div>
+    <div class="ui-mock-content">
+      <div style="color:var(--purple); font-weight:700; font-size:16px; margin-bottom:8px;">Kiro Crew</div>
+      <div style="color:var(--muted); font-size:12px; margin-bottom:16px;">首次打开会引导你用 Kiro 账号登录（device code 方式，无需密码）</div>
+      <div style="display:flex; gap:12px;">
+        <div style="flex:1; background:var(--bg3); border-radius:8px; padding:12px; font-size:12px;">
+          <div style="color:var(--text); font-weight:600; margin-bottom:4px;">💬 对话</div>
+          <div style="color:var(--muted);">多个并行会话，每个会话独立记忆</div>
+        </div>
+        <div style="flex:1; background:var(--bg3); border-radius:8px; padding:12px; font-size:12px;">
+          <div style="color:var(--text); font-weight:600; margin-bottom:4px;">📋 任务</div>
+          <div style="color:var(--muted);">Task Runner 进度面板</div>
+        </div>
+        <div style="flex:1; background:var(--bg3); border-radius:8px; padding:12px; font-size:12px;">
+          <div style="color:var(--text); font-weight:600; margin-bottom:4px;">🧠 记忆</div>
+          <div style="color:var(--muted);">Skills、Lessons、Knowledge Library</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-bottom:16px;">1-B　安装 DevFlow</h3>
+  <p>在<strong>项目根目录</strong>执行，选择 Kiro Crew 平台：</p>
+  <pre><code style="background:transparent;padding:0;color:var(--text);">git clone https://github.com/lyxiinnaha/devflow.git devflow-tmp \
+  && bash devflow-tmp/install.sh --platform kirocrew \
+  && rm -rf devflow-tmp</code></pre>
+
+  <p>安装脚本会做三件事：</p>
+  <div class="steps" style="margin-top:8px;">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>命令文件</strong> → 复制 20 个命令文件到项目的 <code>.devflow/commands/</code><br>
+        <span style="color:var(--muted); font-size:13px;">这些文件是 DevFlow 的核心，定义了每个命令的执行逻辑</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>DevFlow Skill</strong> → 安装到 <code>~/.kiro/crew/skills/devflow/SKILL.md</code><br>
+        <span style="color:var(--muted); font-size:13px;">全局安装，所有项目通用，Kiro Crew 启动时自动加载</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>知识库模板</strong> → 初始化 <code>.devflow/config/templates/knowledge/</code><br>
+        <span style="color:var(--muted); font-size:13px;">包含 20 张通用经验卡模板，项目经验会逐步追加进来</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <div class="callout-icon">ℹ️</div>
+    <div class="callout-body">安装完成后重启 Kiro Crew Gateway（<code>kirocrew service restart</code>），让新 Skill 生效。
+    或在控制台 <strong>Overview → Skills</strong> 页面手动点击 Refresh。</div>
+  </div>
+
+  <h3 style="margin-bottom:12px; margin-top:24px;">1-C　验证 Skill 已加载</h3>
+  <p>打开 Kiro Crew 控制台，进入 <strong>Overview → Skills</strong> 标签，应该能看到：</p>
+  <div class="ui-mock">
+    <div class="ui-mock-bar">
+      <span>Kiro Crew — Skills</span>
+    </div>
+    <div class="ui-mock-content">
+      <table style="font-size:12px;">
+        <tr><th>Skill</th><th>触发词</th><th>状态</th></tr>
+        <tr>
+          <td><strong style="color:var(--purple);">devflow</strong></td>
+          <td><code>devflow, devflow start, devflow fix, devflow analyze...</code></td>
+          <td><span class="badge badge-green">已加载</span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ INIT ══ -->
+<hr class="section-divider">
+<div class="wrap section" id="init">
+  <div class="eyebrow">第二步</div>
+  <h2>初始化<em>项目</em></h2>
+  <p>每个项目只需初始化一次。打开 Kiro Crew 控制台，新建一个对话，把项目目录告诉 Kiro Crew，然后运行：</p>
+
+  <div class="ui-mock" style="margin-bottom:24px;">
+    <div class="ui-mock-bar">
+      <span>新对话 — 项目初始化</span>
+    </div>
+    <div class="chat">
+      <div>
+        <div class="bubble-label">你</div>
+        <div class="bubble user">我在 /Users/me/projects/hssa 项目目录，运行 devflow init</div>
+      </div>
+      <div>
+        <div class="bubble-label">Kiro Crew</div>
+        <div class="bubble agent">
+          <strong>DevFlow 初始化开始</strong><br><br>
+          正在扫描项目结构...<br>
+          检测到技术栈：Android（Kotlin）· KMP · Gradle<br><br>
+          <strong>[1/4] 技术栈画像</strong><br>
+          已生成 .devflow/devflow-profile.md<br><br>
+          <strong>[2/4] CodeGraph 配置</strong><br>
+          策略：单根索引（壳工程根目录统一覆盖）<br>
+          请在终端运行：<code>codegraph init</code><br><br>
+          <strong>[3/4] Review Skill（可跳过）</strong><br>
+          是否生成 Android 专项代码审查规范？[y/n]
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p>init 会逐步询问几项配置，<strong>全部可以直接回车跳过</strong>，后续通过 <code>devflow init</code> 补充：</p>
+  <table style="margin-bottom:24px;">
+    <tr><th>配置项</th><th>作用</th><th>可否跳过</th></tr>
+    <tr><td>CodeGraph 策略</td><td>代码调用图谱索引范围（单根/多根）</td><td><span class="badge badge-green">可跳过</span></td></tr>
+    <tr><td>Review Skill</td><td>生成项目专项代码审查规范</td><td><span class="badge badge-green">可跳过</span></td></tr>
+    <tr><td>YApi 域名</td><td>analyze/design 自动读取接口文档</td><td><span class="badge badge-green">可跳过</span></td></tr>
+    <tr><td>Meegle 项目 Key</td><td>fix 命令直读 issue，状态同步飞书</td><td><span class="badge badge-green">可跳过</span></td></tr>
+  </table>
+
+  <div class="callout tip">
+    <div class="callout-icon">💡</div>
+    <div class="callout-body"><strong>建议：</strong>在 Kiro Crew 控制台 Settings → Workspaces 里把项目目录设为一个独立 Workspace，这样每次打开这个 Workspace，Kiro Crew 自动切换到项目目录的记忆和上下文。</div>
+  </div>
+</div>
+
+<!-- ══ FEATURE ══ -->
+<hr class="section-divider">
+<div class="wrap section" id="feature">
+  <div class="eyebrow">核心工作流</div>
+  <h2>开发一个<em>新功能</em></h2>
+  <p>以「新增晒单授权弹窗」为例，完整走一遍从需求到代码的全流程。</p>
+
+  <div class="flow" style="margin-bottom:32px;">
+    <div class="flow-node active"><div class="label">start</div><div class="sub">创建工作项</div></div>
+    <div class="flow-arrow hl">→</div>
+    <div class="flow-node active"><div class="label">analyze</div><div class="sub">需求分析</div></div>
+    <div class="flow-arrow hl">→</div>
+    <div class="flow-node active"><div class="label">design</div><div class="sub">技术设计</div></div>
+    <div class="flow-arrow hl">→</div>
+    <div class="flow-node active"><div class="label">plan</div><div class="sub">任务拆解</div></div>
+    <div class="flow-arrow hl">→</div>
+    <div class="flow-node active"><div class="label">code</div><div class="sub">编码执行</div></div>
+    <div class="flow-arrow hl">→</div>
+    <div class="flow-node active"><div class="label">review</div><div class="sub">代码审查</div></div>
+    <div class="flow-arrow hl">→</div>
+    <div class="flow-node active"><div class="label">retrospect</div><div class="sub">复盘入库</div></div>
+  </div>
+
+  <!-- START -->
+  <div class="card purple" style="margin-bottom:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span class="badge badge-purple">Step 1</span>
+      <code style="font-size:12px;">devflow start</code>
+    </div>
+    <h3 style="margin-top:12px;">创建工作项</h3>
+    <div class="ui-mock" style="margin-top:12px;">
+      <div class="chat" style="padding:12px 16px;">
+        <div><div class="bubble user">devflow start 晒单授权弹窗 用户发单时需要弹窗确认授权</div></div>
+        <div><div class="bubble agent">
+          <strong>工作项已创建</strong><br>
+          ID: 20260826-ShareOrderAuth<br>
+          类型: Feature<br>
+          状态: created → <strong>analyzing</strong>
+        </div></div>
+      </div>
+    </div>
+    <p style="font-size:13px; margin-top:8px; margin-bottom:0; color:var(--muted);">工作项状态写入 <code>.devflow/workspace.json</code>，跨会话不丢失。</p>
+  </div>
+
+  <!-- ANALYZE -->
+  <div class="card blue" style="margin-bottom:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span class="badge badge-blue">Step 2</span>
+      <code style="font-size:12px;">devflow analyze</code>
+    </div>
+    <h3 style="margin-top:12px;">需求分析 — 边贴材料边解析</h3>
+    <p style="font-size:14px; margin-bottom:12px;">输入 <code>devflow analyze</code> 后进入「边录边析模式」，把手头所有材料逐步贴进来：</p>
+
+    <div class="grid2" style="gap:12px; margin-bottom:16px;">
+      <div style="background:var(--bg3); border-radius:8px; padding:14px; font-size:13px;">
+        <div style="color:var(--blue); font-weight:600; margin-bottom:6px;">可以粘贴什么</div>
+        <div style="color:var(--muted); line-height:1.8;">
+          📄 PRD 文字段落<br>
+          🖼️ 截图（直接粘贴图片）<br>
+          🎨 Figma 链接<br>
+          🔗 YApi 接口链接<br>
+          💬 产品口述的需求
+        </div>
+      </div>
+      <div style="background:var(--bg3); border-radius:8px; padding:14px; font-size:13px;">
+        <div style="color:var(--blue); font-weight:600; margin-bottom:6px;">AI 边接收边做</div>
+        <div style="color:var(--muted); line-height:1.8;">
+          ✅ 解析功能点<br>
+          ✅ 对齐设计稿和接口<br>
+          ✅ 识别边界条件<br>
+          ✅ 追问模糊之处<br>
+          ✅ 四分类歧义点
+        </div>
+      </div>
+    </div>
+
+    <div class="ui-mock">
+      <div class="chat" style="padding:12px 16px;">
+        <div><div class="bubble user">devflow analyze</div></div>
+        <div><div class="bubble agent">进入需求分析模式。请把需求材料逐步发给我，说「就这些了」后我生成完整分析文档。</div></div>
+        <div><div class="bubble user">产品需求：用户点击「发单」按钮时，如果未完成实名认证，弹出授权弹窗。弹窗包含隐私协议确认和实名认证跳转入口。</div></div>
+        <div><div class="bubble user">[粘贴 Figma 截图]</div></div>
+        <div><div class="bubble agent">
+          已解析：弹窗触发条件（未实名）、两个操作（同意授权/取消）、跳转逻辑。<br>
+          <br>
+          <span style="color:var(--amber);">⚠️ 歧义点（ControlledPass）：</span>用户「取消」后再次点击「发单」是重新弹窗还是直接放行？<br>
+          假设：重新弹窗，记录在需求文档待确认。<br>
+          <br>
+          还有其他材料吗？
+        </div></div>
+        <div><div class="bubble user">就这些了</div></div>
+        <div><div class="bubble agent"><strong>✅ 需求分析完成</strong><br>已生成 .devflow/work-items/20260826-ShareOrderAuth/spec/requirement.md</div></div>
+      </div>
+    </div>
+    <p style="font-size:13px; color:var(--muted); margin-top:8px; margin-bottom:0;">生成的 <code>requirement.md</code> 包含功能清单、歧义四分类表（HardBlocker / ControlledPass / Assumption / OptItem）和验收标准。</p>
+  </div>
+
+  <!-- DESIGN -->
+  <div class="card amber" style="margin-bottom:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span class="badge badge-amber">Step 3</span>
+      <code style="font-size:12px;">devflow design</code>
+    </div>
+    <h3 style="margin-top:12px;">技术设计 — 爆炸半径评估</h3>
+    <p style="font-size:14px; margin-bottom:12px;">DevFlow 在这步调用 CodeGraph 计算影响范围，是最关键的安全门禁。</p>
+
+    <div class="ui-mock">
+      <div class="chat" style="padding:12px 16px;">
+        <div><div class="bubble user">devflow design</div></div>
+        <div><div class="bubble agent">
+          <strong>🔍 CodeGraph 爆炸半径评估</strong><br><br>
+          涉及符号：ShareOrderButton.onClick() → AuthCheckService.checkAuth()<br>
+          → DialogManager.showAuthDialog()<br><br>
+          <span style="color:var(--amber);">影响级别：MEDIUM（7 个调用方）</span><br>
+          直接影响：ShareOrderFragment, OrderListAdapter<br>
+          间接影响：OrderViewModel（通过事件总线）<br><br>
+          ✅ 影响范围在预期内，继续技术设计...
+        </div></div>
+        <div><div class="bubble agent">
+          <strong>技术方案</strong><br>
+          1. 新建 ShareAuthDialog 继承 DTCommDialogFragment（⚠️ KB-026 约束）<br>
+          2. AuthCheckService 新增 checkBeforeShare() 方法<br>
+          3. 弹窗 show() 使用安全重载（⚠️ KB-027 约束）<br><br>
+          已生成 design.md，包含时序图和接口签名。冻结设计？[y/n]
+        </div></div>
+      </div>
+    </div>
+    <div class="callout warn" style="margin-top:12px;">
+      <div class="callout-icon">⚠️</div>
+      <div class="callout-body">如果 CodeGraph 评估结果是 <strong>CRITICAL（30+ 调用方）</strong>，DevFlow 会强制停下来要求人工确认，不允许 AI 自动继续。</div>
+    </div>
+  </div>
+
+  <!-- PLAN -->
+  <div class="card green" style="margin-bottom:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span class="badge badge-green">Step 4</span>
+      <code style="font-size:12px;">devflow plan</code>
+    </div>
+    <h3 style="margin-top:12px;">任务拆解 — 经验卡自动注入</h3>
+    <p style="font-size:14px; margin-bottom:12px;">DevFlow 读取设计文档，拆解为原子任务，<strong>同时从知识库召回相关经验卡转化为编码约束</strong>。</p>
+
+    <div class="ui-mock">
+      <div class="chat" style="padding:12px 16px;">
+        <div><div class="bubble user">devflow plan</div></div>
+        <div><div class="bubble agent">
+          <strong>── 项目规则（始终生效）──────────────────</strong><br>
+          埋点必须收口到模块级 object（来源：KB-030~035）<br>
+          <strong>──────────────────────────────────────</strong><br><br>
+          召回经验卡：9 张（dialog×3, auth×2, 埋点×3, layout×1）<br><br>
+          <strong>✅ tasks.md 已生成</strong><br>
+          任务总数：6 个<br>
+          高风险任务：1 个（T-04 弹窗逻辑，需前置检查）<br>
+          注入禁令：9 条
+        </div></div>
+      </div>
+    </div>
+
+    <p style="font-size:13px; color:var(--muted); margin-top:12px;">生成的 tasks.md 片段示例：</p>
+    <pre><code style="background:transparent;padding:0;color:var(--text); font-size:12px;"><span class="c">## T-04：实现授权弹窗逻辑</span>
+
+- [ ] 继承 DTCommDialogFragment（<span class="err">禁止系统 AlertDialog</span>）  <span class="hi">← KB-026</span>
+- [ ] show() 使用安全重载                                    <span class="hi">← KB-027</span>
+- [ ] fm == null 时禁止降级执行受保护操作                     <span class="hi">← KB-043</span>
+- [ ] Click 埋点在 setOnClickListener 第一行                 <span class="hi">← KB-033</span>
+
+验收标准：
+- [ ] Fragment 各生命周期阶段 show() 不崩溃
+- [ ] fm == null 场景下操作被正确拦截</code></pre>
+  </div>
+</div>
+
+<!-- ══ TASK RUNNER ══ -->
+<hr class="section-divider">
+<div class="wrap section" id="taskrunner">
+  <div class="eyebrow">Kiro Crew 专项能力</div>
+  <h2>用 Task Runner<em>无人值守执行编码</em></h2>
+  <p><code>devflow plan</code> 生成 tasks.md 后，可以直接交给 Kiro Crew Task Runner 执行。它会逐步完成每个任务、验证结果、遇错自动重试，你可以离开去做别的事。</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>在对话框输入 run 命令</h3>
+        <div class="ui-mock">
+          <div class="chat" style="padding:12px 16px;">
+            <div><div class="bubble user">run .devflow/work-items/20260826-ShareOrderAuth/spec/tasks.md</div></div>
+            <div><div class="bubble agent">
+              <strong>🚀 任务启动</strong><br>
+              规格文件：tasks.md（6 个任务）<br>
+              工具批准模式：交互式（遇到写文件操作会弹框确认）<br><br>
+              <strong>T-01</strong> ✅ 读取 AuthCheckService 现有实现<br>
+              <strong>T-02</strong> 🔄 新增 checkBeforeShare() 方法...
+            </div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>在控制台 Tasks 页面监控进度</h3>
+        <div class="ui-mock">
+          <div class="ui-mock-bar">
+            <span>Kiro Crew — Tasks</span>
+          </div>
+          <div class="ui-mock-content">
+            <div style="font-size:13px; margin-bottom:10px; color:var(--purple); font-weight:600;">20260826-ShareOrderAuth · 运行中</div>
+            <table style="font-size:12px;">
+              <tr>
+                <td style="width:28px;">✅</td>
+                <td>T-01 读取 AuthCheckService 现有实现</td>
+                <td style="color:var(--muted);">完成</td>
+              </tr>
+              <tr>
+                <td>✅</td>
+                <td>T-02 新增 checkBeforeShare() 方法</td>
+                <td style="color:var(--muted);">完成</td>
+              </tr>
+              <tr>
+                <td>✅</td>
+                <td>T-03 实现 ShareOrderButton 触发逻辑</td>
+                <td style="color:var(--muted);">完成</td>
+              </tr>
+              <tr>
+                <td>🔄</td>
+                <td><strong>T-04 实现授权弹窗逻辑（高风险）</strong></td>
+                <td style="color:var(--amber);">执行中</td>
+              </tr>
+              <tr>
+                <td>⏳</td>
+                <td>T-05 埋点接入</td>
+                <td style="color:var(--muted);">等待</td>
+              </tr>
+              <tr>
+                <td>⏳</td>
+                <td>T-06 单元测试</td>
+                <td style="color:var(--muted);">等待</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>中断后续跑（断点恢复）</h3>
+        <p style="font-size:14px;">Task Runner 支持从中断处继续，不需要从头重跑。在对话里说：</p>
+        <div class="ui-mock">
+          <div class="chat" style="padding:12px 16px;">
+            <div><div class="bubble user">继续上次的任务</div></div>
+            <div><div class="bubble agent">检测到未完成任务（T-04 未完成）。从 T-04 继续执行...</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <div class="callout-icon">💡</div>
+    <div class="callout-body">
+      <strong>批准模式控制</strong>：默认情况下，Task Runner 在文件写入操作前会弹框要求确认。<br>
+      如果你完全信任这个任务，可以在 <code>~/.kiro/crew/config.json</code> 中添加工具白名单，让写文件操作自动批准：
+      <pre style="margin-top:8px;"><code style="background:transparent;padding:0;color:var(--muted); font-size:12px;">{
+  "hooks": {
+    "auto_approve_tools": ["read", "Reading *", "fs_write", "Running: ./gradlew *"]
+  }
+}</code></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══ REVIEW ══ -->
+<div class="wrap" style="padding-bottom:16px;" id="review-section">
+  <div class="card" style="margin-bottom:0;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <span class="badge badge-blue">编码完成后</span>
+      <code style="font-size:12px;">devflow review</code>
+    </div>
+    <h3>代码审查 — CRITICAL 阻断合并</h3>
+    <div class="ui-mock">
+      <div class="chat" style="padding:12px 16px;">
+        <div><div class="bubble user">devflow review</div></div>
+        <div><div class="bubble agent">
+          <strong>代码审查开始（使用项目专项 Review Skill）</strong><br><br>
+          🔍 原逻辑保留性检查...<br>
+          🔍 退步检查（null 保护 / 异常捕获 / 返回值语义）...<br>
+          🔍 CodeGraph 影响面验证...<br><br>
+          <span style="color:var(--green);">✅ APPROVED</span><br>
+          覆盖任务：6/6 ✓　开放问题：0 ✓　跨模块回归：已验证 ✓
+        </div></div>
+      </div>
+    </div>
+    <p style="font-size:13px; color:var(--muted); margin-top:8px; margin-bottom:0;">如果发现安全漏洞或被删除的安全兜底逻辑，输出 <span style="color:var(--red);">🔴 BLOCKED</span>，阻断合并。</p>
+  </div>
+</div>
+
+<!-- ══ BUG FIX ══ -->
+<hr class="section-divider">
+<div class="wrap section" id="bugfix">
+  <div class="eyebrow">Bug 修复</div>
+  <h2>修 Bug 并<em>沉淀经验</em></h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>输入 devflow fix</h3>
+        <p style="font-size:14px;">三种输入方式，选最方便的：</p>
+        <div class="grid3" style="gap:10px; margin-bottom:12px;">
+          <div style="background:var(--bg3); border-radius:8px; padding:12px; font-size:12px;">
+            <div style="color:var(--blue); font-weight:600; margin-bottom:6px;">直接描述现象</div>
+            <code style="font-size:11px; word-break:break-all;">devflow fix 点击发单按钮后弹窗崩溃，报 IllegalStateException</code>
+          </div>
+          <div style="background:var(--bg3); border-radius:8px; padding:12px; font-size:12px;">
+            <div style="color:var(--blue); font-weight:600; margin-bottom:6px;">Meegle 链接</div>
+            <code style="font-size:11px; word-break:break-all;">devflow fix https://project.feishu.cn/.../issue/123</code>
+          </div>
+          <div style="background:var(--bg3); border-radius:8px; padding:12px; font-size:12px;">
+            <div style="color:var(--blue); font-weight:600; margin-bottom:6px;">工作项 ID</div>
+            <code style="font-size:11px;">devflow fix 12345678</code>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>AI 执行四阶段 CodeGraph 根因分析</h3>
+        <div class="ui-mock">
+          <div class="chat" style="padding:12px 16px;">
+            <div><div class="bubble user">devflow fix 点击发单后 Dialog 崩溃，IllegalStateException: Can not perform this action after onSaveInstanceState</div></div>
+            <div><div class="bubble agent">
+              <strong>Stage 1：入口定位</strong><br>
+              ShareOrderButton.onClick() → DialogManager.show()<br><br>
+              <strong>Stage 2：调用链追踪</strong><br>
+              DialogManager.show(fm, tag) → super.show(manager, tag)<br>
+              <span style="color:var(--red);">↑ 此处 FragmentManager 在 onSaveInstanceState 后已提交，直接调用崩溃</span><br><br>
+              <strong>Stage 3：爆炸半径</strong><br>
+              直接影响：ShareOrderFragment · OrderListFragment（2 处调用）<br>
+              MEDIUM 级别，继续修复<br><br>
+              <strong>Stage 4：原子修复方案</strong><br>
+              将 super.show() 替换为安全重载 showAllowingStateLoss()
+            </div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>人工验证门禁 — AI 等你确认再提交</h3>
+        <div class="ui-mock">
+          <div class="chat" style="padding:12px 16px;">
+            <div><div class="bubble agent">
+              修复已完成，diff 如下：<br><br>
+              <code style="font-size:11px; color:var(--red);">- super.show(fragmentManager, tag)</code><br>
+              <code style="font-size:11px; color:var(--green);">+ showAllowingStateLoss(fragmentManager, tag)</code><br><br>
+              <strong>请手动验证后回复「验证通过」，我再提交。</strong>
+            </div></div>
+            <div><div class="bubble user">验证通过，提交吧</div></div>
+            <div><div class="bubble agent">✅ 已提交。强制进入复盘环节...</div></div>
+          </div>
+        </div>
+        <div class="callout warn" style="margin-top:8px;">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-body">这是 DevFlow 的<strong>人工验证门禁</strong>——修复再快，AI 也不会自动 commit，必须等人确认。防止 AI 自作主张提交未经验证的修复。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>强制复盘 — 经验自动写入知识库</h3>
+        <div class="ui-mock">
+          <div class="chat" style="padding:12px 16px;">
+            <div><div class="bubble agent">
+              <strong>devflow retrospect（强制触发）</strong><br><br>
+              根因：show() 未使用安全重载，onSaveInstanceState 后 FM 已提交<br>
+              反模式：super.show(manager, tag) 直接调用<br>
+              必须测试：Fragment 各生命周期阶段调用 show()<br><br>
+              去重检查：发现相似卡 KB-027（86% 匹配）<br>
+              选择：1.合并到 KB-027  2.独立新卡  3.放弃<br>
+            </div></div>
+            <div><div class="bubble user">合并到 KB-027</div></div>
+            <div><div class="bubble agent"><strong>✅ KB-027 已更新，required_tests 补充了新场景。</strong></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ KNOWLEDGE ══ -->
+<hr class="section-divider">
+<div class="wrap section" id="knowledge">
+  <div class="eyebrow">知识库查询</div>
+  <h2>用自然语言<em>查历史踩坑</em></h2>
+  <p>把经验卡目录加入 Kiro Crew 的 Knowledge Library 后，可以用自然语言搜索，比 tag 匹配更灵活。</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>把知识库目录添加到 Knowledge Library</h3>
+        <p style="font-size:14px;">打开 Kiro Crew 控制台，进入 <strong>Overview → Knowledge</strong> 标签，点击「+ Add Folder」：</p>
+        <div class="ui-mock">
+          <div class="ui-mock-bar"><span>Kiro Crew — Knowledge Library</span></div>
+          <div class="ui-mock-content" style="font-size:13px;">
+            <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+              <span style="color:var(--text); font-weight:600;">知识库文件夹</span>
+              <span style="color:var(--blue); cursor:pointer;">+ Add Folder</span>
+            </div>
+            <div style="background:var(--bg3); border-radius:6px; padding:10px 14px;">
+              <div style="color:var(--muted); font-size:12px; margin-bottom:4px;">路径</div>
+              <code style="font-size:12px; color:var(--green);">/Users/me/projects/hssa/.devflow/config/templates/knowledge/</code>
+            </div>
+            <div style="margin-top:10px; font-size:12px; color:var(--muted);">✅ 正在索引：bug-experience-cards.csv · project-rules.md · knowledge-usage.jsonl</div>
+          </div>
+        </div>
+        <p style="font-size:13px; color:var(--muted); margin-top:8px;">Kiro Crew 会对这个目录里的文件做 LLM 实体提取 + 向量索引，支持关键词、图谱遍历、语义三路融合检索。</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>用自然语言查询</h3>
+        <div class="ui-mock">
+          <div class="chat" style="padding:12px 16px;">
+            <div><div class="bubble user">我们项目里有没有关于 Dialog 崩溃的经验？</div></div>
+            <div><div class="bubble agent">
+              从知识库找到 2 条相关经验：<br><br>
+              <strong>KB-027</strong> · CRITICAL · Dialog show() 崩溃<br>
+              根因：super.show(manager, tag) 在 FM 已提交后调用<br>
+              解法：showAllowingStateLoss()<br>
+              <span style="color:var(--muted); font-size:12px;">📄 来源：bug-experience-cards.csv 第 27 行</span><br><br>
+              <strong>KB-043</strong> · CRITICAL · 合规授权弹窗被绕过<br>
+              根因：fm == null 时降级执行受保护操作<br>
+              <span style="color:var(--muted); font-size:12px;">📄 来源：bug-experience-cards.csv 第 43 行</span>
+            </div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>管理知识库健康状态</h3>
+        <div class="ui-mock">
+          <div class="chat" style="padding:12px 16px;">
+            <div><div class="bubble user">devflow knowledge check</div></div>
+            <div><div class="bubble agent">
+              <strong>知识库健康报告</strong><br>
+              总计：48 张 · 健康：45 张 · 问题：3 张<br><br>
+              🏆 高价值卡（召回≥3次，有效率≥60%）：KB-027 KB-030 KB-043<br>
+              👀 待观察卡（有效率&lt;30%）：KB-015 → 建议复查描述<br>
+              💤 沉睡卡（90天零召回）：KB-008 → 建议归档<br><br>
+              整体有效率：74%（35次召回中26次 applied）<br><br>
+              蒸馏建议：tag=dialog 有 5 张卡可蒸馏<br>
+              → devflow knowledge distill tag=dialog
+            </div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CHEATSHEET ══ -->
+<hr class="section-divider">
+<div class="wrap wide section" id="cheatsheet">
+  <div class="eyebrow">速查表</div>
+  <h2>所有命令<em>一览</em></h2>
+
+  <div class="grid2" style="gap:20px;">
+    <div>
+      <h4 style="margin-bottom:12px;">🚀 开发主线</h4>
+      <table>
+        <tr><th>命令</th><th>说什么 / 效果</th></tr>
+        <tr><td><code>devflow start</code></td><td>「devflow start 需求名称 简短描述」→ 创建工作项</td></tr>
+        <tr><td><code>devflow analyze</code></td><td>输入后逐步贴材料，说「就这些了」生成需求文档</td></tr>
+        <tr><td><code>devflow design</code></td><td>CodeGraph 爆炸半径评估 + 技术方案生成</td></tr>
+        <tr><td><code>devflow estimate</code></td><td>工时估算，可同步到 Meegle 排期</td></tr>
+        <tr><td><code>devflow plan</code></td><td>拆解任务，经验卡自动注入，生成 tasks.md</td></tr>
+        <tr><td><code>devflow code</code></td><td>按 tasks.md 逐项编码（或用 Task Runner）</td></tr>
+        <tr><td><code>devflow review</code></td><td>代码审查，CRITICAL 阻断合并</td></tr>
+        <tr><td><code>devflow retrospect</code></td><td>复盘入库，关闭工作项</td></tr>
+      </table>
+    </div>
+
+    <div>
+      <h4 style="margin-bottom:12px;">🐛 Bug 修复</h4>
+      <table>
+        <tr><th>命令</th><th>说什么 / 效果</th></tr>
+        <tr><td><code>devflow fix</code></td><td>描述现象 / Meegle 链接 / ID，四阶段根因分析</td></tr>
+        <tr><td><code>devflow refactor</code></td><td>重构，基线一致性验证</td></tr>
+      </table>
+
+      <h4 style="margin-bottom:12px; margin-top:20px;">🧠 知识库</h4>
+      <table>
+        <tr><th>命令</th><th>效果</th></tr>
+        <tr><td><code>devflow knowledge check</code></td><td>质量面板：高价值/待观察/沉睡卡统计</td></tr>
+        <tr><td><code>devflow knowledge distill tag=xxx</code></td><td>蒸馏同类卡为项目规则</td></tr>
+        <tr><td><code>devflow knowledge dedupe</code></td><td>三维去重扫描</td></tr>
+        <tr><td><code>devflow knowledge prune</code></td><td>交互式清理低效卡</td></tr>
+      </table>
+
+      <h4 style="margin-bottom:12px; margin-top:20px;">📋 工作项管理</h4>
+      <table>
+        <tr><th>命令</th><th>效果</th></tr>
+        <tr><td><code>devflow list</code></td><td>所有工作项，Epic 父子结构</td></tr>
+        <tr><td><code>devflow continue</code></td><td>新会话后恢复上次进度</td></tr>
+        <tr><td><code>devflow switch</code></td><td>切换当前工作项</td></tr>
+        <tr><td><code>devflow change</code></td><td>需求变更，自动回退受影响任务</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:24px; background:linear-gradient(135deg, rgba(183,148,244,.05), rgba(99,179,237,.05)); border-color:rgba(183,148,244,.25);">
+    <h4 style="margin-bottom:10px;">⚡ Kiro Crew Task Runner 专用</h4>
+    <table style="font-size:13px;">
+      <tr><th>操作</th><th>命令</th></tr>
+      <tr><td>执行 tasks.md</td><td><code>run .devflow/work-items/&lt;id&gt;/spec/tasks.md</code></td></tr>
+      <tr><td>查看进度</td><td>控制台 Tasks 标签页</td></tr>
+      <tr><td>中断后续跑</td><td>在对话里说「继续上次的任务」</td></tr>
+      <tr><td>取消任务</td><td>控制台 Tasks 标签 → 点击 Stop，或说「取消任务」</td></tr>
+    </table>
+  </div>
+</div>
+
+<footer>
+  <p>DevFlow v3.8.0 × Kiro Crew · 操作手册 · 2026-08-26</p>
+  <p style="margin-top:6px;">「让 AI 成为有记忆的团队成员，而不只是代码生成器。」</p>
+</footer>
+
+</body>
+</html>
