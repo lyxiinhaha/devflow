@@ -249,13 +249,14 @@ fi
 
 detect_platform() {
   # 按优先级自动检测已有配置
-  [[ -d "${TARGET_DIR}/.kiro" ]]                                      && echo "kiro"     && return
-  [[ -d "${TARGET_DIR}/.cursor" ]]                                    && echo "cursor"   && return
-  [[ -f "${TARGET_DIR}/AGENTS.md" ]]                                  && echo "codex"    && return
-  [[ -f "${TARGET_DIR}/OPENCODE.md" ]]                                && echo "opencode" && return
-  [[ -f "${TARGET_DIR}/GEMINI.md" ]]                                  && echo "gemini"   && return
+  [[ -d "${HOME}/.kiro/crew" ]] || command -v kirocrew &>/dev/null  && echo "kirocrew" && return
+  [[ -d "${TARGET_DIR}/.kiro" ]]                                    && echo "kiro"     && return
+  [[ -d "${TARGET_DIR}/.cursor" ]]                                  && echo "cursor"   && return
+  [[ -f "${TARGET_DIR}/AGENTS.md" ]]                                && echo "codex"    && return
+  [[ -f "${TARGET_DIR}/OPENCODE.md" ]]                              && echo "opencode" && return
+  [[ -f "${TARGET_DIR}/GEMINI.md" ]]                                && echo "gemini"   && return
   # Claude Code：检查 .claude 目录或 claude CLI
-  [[ -d "${TARGET_DIR}/.claude" ]] || command -v claude &>/dev/null   && echo "claude"   && return
+  [[ -d "${TARGET_DIR}/.claude" ]] || command -v claude &>/dev/null && echo "claude"   && return
   echo ""
 }
 
@@ -277,21 +278,23 @@ if [[ -z "$PLATFORM" ]]; then
     echo "  请选择 AI 平台："
     echo "    1) Claude Code（推荐）"
     echo "    2) Cursor"
-    echo "    3) Kiro"
-    echo "    4) Codex（OpenAI）"
-    echo "    5) OpenCode"
-    echo "    6) Gemini CLI"
+    echo "    3) Kiro（IDE）"
+    echo "    4) Kiro Crew（Agent 平台）"
+    echo "    5) Codex（OpenAI）"
+    echo "    6) OpenCode"
+    echo "    7) Gemini CLI"
     echo ""
     while true; do
-      read -rp "  请输入编号 [1-6]：" choice
+      read -rp "  请输入编号 [1-7]：" choice
       case $choice in
         1) PLATFORM="claude"   ; break ;;
         2) PLATFORM="cursor"   ; break ;;
         3) PLATFORM="kiro"     ; break ;;
-        4) PLATFORM="codex"    ; break ;;
-        5) PLATFORM="opencode" ; break ;;
-        6) PLATFORM="gemini"   ; break ;;
-        *) echo "  请输入 1-6" ;;
+        4) PLATFORM="kirocrew" ; break ;;
+        5) PLATFORM="codex"    ; break ;;
+        6) PLATFORM="opencode" ; break ;;
+        7) PLATFORM="gemini"   ; break ;;
+        *) echo "  请输入 1-7" ;;
       esac
     done
     echo ""
@@ -397,6 +400,16 @@ case $PLATFORM in
   kiro)
     install_adapter_file "adapters/kiro/devflow.md" "${TARGET_DIR}/.kiro/steering/devflow.md"
     step "Kiro Steering → .kiro/steering/devflow.md"
+    ;;
+  kirocrew)
+    SKILL_DIR="${HOME}/.kiro/crew/skills/devflow"
+    mkdir -p "$SKILL_DIR"
+    if [[ "$LOCAL_MODE" == true ]]; then
+      cp "${DEVFLOW_ROOT}/adapters/kirocrew/SKILL.md" "$SKILL_DIR/SKILL.md"
+    else
+      download_file "adapters/kirocrew/SKILL.md" "$SKILL_DIR/SKILL.md"
+    fi
+    step "Kiro Crew Skill → ~/.kiro/crew/skills/devflow/SKILL.md"
     ;;
   codex)
     append_adapter_file "adapters/codex/AGENTS.md" "${TARGET_DIR}/AGENTS.md"
@@ -533,6 +546,16 @@ elif [[ "$PLATFORM" == "kiro" ]]; then
   echo -e "     ${BOLD}devflow init${NC}"
   echo ""
   echo -e "  DevFlow Steering 文件已写入 ${BOLD}.kiro/steering/devflow.md${NC}，Kiro 会自动加载。"
+elif [[ "$PLATFORM" == "kirocrew" ]]; then
+  echo -e "  ${CYAN}1.${NC} 打开 Kiro Crew（http://localhost:5476），在任意会话中输入："
+  echo -e "     ${BOLD}devflow init${NC}"
+  echo ""
+  echo -e "  DevFlow Skill 已安装到 ${BOLD}~/.kiro/crew/skills/devflow/${NC}。"
+  echo -e "  说「devflow」或任意 devflow 命令时会自动触发。"
+  echo ""
+  echo -e "  ${CYAN}可选：把知识库加入 Kiro Crew Knowledge Library${NC}"
+  echo -e "  在 Kiro Crew 控制台添加文件夹：${BOLD}.devflow/config/templates/knowledge/${NC}"
+  echo -e "  这样可以用自然语言查询经验卡（如「有没有关于 Dialog 崩溃的经验？」）"
 else
   echo -e "  ${CYAN}1.${NC} 用 ${PLATFORM^} 打开项目，输入："
   echo -e "     ${BOLD}devflow init${NC}"
