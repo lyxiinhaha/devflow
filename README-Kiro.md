@@ -26,9 +26,6 @@ Kiro 的 Spec 记录了意图，但回答不了「这个函数改了会影响谁
 在**项目根目录**运行：
 
 ```bash
-# 内网（推荐）
-bash <(curl -fsSL http://gitlab.inzwc.com/hst-sa/app-team/devflow/-/raw/main/install.sh) --platform kiro
-# 外网
 bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh) --platform kiro
 ```
 
@@ -40,7 +37,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/inst
 devflow init
 ```
 
-升级：`bash <(curl -fsSL http://gitlab.inzwc.com/hst-sa/app-team/devflow/-/raw/main/install.sh) --update`（内网）  或  `bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh) --update`（外网）
+升级：`bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh) --update`
 
 ---
 

@@ -134,13 +134,10 @@ devflow start 用户头像上传 支持裁剪和预览
 Cursor / Kiro / Codex / OpenCode / Gemini CLI 使用统一安装脚本：
 
 ```bash
-# 内网（推荐）
-bash <(curl -fsSL http://gitlab.inzwc.com/hst-sa/app-team/devflow/-/raw/main/install.sh)
-# 外网
 bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh)
 ```
 
-升级：`bash <(curl -fsSL http://gitlab.inzwc.com/hst-sa/app-team/devflow/-/raw/main/install.sh) --update`（内网）  或  `bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh) --update`（外网）
+升级：`bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh) --update`
 
 ---
 

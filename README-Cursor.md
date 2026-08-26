@@ -123,9 +123,6 @@ DevFlow 的解法：
 在**项目根目录**下运行：
 
 ```bash
-# 内网（推荐）
-bash <(curl -fsSL http://gitlab.inzwc.com/hst-sa/app-team/devflow/-/raw/main/install.sh)
-# 外网
 bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh)
 ```
 
@@ -187,9 +184,6 @@ DevFlow v3.3.0 — AI 研发工作流
 在项目目录执行一行命令：
 
 ```bash
-# 内网（推荐）
-bash <(curl -fsSL http://gitlab.inzwc.com/hst-sa/app-team/devflow/-/raw/main/install.sh) --update
-# 外网
 bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh) --update
 ```
 
@@ -418,9 +412,6 @@ meegle auth login
 
 A：检查 `.devflow/commands/` 目录是否存在。如果没有，重新运行安装脚本：
 ```bash
-# 内网
-bash <(curl -fsSL http://gitlab.inzwc.com/hst-sa/app-team/devflow/-/raw/main/install.sh) --platform cursor --dir .
-# 外网
 bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh) --platform cursor --dir .
 ```
 
