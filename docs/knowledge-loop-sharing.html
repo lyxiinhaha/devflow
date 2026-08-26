@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>知识闭环 · DevFlow</title>
+<style>
+  :root {
+    --blue:   #63b3ed;
+    --amber:  #f6ad55;
+    --green:  #68d391;
+    --red:    #fc8181;
+    --bg:     #0d1117;
+    --bg2:    #161b22;
+    --bg3:    #21262d;
+    --border: #30363d;
+    --text:   #e6edf3;
+    --muted:  #7d8590;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'SF Pro Display', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(13,17,23,.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px; height: 56px;
+  }
+  .nav-logo { font-weight: 700; font-size: 15px; color: var(--blue); letter-spacing: .5px; }
+  .nav-links { display: flex; gap: 28px; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 13px; transition: color .2s; }
+  .nav-links a:hover { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  section {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 96px 0 64px;
+    max-width: 860px; margin: 0 auto;
+  }
+  section.wide { max-width: 1060px; }
+
+  /* ── TYPOGRAPHY ── */
+  .eyebrow {
+    font-size: 12px; font-weight: 600; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--blue);
+    margin-bottom: 16px;
+  }
+  h1 { font-size: clamp(36px, 5vw, 60px); font-weight: 800; line-height: 1.15; margin-bottom: 24px; }
+  h2 { font-size: clamp(26px, 3.5vw, 40px); font-weight: 700; line-height: 1.25; margin-bottom: 20px; }
+  h3 { font-size: 20px; font-weight: 600; margin-bottom: 12px; }
+  p  { color: #b4bcc8; margin-bottom: 16px; font-size: 17px; }
+  .lead { font-size: 20px; color: var(--text); margin-bottom: 28px; }
+  em  { color: var(--amber); font-style: normal; }
+  strong { color: var(--text); font-weight: 600; }
+
+  /* ── HIGHLIGHT TEXT ── */
+  .hl { color: var(--blue); }
+  .hl-amber { color: var(--amber); }
+  .hl-green { color: var(--green); }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 20px;
+  }
+  .card.accent-blue  { border-left: 3px solid var(--blue); }
+  .card.accent-amber { border-left: 3px solid var(--amber); }
+  .card.accent-green { border-left: 3px solid var(--green); }
+  .card.accent-red   { border-left: 3px solid var(--red); }
+
+  /* ── QUOTE ── */
+  blockquote {
+    border-left: 3px solid var(--amber);
+    padding: 20px 28px;
+    margin: 32px 0;
+    background: rgba(246,173,85,.06);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    font-size: 20px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+  blockquote cite {
+    display: block; margin-top: 12px;
+    font-size: 13px; color: var(--muted); font-style: normal;
+  }
+
+  /* ── CODE ── */
+  pre, code {
+    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+    font-size: 13px;
+  }
+  code {
+    background: var(--bg3);
+    padding: 2px 7px; border-radius: 5px;
+    color: var(--blue);
+  }
+  pre {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    overflow-x: auto;
+    line-height: 1.7;
+    margin: 20px 0;
+  }
+  pre .c  { color: var(--muted); }
+  pre .kw { color: var(--blue); }
+  pre .s  { color: var(--green); }
+  pre .n  { color: var(--amber); }
+  pre .ok { color: var(--green); font-weight: 600; }
+  pre .err { color: var(--red); }
+
+  /* ── GRID ── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  @media (max-width: 700px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+
+  /* ── TABLE ── */
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th {
+    text-align: left; padding: 10px 16px;
+    background: var(--bg3); color: var(--muted);
+    font-size: 12px; letter-spacing: .8px; text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  .badge {
+    display: inline-block;
+    padding: 2px 9px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; letter-spacing: .5px;
+  }
+  .badge-red    { background: rgba(252,129,129,.15); color: var(--red); }
+  .badge-amber  { background: rgba(246,173,85,.15);  color: var(--amber); }
+  .badge-green  { background: rgba(104,211,145,.15); color: var(--green); }
+  .badge-blue   { background: rgba(99,179,237,.15);  color: var(--blue); }
+
+  /* ── KNOWLEDGE FLOW ── */
+  .flow {
+    display: flex; align-items: center; gap: 0;
+    margin: 36px 0;
+    overflow-x: auto;
+  }
+  .flow-node {
+    flex-shrink: 0;
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 22px;
+    text-align: center;
+    min-width: 110px;
+  }
+  .flow-node .icon { font-size: 24px; margin-bottom: 6px; }
+  .flow-node .label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .flow-node .sub   { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .flow-node.active { border-color: var(--blue); background: rgba(99,179,237,.08); }
+  .flow-node.key    { border-color: var(--amber); background: rgba(246,173,85,.08); }
+  .flow-arrow {
+    flex-shrink: 0; color: var(--muted);
+    font-size: 20px; padding: 0 6px; line-height: 1;
+  }
+  .flow-arrow.blue  { color: var(--blue); }
+  .flow-arrow.amber { color: var(--amber); }
+
+  /* ── LOOP DIAGRAM ── */
+  .loop-wrap { position: relative; margin: 36px auto; max-width: 680px; }
+
+  /* ── STAT TILES ── */
+  .stat { text-align: center; padding: 32px 20px; }
+  .stat .num { font-size: 52px; font-weight: 800; line-height: 1; }
+  .stat .desc { font-size: 14px; color: var(--muted); margin-top: 8px; }
+
+  /* ── STEP LIST ── */
+  .steps { counter-reset: step; }
+  .step {
+    counter-increment: step;
+    display: flex; gap: 20px; margin-bottom: 28px;
+    align-items: flex-start;
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(99,179,237,.12);
+    border: 1.5px solid var(--blue);
+    color: var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+    margin-top: 2px;
+  }
+
+  /* ── DIVIDER ── */
+  .section-divider {
+    border: none; border-top: 1px solid var(--border);
+    margin: 0 auto; max-width: 860px;
+  }
+
+  /* ── CTA ── */
+  .cta-btn {
+    display: inline-block;
+    background: var(--blue);
+    color: #0d1117;
+    font-weight: 700;
+    padding: 14px 32px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 15px;
+    margin-top: 20px;
+    transition: opacity .2s;
+  }
+  .cta-btn:hover { opacity: .85; }
+  .cta-btn.outline {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    margin-left: 12px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── PILL ── */
+  .pill {
+    display: inline-block;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    color: var(--muted);
+    margin: 3px;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">DevFlow · 知识闭环</span>
+  <div class="nav-links">
+    <a href="#problem">问题</a>
+    <a href="#karpathy">Karpathy</a>
+    <a href="#system">知识体系</a>
+    <a href="#data">真实数据</a>
+    <a href="#loop">完整闭环</a>
+    <a href="#start">开始</a>
+  </div>
+</nav>
+
+<!-- ══ HERO ══════════════════════════════════════════════════════════ -->
+<section id="hero" style="padding-top:140px; padding-bottom:80px;">
+  <div class="eyebrow">DevFlow · 工程实践分享</div>
+  <h1>团队踩过的坑<br><em>不应该踩第二次</em></h1>
+  <p class="lead">
+    从知识管理的本质出发，看 DevFlow 如何把每一次 Bug 修复<br>
+    转化为团队永不遗忘的工程智慧。
+  </p>
+  <div>
+    <span class="pill">知识管理</span>
+    <span class="pill">经验闭环</span>
+    <span class="pill">AI 工作流</span>
+    <span class="pill">CodeGraph</span>
+    <span class="pill">团队协作</span>
+  </div>
+</section>
+
+<!-- ══ PROBLEM ═══════════════════════════════════════════════════════ -->
+<hr class="section-divider">
+<section id="problem">
+  <div class="eyebrow">问题</div>
+  <h2>团队知识的<em>两种死法</em></h2>
+  <p class="lead">传统团队的工程经验，只有两个结局。</p>
+
+  <div class="grid2" style="margin-bottom:32px;">
+    <div class="card accent-red">
+      <h3>💬 死法一：口口相传</h3>
+      <p>Review 时提一句「这里要注意 Token 刷新的并发问题」，下个月新同学来了，没人提，又踩了一次。</p>
+    </div>
+    <div class="card accent-red">
+      <h3>📄 死法二：文档归档</h3>
+      <p>把踩坑记录写进 Confluence，三个月后没人看，六个月后没人找得到，一年后忘了有这个文档。</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:0;">
+    <p style="margin:0; font-size:18px; color: var(--text);">
+      工程经验的核心矛盾：<strong>知识产生在个体，价值发挥在团队，但传递的管道太窄、太脆弱。</strong><br>
+      <span style="color:var(--muted); font-size:15px;">最终的代价是：相同根因的 Bug，换个人、换个模块，继续出现。</span>
+    </p>
+  </div>
+</section>
+
+<!-- ══ KARPATHY ═══════════════════════════════════════════════════════ -->
+<hr class="section-divider">
+<section id="karpathy">
+  <div class="eyebrow">Karpathy 的视角</div>
+  <h2>AI 写代码很快，<em>但没有记忆</em></h2>
+
+  <blockquote>
+    "Vibe coding is fun and great for prototypes. But it accumulates a form of technical debt that's harder to see — the AI doesn't know your system's history."
+    <cite>— Andrej Karpathy，前 OpenAI / Tesla AI</cite>
+  </blockquote>
+
+  <p>Karpathy 指出的问题本质：<strong>每次新对话，AI 都从零开始。</strong>它不知道你们两个月前因为 Dialog 的 <code>super.show()</code> 让线上崩了一次，它不知道埋点必须通过模块级 object 收口，它不知道金额计算绝对不能用浮点数。</p>
+
+  <div class="card accent-amber" style="margin:28px 0;">
+    <h3>类比神经网络的训练数据</h3>
+    <p>Karpathy 在 Software 2.0 里提到：神经网络的能力边界，由训练数据决定。</p>
+    <p style="margin-bottom:0;">把这个类比搬到工程团队：<strong>AI 在你的项目上的能力边界，由你注入给它的上下文决定。</strong><br>
+    你的 Bug 经验卡，就是这个项目的「训练数据」。积累得越多，AI 在这个项目里越靠谱。</p>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3 style="color:var(--red);">没有知识体系时</h3>
+      <p style="margin-bottom:0; font-size:15px;">AI 凭通用知识写代码 → 不了解你们项目的历史 → 历史上踩过的坑，下次仍然会踩</p>
+    </div>
+    <div class="card accent-green">
+      <h3 style="color:var(--green);">有知识体系时</h3>
+      <p style="margin-bottom:0; font-size:15px;">AI 接收项目专属经验 → 了解这个项目的雷区 → 写代码时自动规避已知问题</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SYSTEM ══════════════════════════════════════════════════════════ -->
+<hr class="section-divider">
+<section id="system">
+  <div class="eyebrow">知识体系</div>
+  <h2>三层结构，<em>各司其职</em></h2>
+
+  <div class="flow">
+    <div class="flow-node key">
+      <div class="icon">🐛</div>
+      <div class="label">Bug 修复</div>
+      <div class="sub">retrospect</div>
+    </div>
+    <div class="flow-arrow amber">→</div>
+    <div class="flow-node">
+      <div class="icon">🗂️</div>
+      <div class="label">经验卡</div>
+      <div class="sub">Layer 2</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node active">
+      <div class="icon">⚗️</div>
+      <div class="label">蒸馏</div>
+      <div class="sub">distill</div>
+    </div>
+    <div class="flow-arrow blue">→</div>
+    <div class="flow-node active">
+      <div class="icon">📐</div>
+      <div class="label">项目规则</div>
+      <div class="sub">Layer 1</div>
+    </div>
+    <div class="flow-arrow blue">→</div>
+    <div class="flow-node">
+      <div class="icon">🤖</div>
+      <div class="label">自动注入</div>
+      <div class="sub">plan / code</div>
+    </div>
+  </div>
+
+  <div class="card accent-blue" style="margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap;">
+      <div>
+        <span class="badge badge-blue">Layer 1</span>
+        <h3 style="margin-top:10px;">项目规则 <code>project-rules.md</code></h3>
+        <p style="margin-bottom:0;">由多张经验卡蒸馏而来的高密度规则。<strong>每次 plan / code / review 自动注入，始终生效，无需召回匹配。</strong><br>
+        类比：项目的「编码宪法」，覆盖该领域所有已知问题。</p>
+      </div>
+      <div style="text-align:right; flex-shrink:0;">
+        <div style="font-size:28px; font-weight:800; color:var(--blue);">始终</div>
+        <div style="font-size:12px; color:var(--muted);">生效方式</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card accent-amber" style="margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap;">
+      <div>
+        <span class="badge badge-amber">Layer 2</span>
+        <h3 style="margin-top:10px;">经验卡 <code>bug-experience-cards.csv</code></h3>
+        <p style="margin-bottom:0;">每次 Bug 修复后由 <code>devflow retrospect</code> 自动写入。按模块 / tag 匹配召回，<strong>直接转化为任务约束和验收标准</strong>，注入到当前需求的 tasks.md。</p>
+      </div>
+      <div style="text-align:right; flex-shrink:0;">
+        <div style="font-size:28px; font-weight:800; color:var(--amber);">按需</div>
+        <div style="font-size:12px; color:var(--muted);">生效方式</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:0;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap;">
+      <div>
+        <span class="badge badge-blue" style="background:var(--bg3); color:var(--muted); border:1px solid var(--border);">Layer 3</span>
+        <h3 style="margin-top:10px;">历史案例</h3>
+        <p style="margin-bottom:0;">完整的修复记录和 CodeGraph 追踪路径，按需查询用于深度排查。不自动注入，不占 token。</p>
+      </div>
+      <div style="text-align:right; flex-shrink:0;">
+        <div style="font-size:28px; font-weight:800; color:var(--muted);">查询</div>
+        <div style="font-size:12px; color:var(--muted);">生效方式</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ DATA ═══════════════════════════════════════════════════════════ -->
+<hr class="section-divider">
+<section id="data" class="wide">
+  <div class="eyebrow">真实数据 · hssa 项目</div>
+  <h2>这不是概念，<em>是跑出来的数字</em></h2>
+
+  <div class="grid3" style="margin-bottom:40px;">
+    <div class="card stat">
+      <div class="num hl">48</div>
+      <div class="desc">张经验卡<br>（含 28 张项目专属）</div>
+    </div>
+    <div class="card stat">
+      <div class="num hl-amber">9</div>
+      <div class="desc">单次最多召回<br>（晒单授权弹窗需求）</div>
+    </div>
+    <div class="card stat">
+      <div class="num hl-green">1</div>
+      <div class="desc">条规则覆盖<br>6 张埋点卡的所有问题</div>
+    </div>
+  </div>
+
+  <!-- Case 1 -->
+  <div class="card accent-amber" style="margin-bottom:24px;">
+    <span class="badge badge-amber">案例一</span>
+    <h3 style="margin-top:12px;">CodeGraph 根因追踪 · 条件单成交回报不刷新</h3>
+    <p>直觉修法：在成交回报订阅里直接加列表刷新。CodeGraph 追踪发现真正断点：</p>
+    <pre><code style="background:transparent; padding:0; color:var(--text);">StockDeliverSubscription → AccountCondOrderPresenter.observeStockDeliverRefresh()
+    → <span class="err">if (moduleVisible)</span> → RefreshCurrentList → loadData()
+           ↑
+           <span class="n">moduleVisible 始终 false</span> ← 根因在这里
+
+<span class="ok">// 真正的修复：一行代码</span>
+fun onModuleVisibleChanged(visible: Boolean) {
+    presenter.setModuleVisible(visible)  <span class="c">// 原来是空方法</span>
+}</code></pre>
+    <p style="margin-bottom:0; color:var(--muted); font-size:14px;">这次修复的根因已沉淀为经验卡，下次遇到类似「回调链中间某个 flag 没更新」的症状，会自动召回这个追踪模式。</p>
+  </div>
+
+  <!-- Case 2 -->
+  <div class="card accent-blue">
+    <span class="badge badge-blue">案例二</span>
+    <h3 style="margin-top:12px;">9 张经验卡自动注入 · 晒单授权弹窗需求</h3>
+    <p>这个需求涉及弹窗 + 埋点 + 授权，<code>devflow plan</code> 自动召回并注入了 9 条约束：</p>
+    <div style="overflow-x:auto;">
+    <table>
+      <tr><th>注入的编码禁令</th><th>来源</th><th>严重级</th></tr>
+      <tr>
+        <td>禁止在 Fragment 直接调用 <code>SensorsTool</code>，必须通过 object 收口</td>
+        <td><span class="badge badge-amber">KB-030</span></td>
+        <td><span class="badge badge-red">CRITICAL</span></td>
+      </tr>
+      <tr>
+        <td>Click 埋点必须在 <code>setOnClickListener</code> 内第一行触发</td>
+        <td><span class="badge badge-amber">KB-033</span></td>
+        <td><span class="badge badge-amber">HIGH</span></td>
+      </tr>
+      <tr>
+        <td>弹窗必须继承 <code>DTCommDialogFragment</code>，禁用系统 <code>AlertDialog</code></td>
+        <td><span class="badge badge-amber">KB-026</span></td>
+        <td><span class="badge badge-red">CRITICAL</span></td>
+      </tr>
+      <tr>
+        <td><code>show()</code> 必须使用安全重载，禁止 <code>super.show(manager, tag)</code></td>
+        <td><span class="badge badge-amber">KB-027</span></td>
+        <td><span class="badge badge-red">CRITICAL</span></td>
+      </tr>
+      <tr>
+        <td>布局方向属性用 <code>start/end</code>，禁止 <code>left/right</code></td>
+        <td><span class="badge badge-amber">KB-021</span></td>
+        <td><span class="badge badge-blue">MEDIUM</span></td>
+      </tr>
+      <tr>
+        <td colspan="3" style="color:var(--muted); font-size:13px; padding:10px 16px;">…共 9 条，执行这个需求的工程师不需要提前知道这些坑的存在</td>
+      </tr>
+    </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══ LOOP ════════════════════════════════════════════════════════════ -->
+<hr class="section-divider">
+<section id="loop">
+  <div class="eyebrow">完整闭环</div>
+  <h2>让知识<em>自我生长</em>的四步循环</h2>
+
+  <div class="steps" style="margin-top:32px;">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <h3>修完 Bug → 强制复盘</h3>
+        <p><code>devflow fix</code> 执行四阶段根因分析后，强制触发 <code>devflow retrospect</code>。AI 提炼根因、反模式、必须补充的测试，<strong>写入经验卡</strong>，不允许跳过。</p>
+        <pre><code style="background:transparent; padding:0; color:var(--muted); font-size:12px;">devflow fix KB-043 合规授权门禁被绕过
+  → 根因：fm == null 时降级执行受保护操作
+  → 反模式：if (fm == null) 直接 fallback 不抛错
+  → 已写入 bug-experience-cards.csv</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <h3>经验积累 → 定期蒸馏</h3>
+        <p>同类经验卡积累到阈值（默认 3 张），运行 <code>devflow knowledge distill tag=xxx</code>，AI 将多张卡的共性提炼为一条<strong>项目级规则</strong>，写入 <code>project-rules.md</code>。</p>
+        <pre><code style="background:transparent; padding:0; color:var(--muted); font-size:12px;">devflow knowledge distill tag=android-sensor
+  → KB-030 + KB-031 + KB-033 + KB-034 → 1 条规则
+  → 「埋点必须收口到模块级 object」
+  → 参与卡标记 distilled=true，不再参与召回（规则已覆盖）</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <h3>规则 → 自动注入每次开发</h3>
+        <p><code>devflow plan</code> 每次执行都会加载 <code>project-rules.md</code> 全文，同时按模块/tag 召回相关经验卡，<strong>直接转化为任务约束</strong>，写入 <code>tasks.md</code>。工程师不需要主动查，AI 帮你带进去。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div>
+        <h3>新 Bug 触发规则失效检测</h3>
+        <p>写入新卡时，系统自动检测是否命中已有规则的 tag。若命中，提示「这条规则可能已失效或需要加强」——<strong>规则不是一次写完就够了，知识库也在进化。</strong></p>
+        <pre><code style="background:transparent; padding:0; color:var(--muted); font-size:12px;">⚠️ 规则「埋点必须收口到模块级 object」自建立后出现 2 次同类新卡
+   最新：KB-047（2026-08-20）→ 建议复查规则是否需要加强</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card accent-green" style="margin-top:8px;">
+    <h3>🔁 这是一个飞轮，不是一次性工作</h3>
+    <p style="margin-bottom:0;">每次 Bug 修复让知识库更强，知识库更强让下次开发更少出 Bug，更少出 Bug 积累更多高质量经验。<br>
+    时间越长，这套系统对你们项目的理解越深，对新成员的保护越强。</p>
+  </div>
+</section>
+
+<!-- ══ CONTRIBUTION ════════════════════════════════════════════════════ -->
+<hr class="section-divider">
+<section id="contribution">
+  <div class="eyebrow">团队协作</div>
+  <h2><em>每个人</em>都是知识库的贡献者</h2>
+
+  <p class="lead">知识库存在项目的 git 仓库里（<code>.devflow/config/templates/knowledge/</code>），团队共用，提交共享。</p>
+
+  <div class="grid2" style="margin-bottom:28px;">
+    <div class="card">
+      <h3>每个人的日常</h3>
+      <div class="steps" style="margin-top:12px;">
+        <div class="step" style="margin-bottom:12px;">
+          <div class="step-num" style="width:24px;height:24px;font-size:11px;">1</div>
+          <div><code>devflow fix</code> 修复 Bug</div>
+        </div>
+        <div class="step" style="margin-bottom:12px;">
+          <div class="step-num" style="width:24px;height:24px;font-size:11px;">2</div>
+          <div><code>devflow retrospect</code> 写经验卡</div>
+        </div>
+        <div class="step" style="margin-bottom:0;">
+          <div class="step-num" style="width:24px;height:24px;font-size:11px;">3</div>
+          <div><code>git commit</code> 推上去，团队共享</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>知识库维护者（每周）</h3>
+      <div class="steps" style="margin-top:12px;">
+        <div class="step" style="margin-bottom:12px;">
+          <div class="step-num" style="width:24px;height:24px;font-size:11px;">1</div>
+          <div><code>devflow knowledge dedupe</code> 去重</div>
+        </div>
+        <div class="step" style="margin-bottom:12px;">
+          <div class="step-num" style="width:24px;height:24px;font-size:11px;">2</div>
+          <div><code>devflow knowledge distill</code> 蒸馏</div>
+        </div>
+        <div class="step" style="margin-bottom:0;">
+          <div class="step-num" style="width:24px;height:24px;font-size:11px;">3</div>
+          <div>提交 <code>project-rules.md</code>，全员生效</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background:linear-gradient(135deg, rgba(99,179,237,.06), rgba(104,211,145,.06)); border-color: rgba(99,179,237,.3);">
+    <p style="font-size:18px; color:var(--text); margin-bottom:0;">
+      <strong>工程师不需要主动「管理知识库」。</strong><br>
+      正常做 Bug 修复，正常写 retrospect，经验卡自然积累。<br>
+      <span style="color:var(--muted);">知识库的生长是研发流程的副产品，不是额外工作。</span>
+    </p>
+  </div>
+</section>
+
+<!-- ══ START ═══════════════════════════════════════════════════════════ -->
+<hr class="section-divider">
+<section id="start">
+  <div class="eyebrow">开始</div>
+  <h2>三步，把知识闭环<em>接入你的项目</em></h2>
+
+  <div class="card accent-blue" style="margin-bottom:20px;">
+    <h3>第一步：安装</h3>
+    <pre><code style="background:transparent; padding:0; color:var(--text);"># Claude Code
+claude plugins install devflow
+
+# Cursor / Kiro / Codex / Gemini CLI
+bash &lt;(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh)</code></pre>
+  </div>
+
+  <div class="card accent-amber" style="margin-bottom:20px;">
+    <h3>第二步：初始化项目</h3>
+    <pre><code style="background:transparent; padding:0; color:var(--text);">devflow init
+<span class="c"># 自动检测技术栈、配置 CodeGraph、初始化知识库目录</span></code></pre>
+  </div>
+
+  <div class="card accent-green" style="margin-bottom:32px;">
+    <h3>第三步：从下一个 Bug 开始积累</h3>
+    <pre><code style="background:transparent; padding:0; color:var(--text);">devflow fix &lt;bug 描述 或 Meegle 链接&gt;
+<span class="c"># 修复完成后，devflow retrospect 自动触发，经验卡自动入库</span></code></pre>
+  </div>
+
+  <p style="font-size:18px; color: var(--text);">
+    知识库从空开始，随着每次修复积累。<br>
+    <strong>第一张经验卡，就是知识闭环的起点。</strong>
+  </p>
+
+  <div>
+    <a href="https://github.com/lyxiinnaha/devflow" class="cta-btn">查看项目 →</a>
+    <a href="#" class="cta-btn outline">完整命令文档</a>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══════════════════════════════════════════════════════════ -->
+<footer>
+  <p>DevFlow v3.8.0 · 工程实践系列分享 · 2026-08-26</p>
+  <p style="margin-top:6px;">「好的工程工具不限制工程师的创造力，而是把工程师从重复性判断疲劳中解放出来。」</p>
+</footer>
+
+</body>
+</html>
