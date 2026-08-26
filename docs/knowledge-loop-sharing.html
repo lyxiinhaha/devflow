@@ -375,7 +375,7 @@
     <div class="flow-node">
       <div class="icon">🤖</div>
       <div class="label">自动注入</div>
-      <div class="sub">plan / code</div>
+      <div class="sub">plan / code / review</div>
     </div>
   </div>
 
@@ -384,8 +384,18 @@
       <div>
         <span class="badge badge-blue">Layer 1</span>
         <h3 style="margin-top:10px;">项目规则 <code>project-rules.md</code></h3>
-        <p style="margin-bottom:0;">由多张经验卡蒸馏而来的高密度规则。<strong>每次 plan / code / review 自动注入，始终生效，无需召回匹配。</strong><br>
-        类比：项目的「编码宪法」，覆盖该领域所有已知问题。</p>
+        <p>由同类经验卡蒸馏而来。<strong>每次 plan / code / review 自动置顶加载，始终生效，无需召回匹配。</strong>同一领域 N 张卡压缩为 1 条规则，token 开销固定可控。</p>
+        <pre style="margin:0;"><code style="background:transparent; padding:0; color:var(--text); font-size:12px;"><span class="c">## 埋点必须收口到模块级 object（来源：KB-030~KB-035，创建：2026-08-05）</span>
+
+所有埋点调用必须通过模块级 object 统一管理，禁止业务文件直接调用 SensorsTool。
+
+<span class="err">禁止：</span>
+- Fragment/ViewModel 中直接调用 SensorsTool.sensorsOnEventAttach()
+- Click 埋点放在网络请求回调或 dismiss 之后
+
+<span class="ok">必须：</span>
+- 每个模块新建独立 Sensor object 文件
+- Click 事件在 setOnClickListener 内第一行触发</code></pre>
       </div>
       <div style="text-align:right; flex-shrink:0;">
         <div style="font-size:28px; font-weight:800; color:var(--blue);">始终</div>
@@ -395,15 +405,37 @@
   </div>
 
   <div class="card accent-amber" style="margin-bottom:16px;">
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap;">
-      <div>
-        <span class="badge badge-amber">Layer 2</span>
-        <h3 style="margin-top:10px;">经验卡 <code>bug-experience-cards.csv</code></h3>
-        <p style="margin-bottom:0;">每次 Bug 修复后由 <code>devflow retrospect</code> 自动写入。按模块 / tag 匹配召回，<strong>直接转化为任务约束和验收标准</strong>，注入到当前需求的 tasks.md。</p>
+    <span class="badge badge-amber">Layer 2</span>
+    <h3 style="margin-top:10px;">经验卡 <code>bug-experience-cards.csv</code></h3>
+    <p>每次 Bug 修复后由 <code>devflow retrospect</code> 自动提炼写入。<strong>按模块 / tag 匹配召回，直接转化为任务约束和验收标准</strong>注入到 tasks.md。已蒸馏为规则的卡（<code>distilled=true</code>）不再参与召回，避免重复注入。</p>
+
+    <p style="font-size:13px; color:var(--muted); margin-bottom:8px;">一张真实的卡长这样（KB-027，线上 Dialog 崩溃）：</p>
+    <div style="overflow-x:auto;">
+    <table style="font-size:12px;">
+      <tr><th style="width:120px;">字段</th><th>内容</th></tr>
+      <tr><td><code>id</code></td><td>KB-027</td></tr>
+      <tr><td><code>module</code></td><td>dialog</td></tr>
+      <tr><td><code>severity</code></td><td><span class="badge badge-red">CRITICAL</span></td></tr>
+      <tr><td><code>root_cause</code></td><td>未用安全重载 show()，直接调用 super.show(manager, tag)，FragmentManager 已 committed 时必崩</td></tr>
+      <tr><td><code>anti_patterns</code></td><td><code>dialog.show(fm, tag)</code>；<code>super.show(manager, tag)</code></td></tr>
+      <tr><td><code>required_tests</code></td><td>Fragment 生命周期各阶段 show()；Activity onPause 后触发 show()</td></tr>
+      <tr><td><code>tags</code></td><td>dialog, crash, fragment</td></tr>
+    </table>
+    </div>
+
+    <p style="font-size:13px; color:var(--muted); margin:12px 0 4px;">写入前三维去重检测，防止团队成员重复沉淀同一问题：</p>
+    <div class="grid3" style="gap:12px;">
+      <div style="background:var(--bg3); border-radius:8px; padding:12px; font-size:12px;">
+        <div style="color:var(--blue); font-weight:600; margin-bottom:4px;">标题关键词重叠</div>
+        <div style="color:var(--muted);">&gt; 60% 命中 → 候选重复</div>
       </div>
-      <div style="text-align:right; flex-shrink:0;">
-        <div style="font-size:28px; font-weight:800; color:var(--amber);">按需</div>
-        <div style="font-size:12px; color:var(--muted);">生效方式</div>
+      <div style="background:var(--bg3); border-radius:8px; padding:12px; font-size:12px;">
+        <div style="color:var(--blue); font-weight:600; margin-bottom:4px;">根因 + 模块双命中</div>
+        <div style="color:var(--muted);">两字段同时匹配 → 候选重复</div>
+      </div>
+      <div style="background:var(--bg3); border-radius:8px; padding:12px; font-size:12px;">
+        <div style="color:var(--blue); font-weight:600; margin-bottom:4px;">反模式关键词重叠</div>
+        <div style="color:var(--muted);">&gt; 50% 命中 → 候选重复</div>
       </div>
     </div>
   </div>
@@ -506,53 +538,131 @@ fun onModuleVisibleChanged(visible: Boolean) {
 <hr class="section-divider">
 <section id="loop">
   <div class="eyebrow">完整闭环</div>
-  <h2>让知识<em>自我生长</em>的四步循环</h2>
+  <h2>让知识<em>自我生长</em>的五步循环</h2>
 
   <div class="steps" style="margin-top:32px;">
+
     <div class="step">
       <div class="step-num">1</div>
-      <div>
-        <h3>修完 Bug → 强制复盘</h3>
-        <p><code>devflow fix</code> 执行四阶段根因分析后，强制触发 <code>devflow retrospect</code>。AI 提炼根因、反模式、必须补充的测试，<strong>写入经验卡</strong>，不允许跳过。</p>
+      <div style="flex:1;">
+        <h3>修完 Bug → 强制复盘写卡</h3>
+        <p><code>devflow fix</code> 四阶段根因分析完成后，强制触发 <code>devflow retrospect</code>。AI 提炼三个核心字段，不允许跳过：</p>
+        <div class="grid3" style="gap:12px; margin-bottom:16px;">
+          <div style="background:var(--bg3); border-radius:8px; padding:14px; font-size:13px;">
+            <div style="color:var(--red); font-weight:600; margin-bottom:6px;">root_cause</div>
+            <div style="color:var(--muted);">为什么出现，不是「是什么」</div>
+          </div>
+          <div style="background:var(--bg3); border-radius:8px; padding:14px; font-size:13px;">
+            <div style="color:var(--amber); font-weight:600; margin-bottom:6px;">anti_patterns</div>
+            <div style="color:var(--muted);">下次绝对不能这样写</div>
+          </div>
+          <div style="background:var(--bg3); border-radius:8px; padding:14px; font-size:13px;">
+            <div style="color:var(--green); font-weight:600; margin-bottom:6px;">required_tests</div>
+            <div style="color:var(--muted);">这类问题必须加的测试</div>
+          </div>
+        </div>
         <pre><code style="background:transparent; padding:0; color:var(--muted); font-size:12px;">devflow fix KB-043 合规授权门禁被绕过
-  → 根因：fm == null 时降级执行受保护操作
-  → 反模式：if (fm == null) 直接 fallback 不抛错
-  → 已写入 bug-experience-cards.csv</code></pre>
+  root_cause:     fm == null 时直接降级执行受保护操作，跳过弹窗授权
+  anti_patterns:  if (fm == null) { doProtectedAction() }  ← 永远不能这样写
+  required_tests: fragment 为 null 时触发受保护操作的完整路径测试
+  → 写入 KB-043，tags: compliance,auth,dialog</code></pre>
       </div>
     </div>
+
     <div class="step">
       <div class="step-num">2</div>
-      <div>
-        <h3>经验积累 → 定期蒸馏</h3>
-        <p>同类经验卡积累到阈值（默认 3 张），运行 <code>devflow knowledge distill tag=xxx</code>，AI 将多张卡的共性提炼为一条<strong>项目级规则</strong>，写入 <code>project-rules.md</code>。</p>
-        <pre><code style="background:transparent; padding:0; color:var(--muted); font-size:12px;">devflow knowledge distill tag=android-sensor
-  → KB-030 + KB-031 + KB-033 + KB-034 → 1 条规则
-  → 「埋点必须收口到模块级 object」
-  → 参与卡标记 distilled=true，不再参与召回（规则已覆盖）</code></pre>
+      <div style="flex:1;">
+        <h3>经验卡召回 → 直接变成任务约束</h3>
+        <p><code>devflow plan</code> 按当前需求的模块 / tag 召回相关卡，<strong>自动转化为 tasks.md 里的编码禁令和验收条目</strong>，工程师执行任务时直接看到约束，不需要提前知道历史。</p>
+        <pre><code style="background:transparent; padding:0; color:var(--text); font-size:12px;"><span class="c">## 任务 T-04：实现授权弹窗逻辑</span>
+
+- [ ] 弹窗继承 DTCommDialogFragment（<span class="err">禁止系统 AlertDialog</span>）  <span class="c">← KB-026</span>
+- [ ] show() 使用安全重载                                              <span class="c">← KB-027</span>
+- [ ] FragmentManager 为 null 时禁止降级执行受保护操作                 <span class="c">← KB-043</span>
+
+验收标准：
+- [ ] Fragment 各生命周期阶段 show() 不崩溃
+- [ ] fm == null 场景下受保护操作被正确拦截</code></pre>
+        <p style="font-size:14px; color:var(--muted); margin-top:8px;">
+          每次召回都写入 <code>knowledge-usage.jsonl</code>：<code>recalled_by / outcome / outcome_ts</code>——记录这张卡在这个需求里有没有真正发挥作用。
+        </p>
       </div>
     </div>
+
     <div class="step">
       <div class="step-num">3</div>
-      <div>
-        <h3>规则 → 自动注入每次开发</h3>
-        <p><code>devflow plan</code> 每次执行都会加载 <code>project-rules.md</code> 全文，同时按模块/tag 召回相关经验卡，<strong>直接转化为任务约束</strong>，写入 <code>tasks.md</code>。工程师不需要主动查，AI 帮你带进去。</p>
+      <div style="flex:1;">
+        <h3>同类卡积累 → 蒸馏为项目规则</h3>
+        <p>同一 tag 下的卡达到阈值（默认 3 张），<code>devflow knowledge distill tag=xxx</code> 将多张卡的共性提炼为一条规则，写入 <code>project-rules.md</code>。</p>
+        <div class="grid2" style="gap:16px; margin-bottom:16px;">
+          <div class="card" style="margin-bottom:0; padding:16px 20px;">
+            <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">蒸馏前：6 张独立经验卡</div>
+            <div style="font-size:13px; color:var(--amber);">KB-030  KB-031  KB-032<br>KB-033  KB-034  KB-035</div>
+            <div style="font-size:11px; color:var(--muted); margin-top:6px;">各自按需召回，每次各占 token</div>
+          </div>
+          <div class="card accent-blue" style="margin-bottom:0; padding:16px 20px;">
+            <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">蒸馏后：1 条项目规则</div>
+            <div style="font-size:13px; color:var(--blue);">「埋点必须收口到模块级 object」</div>
+            <div style="font-size:11px; color:var(--muted); margin-top:6px;">始终生效，6 张卡标记 distilled=true 不再召回</div>
+          </div>
+        </div>
+        <p style="font-size:14px; color:var(--muted);">蒸馏前系统自动检查 <code>project-rules.md</code> 是否已有同 tag 规则，避免规则重复。参与蒸馏的卡标记 <code>distilled=true</code> 后退出召回池，只有 project-rules.md 里那一条规则继续生效。</p>
       </div>
     </div>
+
     <div class="step">
       <div class="step-num">4</div>
-      <div>
-        <h3>新 Bug 触发规则失效检测</h3>
-        <p>写入新卡时，系统自动检测是否命中已有规则的 tag。若命中，提示「这条规则可能已失效或需要加强」——<strong>规则不是一次写完就够了，知识库也在进化。</strong></p>
+      <div style="flex:1;">
+        <h3>规则失效检测 → 知识库自进化</h3>
+        <p>写入新卡时，系统自动检测是否命中已有规则的 tag。若命中，提示规则可能需要加强——<strong>规则不是一次写完就永久有效，知识库也在进化。</strong></p>
         <pre><code style="background:transparent; padding:0; color:var(--muted); font-size:12px;">⚠️ 规则「埋点必须收口到模块级 object」自建立后出现 2 次同类新卡
-   最新：KB-047（2026-08-20）→ 建议复查规则是否需要加强</code></pre>
+   KB-046（2026-08-15）  KB-047（2026-08-20）
+   → 建议：修订规则覆盖新场景 / 个例单独保留 / 放弃规则</code></pre>
+        <p style="font-size:14px; color:var(--muted); margin-top:8px;">这个机制让规则不会变成「挂在墙上但已经过时的制度」，团队的实际行为会倒逼规则更新。</p>
       </div>
     </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div style="flex:1;">
+        <h3>质量信号面板 → 定期清洁知识库</h3>
+        <p><code>devflow knowledge check</code> 分析 <code>knowledge-usage.jsonl</code> 中的召回记录，输出三类质量信号：</p>
+        <div class="grid3" style="gap:12px; margin-bottom:16px;">
+          <div style="background:rgba(104,211,145,.08); border:1px solid rgba(104,211,145,.3); border-radius:8px; padding:14px; font-size:13px;">
+            <div style="color:var(--green); font-weight:700; margin-bottom:6px;">🏆 高价值卡</div>
+            <div style="color:var(--muted);">召回 ≥ 3 次<br>有效率 ≥ 60%</div>
+            <div style="color:var(--green); font-size:11px; margin-top:6px;">优先蒸馏为规则</div>
+          </div>
+          <div style="background:rgba(246,173,85,.08); border:1px solid rgba(246,173,85,.3); border-radius:8px; padding:14px; font-size:13px;">
+            <div style="color:var(--amber); font-weight:700; margin-bottom:6px;">👀 待观察卡</div>
+            <div style="color:var(--muted);">召回 ≥ 1 次<br>有效率 &lt; 30%</div>
+            <div style="color:var(--amber); font-size:11px; margin-top:6px;">复查描述是否准确</div>
+          </div>
+          <div style="background:rgba(125,133,144,.08); border:1px solid rgba(125,133,144,.3); border-radius:8px; padding:14px; font-size:13px;">
+            <div style="color:var(--muted); font-weight:700; margin-bottom:6px;">💤 沉睡卡</div>
+            <div style="color:var(--muted);">90 天内零召回</div>
+            <div style="color:var(--muted); font-size:11px; margin-top:6px;">归档或删除</div>
+          </div>
+        </div>
+        <p>配合 <code>devflow knowledge dedupe</code>（去重）和 <code>devflow knowledge prune</code>（交互式清理）定期维护，知识库只保留真正有效的内容。</p>
+        <pre><code style="background:transparent; padding:0; color:var(--muted); font-size:12px;">── 整体质量报告 ─────────────────────────────
+  高价值卡  6 张   KB-027 KB-030 KB-033 KB-043 ...
+  待观察卡  3 张   → 建议复查内容
+  沉睡卡    2 张   → 建议归档
+  整体有效率：74%（35 次召回中 26 次标记 applied）
+
+── 蒸馏建议 ────────────────────────────────
+  tag=dialog       5 张可蒸馏  → devflow knowledge distill tag=dialog</code></pre>
+      </div>
+    </div>
+
   </div>
 
   <div class="card accent-green" style="margin-top:8px;">
     <h3>🔁 这是一个飞轮，不是一次性工作</h3>
-    <p style="margin-bottom:0;">每次 Bug 修复让知识库更强，知识库更强让下次开发更少出 Bug，更少出 Bug 积累更多高质量经验。<br>
-    时间越长，这套系统对你们项目的理解越深，对新成员的保护越强。</p>
+    <p style="margin-bottom:0;">每次 Bug 修复写一张卡，卡积累到阈值蒸馏为规则，规则在每次开发时自动保护团队，保护越好出 Bug 越少，出 Bug 反而带来新的高质量经验。<br>
+    时间越长，这套系统对你们项目的理解越深，对新成员的保护越强。<br>
+    <span style="color:var(--muted); font-size:14px;">知识库有效率随着 prune/distill 维护逐步上升，而不是随时间衰减。</span></p>
   </div>
 </section>
 
