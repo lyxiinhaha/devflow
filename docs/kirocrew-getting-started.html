@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kiro Crew 入门手册 · 从零到写代码</title>
+<style>
+  :root {
+    --blue:   #63b3ed;
+    --amber:  #f6ad55;
+    --green:  #68d391;
+    --red:    #fc8181;
+    --purple: #b794f4;
+    --bg:     #0d1117;
+    --bg2:    #161b22;
+    --bg3:    #21262d;
+    --border: #30363d;
+    --text:   #e6edf3;
+    --muted:  #7d8590;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: -apple-system,'PingFang SC','SF Pro Display',sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+
+  /* ── NAV ── */
+  nav { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(13,17,23,.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 40px; height:56px; }
+  .nav-logo { font-weight:700; font-size:15px; color:var(--purple); }
+  .nav-links { display:flex; gap:20px; }
+  .nav-links a { color:var(--muted); text-decoration:none; font-size:13px; transition:color .2s; }
+  .nav-links a:hover { color:var(--text); }
+
+  /* ── LAYOUT ── */
+  .wrap { max-width:860px; margin:0 auto; padding:0 24px; }
+  section { padding:72px 0 48px; }
+  hr.div { border:none; border-top:1px solid var(--border); max-width:860px; margin:0 auto; }
+
+  /* ── TYPE ── */
+  .eyebrow { font-size:11px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:var(--purple); margin-bottom:14px; }
+  h1 { font-size:clamp(30px,5vw,52px); font-weight:800; line-height:1.15; margin-bottom:18px; }
+  h2 { font-size:clamp(20px,3vw,32px); font-weight:700; line-height:1.25; margin-bottom:16px; }
+  h3 { font-size:17px; font-weight:600; margin-bottom:10px; }
+  p  { color:#b4bcc8; font-size:15px; margin-bottom:12px; }
+  .lead { font-size:18px; color:var(--text); margin-bottom:20px; }
+  em { color:var(--amber); font-style:normal; }
+  strong { color:var(--text); font-weight:600; }
+
+  pre,code { font-family:'SF Mono','Fira Code',Consolas,monospace; font-size:13px; }
+  code { background:var(--bg3); padding:2px 7px; border-radius:5px; color:var(--blue); }
+  pre { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius); padding:18px 22px; overflow-x:auto; line-height:1.75; margin:14px 0; }
+  pre .c  { color:var(--muted); }
+  pre .ok { color:var(--green); }
+  pre .hi { color:var(--amber); }
+
+  /* ── CARDS ── */
+  .card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:22px 26px; margin-bottom:14px; }
+  .card.blue   { border-left:3px solid var(--blue); }
+  .card.amber  { border-left:3px solid var(--amber); }
+  .card.green  { border-left:3px solid var(--green); }
+  .card.purple { border-left:3px solid var(--purple); }
+  .card.red    { border-left:3px solid var(--red); }
+
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+  @media(max-width:650px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+  /* ── STEPS ── */
+  .steps { margin:20px 0; }
+  .step { display:flex; gap:16px; margin-bottom:32px; align-items:flex-start; }
+  .step-num { flex-shrink:0; width:34px; height:34px; border-radius:50%; background:rgba(183,148,244,.12); border:1.5px solid var(--purple); color:var(--purple); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; margin-top:2px; }
+  .step-body { flex:1; }
+
+  /* ── CALLOUT ── */
+  .callout { display:flex; gap:12px; padding:12px 16px; border-radius:8px; margin:12px 0; font-size:14px; }
+  .callout.tip  { background:rgba(104,211,145,.07); border:1px solid rgba(104,211,145,.25); }
+  .callout.warn { background:rgba(246,173,85,.07);  border:1px solid rgba(246,173,85,.25); }
+  .callout.info { background:rgba(99,179,237,.07);  border:1px solid rgba(99,179,237,.25); }
+  .callout-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
+  .callout-body { color:#b4bcc8; }
+  .callout-body strong { color:var(--text); }
+
+  /* ── UI MOCKUP ── */
+  .ui { background:#1c2128; border:1px solid var(--border); border-radius:10px; overflow:hidden; margin:14px 0; }
+  .ui-bar { background:var(--bg3); padding:8px 14px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border); font-size:12px; color:var(--muted); }
+  .ui-dot { width:10px; height:10px; border-radius:50%; display:inline-block; }
+  .ui-body { padding:16px 20px; font-size:13px; }
+
+  /* ── APP LAYOUT MOCKUP ── */
+  .app-mock { display:flex; height:420px; border:1px solid var(--border); border-radius:10px; overflow:hidden; background:#1c2128; margin:16px 0; font-size:12px; }
+  .app-sidebar { width:52px; background:#0d1117; border-right:1px solid var(--border); display:flex; flex-direction:column; align-items:center; padding:12px 0; gap:6px; }
+  .app-sidebar-icon { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; color:var(--muted); }
+  .app-sidebar-icon.active { background:rgba(183,148,244,.15); color:var(--purple); }
+  .app-left { width:220px; background:var(--bg2); border-right:1px solid var(--border); display:flex; flex-direction:column; }
+  .app-left-header { padding:12px 14px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+  .app-main { flex:1; display:flex; flex-direction:column; }
+  .app-chat { flex:1; padding:16px 20px; overflow:hidden; display:flex; flex-direction:column; gap:10px; }
+  .app-composer { padding:12px 16px; border-top:1px solid var(--border); }
+  .composer-box { background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--muted); }
+
+  /* ── CHAT BUBBLES ── */
+  .bubble { max-width:85%; padding:9px 13px; border-radius:10px; font-size:13px; line-height:1.6; }
+  .bubble.user  { align-self:flex-end; background:rgba(99,179,237,.15); border:1px solid rgba(99,179,237,.3); color:var(--text); margin-left:auto; }
+  .bubble.agent { align-self:flex-start; background:var(--bg3); border:1px solid var(--border); color:#b4bcc8; }
+  .bubble-row { display:flex; flex-direction:column; }
+  .bubble-label { font-size:10px; color:var(--muted); margin-bottom:3px; }
+
+  /* ── BADGE ── */
+  .badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
+  .badge-blue   { background:rgba(99,179,237,.15);  color:var(--blue); }
+  .badge-green  { background:rgba(104,211,145,.15); color:var(--green); }
+  .badge-amber  { background:rgba(246,173,85,.15);  color:var(--amber); }
+  .badge-purple { background:rgba(183,148,244,.15); color:var(--purple); }
+  .badge-red    { background:rgba(252,129,129,.15); color:var(--red); }
+
+  /* ── TABLE ── */
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th { text-align:left; padding:9px 14px; background:var(--bg3); color:var(--muted); font-size:11px; letter-spacing:.8px; text-transform:uppercase; border-bottom:1px solid var(--border); }
+  td { padding:11px 14px; border-bottom:1px solid var(--border); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+
+  /* ── NUMBERED SECTION HEADER ── */
+  .section-num { display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:10px; background:rgba(183,148,244,.12); border:1.5px solid var(--purple); color:var(--purple); font-size:18px; font-weight:800; margin-bottom:16px; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-steps { display:flex; gap:0; margin:24px 0; overflow-x:auto; }
+  .progress-step { flex:1; min-width:80px; text-align:center; padding:10px 4px; border-top:2px solid var(--border); font-size:11px; color:var(--muted); }
+  .progress-step.done  { border-top-color:var(--green); color:var(--green); }
+  .progress-step.active{ border-top-color:var(--purple); color:var(--purple); font-weight:700; }
+
+  footer { text-align:center; padding:32px 20px; color:var(--muted); font-size:13px; border-top:1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">Kiro Crew 入门手册</span>
+  <div class="nav-links">
+    <a href="#launch">启动</a>
+    <a href="#setup">配置 CLI</a>
+    <a href="#firstchat">第一次对话</a>
+    <a href="#devflow">安装 DevFlow</a>
+    <a href="#workflow">开发流程</a>
+    <a href="#knowledge">知识库</a>
+    <a href="#tips">常见问题</a>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<div class="wrap" style="padding-top:128px; padding-bottom:40px;">
+  <div class="eyebrow">Kiro Crew × DevFlow · 小白入门手册</div>
+  <h1>打开 App，<em>10 分钟</em>开始写代码</h1>
+  <p class="lead">从零开始，一步一步带你配置好 Kiro Crew，安装 DevFlow 工作流，跑起第一个需求。</p>
+  <div class="progress-steps">
+    <div class="progress-step active">① 启动 App</div>
+    <div class="progress-step">② 配置 kiro-cli</div>
+    <div class="progress-step">③ 第一次对话</div>
+    <div class="progress-step">④ 安装 DevFlow</div>
+    <div class="progress-step">⑤ 开始写代码</div>
+  </div>
+</div>
+
+<!-- ══ WHAT IS IT ══ -->
+<hr class="div">
+<div class="wrap section">
+  <div class="eyebrow">先搞清楚</div>
+  <h2>Kiro Crew 是什么，和 Kiro IDE 有什么区别</h2>
+  <div class="grid2" style="margin-bottom:20px;">
+    <div class="card purple">
+      <h3>Kiro Crew（本文主角）</h3>
+      <p style="font-size:14px;">独立 App，本质是一个<strong>持久化 AI Agent 平台</strong>。<br>
+      有自己的记忆、技能系统、任务调度，对话内容和进度跨重启保留。<br>
+      适合：长期持续的开发工作，团队知识积累。</p>
+    </div>
+    <div class="card blue">
+      <h3>Kiro IDE（另一个产品）</h3>
+      <p style="font-size:14px;">AI 集成开发环境，类似 VS Code + AI。<br>
+      有 Spec 驱动开发、Steering File、Agent Hooks。<br>
+      适合：在编辑器里直接写代码时用。</p>
+    </div>
+  </div>
+  <div class="callout info">
+    <div class="callout-icon">ℹ️</div>
+    <div class="callout-body"><strong>这两个是不同的产品</strong>，可以同时装，互不影响。DevFlow 对两者都有适配，本手册专讲 Kiro Crew。</div>
+  </div>
+
+  <h3 style="margin-top:24px; margin-bottom:12px;">Kiro Crew 的界面结构</h3>
+  <div class="app-mock">
+    <!-- 左侧图标栏 -->
+    <div class="app-sidebar">
+      <div class="app-sidebar-icon active" title="Sessions">💬</div>
+      <div class="app-sidebar-icon" title="Task Runner">▶</div>
+      <div class="app-sidebar-icon" title="Knowledge">📚</div>
+      <div class="app-sidebar-icon" title="Schedule">📅</div>
+      <div class="app-sidebar-icon" title="Artifacts">📦</div>
+      <div style="flex:1;"></div>
+      <div class="app-sidebar-icon" title="Settings">⚙️</div>
+    </div>
+    <!-- 会话列表 -->
+    <div class="app-left">
+      <div class="app-left-header">
+        <span style="color:var(--text); font-weight:600; font-size:13px;">Sessions</span>
+        <span style="color:var(--purple); font-size:18px; cursor:pointer;">＋</span>
+      </div>
+      <div style="padding:8px;">
+        <div style="padding:8px 10px; border-radius:6px; background:rgba(183,148,244,.1); margin-bottom:4px;">
+          <div style="color:var(--text); font-size:12px; font-weight:600;">hssa 项目开发</div>
+          <div style="color:var(--muted); font-size:11px;">devflow code T-04...</div>
+        </div>
+        <div style="padding:8px 10px; border-radius:6px; margin-bottom:4px;">
+          <div style="color:var(--muted); font-size:12px;">新建会话</div>
+        </div>
+      </div>
+    </div>
+    <!-- 主区域 -->
+    <div class="app-main">
+      <div style="padding:10px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:13px; color:var(--text); font-weight:600;">hssa 项目开发</span>
+        <span style="font-size:11px; color:var(--muted);">kirocrew · gpt-4o</span>
+      </div>
+      <div class="app-chat">
+        <div class="bubble-row">
+          <div class="bubble-label">你</div>
+          <div class="bubble user">devflow start 晒单授权弹窗</div>
+        </div>
+        <div class="bubble-row">
+          <div class="bubble-label">Kiro Crew</div>
+          <div class="bubble agent">✅ 工作项已创建：20260826-ShareOrderAuth<br>下一步：devflow analyze</div>
+        </div>
+      </div>
+      <div class="app-composer">
+        <div class="composer-box">输入消息，Enter 发送... &nbsp;<span style="font-size:11px; color:var(--blue);">@kb</span> 搜索知识库</div>
+      </div>
+    </div>
+  </div>
+
+  <table style="margin-top:16px;">
+    <tr><th>区域</th><th>是什么</th></tr>
+    <tr><td>💬 Sessions</td><td>所有对话，每个对话独立记忆，可同时跑多个</td></tr>
+    <tr><td>▶ Task Runner</td><td>无人值守执行任务，跑 devflow plan 生成的 tasks.md</td></tr>
+    <tr><td>📚 Knowledge</td><td>知识库，把文档/经验卡加进来，@kb 搜索</td></tr>
+    <tr><td>📅 Schedule</td><td>定时任务，比如每天早 9 点汇报昨日进度</td></tr>
+    <tr><td>⚙️ Settings</td><td>模型、快捷键、主题、MCP 服务器等配置</td></tr>
+  </table>
+</div>
+
+<!-- ══ LAUNCH ══ -->
+<hr class="div">
+<div class="wrap section" id="launch">
+  <div class="section-num">1</div>
+  <div class="eyebrow">第一步</div>
+  <h2>启动 Kiro Crew</h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>双击打开 /Applications/KiroCrew.app</h3>
+        <p>App 启动后自动在后台运行 Gateway 进程，浏览器会自动打开 <code>http://localhost:5476</code>。</p>
+        <div class="callout tip">
+          <div class="callout-icon">💡</div>
+          <div class="callout-body">如果浏览器没自动打开，手动访问 <code>http://localhost:5476</code> 即可。Mac App 会在菜单栏显示 Kiro Crew 图标，表示 Gateway 正在运行。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>用 Kiro 账号登录</h3>
+        <p>首次启动会看到登录界面，点击按钮，浏览器打开授权页面，用你的 Kiro 账号登录即可。</p>
+        <div class="ui">
+          <div class="ui-bar">
+            <div class="ui-dot" style="background:#fc8181;"></div>
+            <div class="ui-dot" style="background:#f6ad55;"></div>
+            <div class="ui-dot" style="background:#68d391;"></div>
+            <span style="margin-left:8px;">http://localhost:5476</span>
+          </div>
+          <div class="ui-body" style="text-align:center; padding:32px 24px;">
+            <div style="font-size:28px; margin-bottom:12px;">✦</div>
+            <div style="font-size:18px; font-weight:700; color:var(--text); margin-bottom:8px;">Welcome to Kiro Crew</div>
+            <div style="color:var(--muted); font-size:14px; margin-bottom:24px;">Sign in with your Kiro account to get started</div>
+            <div style="display:inline-block; background:var(--purple); color:#0d1117; padding:10px 28px; border-radius:8px; font-weight:700; font-size:14px; cursor:pointer;">Sign in with Kiro</div>
+          </div>
+        </div>
+        <div class="callout info">
+          <div class="callout-icon">ℹ️</div>
+          <div class="callout-body">没有 Kiro 账号？去 <strong>kiro.dev</strong> 免费注册。登录是使用 AI 功能的前提，Kiro Crew 本身的 UI 功能（记忆、任务管理等）离线可用。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SETUP kiro-cli ══ -->
+<hr class="div">
+<div class="wrap section" id="setup">
+  <div class="section-num">2</div>
+  <div class="eyebrow">第二步</div>
+  <h2>安装并配置 <em>kiro-cli</em></h2>
+  <p>Kiro Crew 的 AI 对话能力由 <code>kiro-cli</code> 驱动，必须单独安装。首次使用时控制台会有引导提示。</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>打开终端，安装 kiro-cli</h3>
+        <pre><code style="background:transparent;padding:0;color:var(--text);">brew install kirocli     <span class="c"># macOS，推荐</span>
+
+<span class="c"># 或手动下载：</span>
+curl -fsSL https://kiro.dev/install/cli.sh | sh</code></pre>
+        <div class="callout tip">
+          <div class="callout-icon">💡</div>
+          <div class="callout-body">安装完后在终端运行 <code>kiro --version</code> 确认安装成功，能看到版本号就行。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>登录 kiro-cli</h3>
+        <pre><code style="background:transparent;padding:0;color:var(--text);">kiro login</code></pre>
+        <p>终端会显示一个验证码，浏览器打开授权页面，确认即可。登录成功后终端显示：</p>
+        <pre><code style="background:transparent;padding:0;color:var(--text);"><span class="ok">✓</span> Logged in as your@email.com</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>在 Kiro Crew 控制台验证</h3>
+        <p>回到 <code>http://localhost:5476</code>，点击 <strong>Settings（⚙️）→ General</strong>，应该能看到 kiro-cli 状态变为绿色 ✅。</p>
+        <div class="ui">
+          <div class="ui-bar"><span>Settings → General</span></div>
+          <div class="ui-body">
+            <table style="font-size:12px;">
+              <tr>
+                <td style="color:var(--muted); width:140px;">kiro-cli</td>
+                <td><span class="badge badge-green">✓ Connected</span> &nbsp;<span style="color:var(--muted);">v1.x.x · your@email.com</span></td>
+              </tr>
+              <tr>
+                <td style="color:var(--muted);">Vector Memory</td>
+                <td><span class="badge badge-blue">Downloading model...</span> &nbsp;<span style="color:var(--muted);">610MB，后台下载，首次需等待</span></td>
+              </tr>
+              <tr>
+                <td style="color:var(--muted);">Default Model</td>
+                <td><code>claude-sonnet-4-5</code></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="callout warn">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-body"><strong>首次启动会在后台下载 610MB 的向量嵌入模型</strong>（用于语义搜索），这需要几分钟。下载完成前记忆搜索用关键词模式，下载完成后自动升级为语义搜索，不需要你操作任何东西。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FIRST CHAT ══ -->
+<hr class="div">
+<div class="wrap section" id="firstchat">
+  <div class="section-num">3</div>
+  <div class="eyebrow">第三步</div>
+  <h2>第一次对话，<em>熟悉界面</em></h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>点击「＋」新建一个会话</h3>
+        <p>左侧 Sessions 面板顶部有一个 <strong>＋</strong> 按钮，点击后右侧出现空白的对话界面。</p>
+        <div class="ui">
+          <div class="ui-body" style="display:flex; gap:12px; align-items:flex-start;">
+            <div style="width:180px; background:var(--bg3); border-radius:8px; padding:10px 12px; font-size:12px;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="color:var(--text); font-weight:600;">Sessions</span>
+                <span style="color:var(--purple); font-size:16px; cursor:pointer; font-weight:700;">＋</span>
+              </div>
+              <div style="padding:7px 8px; border-radius:5px; background:rgba(183,148,244,.1); color:var(--purple); font-size:11px;">← 点这里新建</div>
+            </div>
+            <div style="flex:1; background:var(--bg3); border-radius:8px; padding:24px; text-align:center; color:var(--muted); font-size:13px;">
+              新建会话<br>
+              <span style="font-size:11px;">在下方输入框开始对话</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>在输入框发送消息</h3>
+        <p>输入框在页面底部，输入内容后按 <kbd style="background:var(--bg3); padding:2px 6px; border-radius:4px; font-size:12px; border:1px solid var(--border);">Enter</kbd> 发送（<kbd style="background:var(--bg3); padding:2px 6px; border-radius:4px; font-size:12px; border:1px solid var(--border);">Shift+Enter</kbd> 换行）。</p>
+        <div class="ui">
+          <div class="ui-bar"><span>新会话</span></div>
+          <div style="padding:16px 20px; display:flex; flex-direction:column; gap:10px;">
+            <div class="bubble-row">
+              <div class="bubble-label">你</div>
+              <div class="bubble user">你好，我叫小明，是 Android 开发，目前在做 hssa 项目</div>
+            </div>
+            <div class="bubble-row">
+              <div class="bubble-label">Kiro Crew</div>
+              <div class="bubble agent">你好小明！我已记录你的信息：Android 开发，hssa 项目。有什么需要帮忙的？</div>
+            </div>
+          </div>
+          <div style="padding:10px 16px; border-top:1px solid var(--border);">
+            <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:9px 14px; color:var(--muted); font-size:13px;">你好，我叫小明...</div>
+          </div>
+        </div>
+        <div class="callout tip">
+          <div class="callout-icon">💡</div>
+          <div class="callout-body"><strong>告诉 Kiro Crew 你是谁、在做什么项目</strong>——它会把这些记在记忆里，下次对话不用重复介绍。记忆存储在 <code>~/.kiro/crew/memory/preferences.md</code>，可以直接编辑。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>工具调用审批</h3>
+        <p>当 AI 要做某些操作（写文件、运行命令）时，会出现审批弹框，需要你点击批准或拒绝。</p>
+        <div class="ui">
+          <div class="ui-body">
+            <div style="background:rgba(246,173,85,.08); border:1px solid rgba(246,173,85,.3); border-radius:8px; padding:12px 16px; font-size:13px;">
+              <div style="color:var(--amber); font-weight:600; margin-bottom:8px;">⚠️ Tool Approval Required</div>
+              <div style="color:var(--muted); font-size:12px; margin-bottom:10px; font-family:monospace;">fs_write → /Users/me/project/.devflow/workspace.json</div>
+              <div style="display:flex; gap:8px;">
+                <span style="padding:5px 14px; background:var(--green); color:#0d1117; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">✓ Approve</span>
+                <span style="padding:5px 14px; background:var(--amber); color:#0d1117; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">Trust (always)</span>
+                <span style="padding:5px 14px; border:1px solid var(--border); border-radius:6px; font-size:12px; color:var(--muted); cursor:pointer;">✗ Reject</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <table style="margin-top:8px; font-size:13px;">
+          <tr><th>选项</th><th>含义</th></tr>
+          <tr><td><span class="badge badge-green">Approve</span></td><td>只批准这一次</td></tr>
+          <tr><td><span class="badge badge-amber">Trust</span></td><td>这类操作以后自动批准（推荐对读文件/写 .devflow/ 选这个）</td></tr>
+          <tr><td>Reject</td><td>拒绝，AI 会尝试其他方式</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ INSTALL DEVFLOW ══ -->
+<hr class="div">
+<div class="wrap section" id="devflow">
+  <div class="section-num">4</div>
+  <div class="eyebrow">第四步</div>
+  <h2>安装 DevFlow</h2>
+  <p>DevFlow 需要：① 把命令文件装到项目里  ② 把 Skill 文件装到 Kiro Crew 全局技能目录</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>打开终端，进入你的项目目录，运行安装脚本</h3>
+        <pre><code style="background:transparent;padding:0;color:var(--text);">cd /path/to/your-project
+
+git clone https://github.com/lyxiinnaha/devflow.git devflow-tmp \
+  && bash devflow-tmp/install.sh --platform kirocrew \
+  && rm -rf devflow-tmp</code></pre>
+        <p>安装脚本会依次提示几项配置，<strong>全部直接回车跳过</strong>即可，之后通过 <code>devflow init</code> 补充：</p>
+        <div class="ui">
+          <div class="ui-bar"><span>终端</span></div>
+          <div class="ui-body" style="font-family:monospace; font-size:12px; line-height:1.8;">
+            <div style="color:var(--text);">DevFlow v3.8.0 — AI 研发工作流</div>
+            <div style="color:var(--border);">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+            <div style="color:var(--muted);">&nbsp;&nbsp;检测到平台：<span style="color:var(--green);">kirocrew</span></div>
+            <div style="color:var(--muted);">&nbsp;&nbsp;使用此平台？[Y/n] <span style="color:var(--text);">Y</span></div>
+            <div>&nbsp;</div>
+            <div style="color:var(--muted);">正在安装命令文件...</div>
+            <div><span style="color:var(--green);">  ✓</span> <span style="color:var(--muted);">命令文件 → .devflow/commands/ （20 个）</span></div>
+            <div><span style="color:var(--green);">  ✓</span> <span style="color:var(--muted);">配置模板 → .devflow/config/</span></div>
+            <div><span style="color:var(--green);">  ✓</span> <span style="color:var(--muted);">workspace.json 已初始化</span></div>
+            <div>&nbsp;</div>
+            <div style="color:var(--muted);">正在安装平台适配器...</div>
+            <div><span style="color:var(--green);">  ✓</span> <span style="color:var(--muted);">Kiro Crew Skill → ~/.kiro/crew/skills/devflow/SKILL.md</span></div>
+            <div>&nbsp;</div>
+            <div style="color:var(--muted);">&nbsp;&nbsp;[1/3] YApi 域名（如 yapi.example.com）：<span style="color:var(--muted);">（直接回车跳过）</span></div>
+            <div style="color:var(--muted);">&nbsp;&nbsp;[2/3] Meegle 项目 Key：<span style="color:var(--muted);">（直接回车跳过）</span></div>
+            <div style="color:var(--muted);">&nbsp;&nbsp;[3/3] 验收清单 Skill：<span style="color:var(--muted);">（直接回车跳过）</span></div>
+            <div>&nbsp;</div>
+            <div><span style="color:var(--green);">✅ DevFlow 安装完成！</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>重启 Kiro Crew，让 Skill 生效</h3>
+        <p>关闭 KiroCrew.app，重新打开，或在 Kiro Crew 控制台右上角选 <strong>Restart Gateway</strong>。</p>
+        <div class="callout tip">
+          <div class="callout-icon">💡</div>
+          <div class="callout-body">也可以不重启，在 <strong>Settings → Overview → Skills</strong> 页面点 <strong>Refresh</strong>，立刻加载新 Skill。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>验证 DevFlow Skill 已加载</h3>
+        <p>进入 <strong>Settings（⚙️）→ Overview → Skills 标签</strong>，找到 devflow：</p>
+        <div class="ui">
+          <div class="ui-bar"><span>Settings → Overview → Skills</span></div>
+          <div class="ui-body">
+            <table style="font-size:12px;">
+              <tr><th>Skill</th><th>触发词</th><th>加载方式</th><th>状态</th></tr>
+              <tr>
+                <td><strong style="color:var(--purple);">devflow</strong></td>
+                <td><code style="font-size:11px;">devflow, devflow start, devflow fix...</code></td>
+                <td>On-demand (triggered)</td>
+                <td><span class="badge badge-green">✓ 已加载</span></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>初始化项目（每个项目只需做一次）</h3>
+        <p>回到 Kiro Crew 对话，新建一个会话，告诉 AI 项目路径，然后运行：</p>
+        <div class="ui">
+          <div style="padding:14px 20px; display:flex; flex-direction:column; gap:10px;">
+            <div class="bubble-row">
+              <div class="bubble user">我的项目在 /Users/me/projects/hssa，帮我运行 devflow init</div>
+            </div>
+            <div class="bubble-row">
+              <div class="bubble agent">
+                <strong>DevFlow 初始化开始</strong><br>
+                项目目录：/Users/me/projects/hssa<br>
+                检测到技术栈：Android · Kotlin · Gradle<br><br>
+                [1/4] 生成技术栈画像... ✅<br>
+                [2/4] 配置 CodeGraph 索引策略... ✅<br>
+                [3/4] Review Skill（直接回车跳过）：<br>
+                [4/4] 外部集成（直接回车跳过）：<br><br>
+                ✅ 初始化完成！现在可以使用 <strong>devflow start</strong> 创建第一个需求。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ WORKFLOW ══ -->
+<hr class="div">
+<div class="wrap section" id="workflow">
+  <div class="section-num">5</div>
+  <div class="eyebrow">第五步</div>
+  <h2>开始写代码：<em>完整开发流程</em></h2>
+  <p>以「新增晒单授权弹窗」功能为例，走一遍完整流程。</p>
+
+  <div class="card purple" style="margin-bottom:24px;">
+    <h3>整体路径</h3>
+    <div class="progress-steps" style="margin:12px 0 0;">
+      <div class="progress-step active">start<br>创建工作项</div>
+      <div class="progress-step active">analyze<br>需求分析</div>
+      <div class="progress-step active">design<br>技术设计</div>
+      <div class="progress-step active">plan<br>任务拆解</div>
+      <div class="progress-step active">code/run<br>编码</div>
+      <div class="progress-step active">review<br>审查</div>
+      <div class="progress-step active">retrospect<br>复盘</div>
+    </div>
+  </div>
+
+  <!-- START -->
+  <div class="card blue" style="margin-bottom:16px;">
+    <span class="badge badge-blue">devflow start</span>
+    <h3 style="margin-top:10px;">创建工作项</h3>
+    <p style="font-size:14px; margin-bottom:10px;">在 Kiro Crew 对话里输入：</p>
+    <div class="ui">
+      <div style="padding:12px 16px; display:flex; flex-direction:column; gap:8px;">
+        <div class="bubble user">devflow start 晒单授权弹窗 用户发单时弹窗确认授权</div>
+        <div class="bubble agent"><strong>✅ 工作项已创建</strong><br>ID: 20260826-ShareOrderAuth &nbsp;状态: analyzing</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYZE -->
+  <div class="card" style="margin-bottom:16px;">
+    <span class="badge badge-purple">devflow analyze</span>
+    <h3 style="margin-top:10px;">需求分析 — 把手头材料逐步发过来</h3>
+    <p style="font-size:14px; margin-bottom:10px;">输入 <code>devflow analyze</code> 后，把需求材料一条一条发过来，<strong>说「就这些了」触发生成</strong>：</p>
+    <div class="ui">
+      <div style="padding:12px 16px; display:flex; flex-direction:column; gap:8px;">
+        <div class="bubble user">devflow analyze</div>
+        <div class="bubble agent">进入需求分析模式。把材料发给我，可以是文字、图片、链接，发完说「就这些了」。</div>
+        <div class="bubble user">用户点击「发单」时，如果未完成实名认证，需要弹出授权弹窗，包含隐私协议确认和实名认证跳转入口。用户同意后才能发单。</div>
+        <div class="bubble user">[粘贴 Figma 截图]</div>
+        <div class="bubble agent">已解析：触发条件（未实名）、弹窗内容（协议+跳转）、操作路径（同意/取消）。<br>追问：用户取消后再次点发单，是重新弹还是直接拦截？</div>
+        <div class="bubble user">重新弹。就这些了</div>
+        <div class="bubble agent"><strong>✅ 需求分析完成</strong><br>已生成 spec/requirement.md（含功能清单、验收标准、歧义记录）</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESIGN -->
+  <div class="card" style="margin-bottom:16px;">
+    <span class="badge badge-amber">devflow design</span>
+    <h3 style="margin-top:10px;">技术设计 + 爆炸半径评估</h3>
+    <pre><code style="background:transparent;padding:0;color:var(--text); font-size:12px;">devflow design</code></pre>
+    <div class="ui">
+      <div style="padding:12px 16px; display:flex; flex-direction:column; gap:8px;">
+        <div class="bubble user">devflow design</div>
+        <div class="bubble agent">
+          <strong>🔍 CodeGraph 爆炸半径评估</strong><br>
+          涉及：ShareOrderButton → AuthCheckService → DialogManager<br>
+          影响级别：<span style="color:var(--amber);">MEDIUM（7 个调用方）</span> — 继续设计<br><br>
+          技术方案：新建 ShareAuthDialog 继承 DTCommDialogFragment<br>
+          ⚠️ KB-026 约束：禁止系统 AlertDialog<br>
+          ⚠️ KB-027 约束：show() 必须用安全重载<br><br>
+          冻结设计？ [y/n]
+        </div>
+        <div class="bubble user">y</div>
+        <div class="bubble agent"><strong>✅ design.md 已冻结</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAN -->
+  <div class="card" style="margin-bottom:16px;">
+    <span class="badge badge-green">devflow plan</span>
+    <h3 style="margin-top:10px;">任务拆解 — 经验卡自动注入为编码约束</h3>
+    <pre><code style="background:transparent;padding:0;color:var(--text); font-size:12px;">devflow plan</code></pre>
+    <div class="ui">
+      <div style="padding:12px 16px; display:flex; flex-direction:column; gap:8px;">
+        <div class="bubble user">devflow plan</div>
+        <div class="bubble agent">
+          召回经验卡：9 张（dialog×3, auth×2, 埋点×3, layout×1）<br>
+          <strong>✅ tasks.md 已生成：6 个任务，9 条编码禁令已注入</strong><br><br>
+          <span style="font-size:11px; color:var(--muted);">T-01 读取现有实现 / T-02 AuthCheckService 新增方法 /<br>T-03 触发逻辑 / T-04 授权弹窗（高风险）/ T-05 埋点 / T-06 测试</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CODE: 两种方式 -->
+  <div class="card" style="margin-bottom:16px;">
+    <h3>编码：两种方式任选</h3>
+    <div class="grid2" style="margin-top:12px;">
+      <div style="background:var(--bg3); border-radius:8px; padding:14px;">
+        <div style="color:var(--purple); font-weight:600; margin-bottom:8px; font-size:13px;">方式 A：对话里直接执行</div>
+        <div class="ui" style="margin:0;">
+          <div style="padding:10px 14px; display:flex; flex-direction:column; gap:6px;">
+            <div class="bubble user" style="font-size:12px;">devflow code</div>
+            <div class="bubble agent" style="font-size:12px;">按 tasks.md 逐项实现，修改文件前会请求批准...</div>
+          </div>
+        </div>
+        <p style="font-size:12px; color:var(--muted); margin-top:8px; margin-bottom:0;">适合：边看边确认每一步</p>
+      </div>
+      <div style="background:var(--bg3); border-radius:8px; padding:14px;">
+        <div style="color:var(--blue); font-weight:600; margin-bottom:8px; font-size:13px;">方式 B：Task Runner 无人值守</div>
+        <div class="ui" style="margin:0;">
+          <div style="padding:10px 14px; display:flex; flex-direction:column; gap:6px;">
+            <div class="bubble user" style="font-size:12px;">run .devflow/work-items/20260826-ShareOrderAuth/spec/tasks.md</div>
+            <div class="bubble agent" style="font-size:12px;">🚀 任务启动，T-01 ✅ T-02 ✅ T-03 🔄...</div>
+          </div>
+        </div>
+        <p style="font-size:12px; color:var(--muted); margin-top:8px; margin-bottom:0;">适合：把任务丢给它，自己去喝咖啡，回来看结果</p>
+      </div>
+    </div>
+    <div class="callout tip" style="margin-top:12px;">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">Task Runner 的进度在左侧导航 <strong>▶ Task Runner</strong> 页面里查看，可以随时暂停、继续、取消。中断后说「继续上次的任务」可以从断点恢复。</div>
+    </div>
+  </div>
+
+  <!-- REVIEW + RETROSPECT -->
+  <div class="grid2">
+    <div class="card blue" style="margin-bottom:0;">
+      <span class="badge badge-blue">devflow review</span>
+      <h3 style="margin-top:10px;">代码审查</h3>
+      <pre style="margin:8px 0;"><code style="background:transparent;padding:0;color:var(--text); font-size:12px;">devflow review</code></pre>
+      <p style="font-size:13px;">AI 检查代码质量、退步风险、影响面验证。CRITICAL 问题直接阻断，不能合并。</p>
+    </div>
+    <div class="card green" style="margin-bottom:0;">
+      <span class="badge badge-green">devflow retrospect</span>
+      <h3 style="margin-top:10px;">复盘入库</h3>
+      <pre style="margin:8px 0;"><code style="background:transparent;padding:0;color:var(--text); font-size:12px;">devflow retrospect</code></pre>
+      <p style="font-size:13px;">把这次的经验提炼成卡片存入知识库，下次遇到类似问题自动召回。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ KNOWLEDGE ══ -->
+<hr class="div">
+<div class="wrap section" id="knowledge">
+  <div class="section-num">6</div>
+  <div class="eyebrow">第六步（可选但推荐）</div>
+  <h2>把经验卡接入 <em>Knowledge Library</em></h2>
+  <p>DevFlow 的经验卡默认只在 <code>devflow plan</code> 时按 tag 匹配召回。把它加入 Kiro Crew Knowledge Library 后，可以在任意对话里用 <code>@kb</code> 语义搜索，更灵活。</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>点击左侧导航 📚 Knowledge</h3>
+        <p>进入 Knowledge Library 页面，点击右上角 <strong>Add Source</strong> → <strong>Local Folder</strong>。</p>
+        <div class="ui">
+          <div class="ui-bar">
+            <div class="ui-dot" style="background:#fc8181;"></div>
+            <div class="ui-dot" style="background:#f6ad55;"></div>
+            <div class="ui-dot" style="background:#68d391;"></div>
+            <span style="margin-left:8px;">Knowledge Library</span>
+          </div>
+          <div class="ui-body">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <div style="display:flex; gap:6px; font-size:12px;">
+                <span style="background:rgba(183,148,244,.15); color:var(--purple); padding:4px 10px; border-radius:6px; font-weight:600;">Sources</span>
+                <span style="color:var(--muted); padding:4px 10px;">Items</span>
+                <span style="color:var(--muted); padding:4px 10px;">Graph</span>
+              </div>
+              <div style="position:relative; display:inline-block;">
+                <span style="background:var(--purple); color:#0d1117; padding:5px 14px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">Add Source ▾</span>
+                <div style="position:absolute; right:0; top:30px; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:6px; width:140px; z-index:10;">
+                  <div style="padding:7px 10px; font-size:12px; color:var(--muted);">📄 Upload Files</div>
+                  <div style="padding:7px 10px; font-size:12px; background:rgba(183,148,244,.12); color:var(--purple); border-radius:5px; font-weight:600;">📁 Local Folder</div>
+                </div>
+              </div>
+            </div>
+            <div style="color:var(--muted); font-size:13px; text-align:center; padding:20px;">还没有知识来源，点击 Add Source 开始添加</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>填写文件夹路径，点 Add Folder</h3>
+        <div class="ui">
+          <div class="ui-body">
+            <div style="background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:16px; font-size:12px;">
+              <div style="font-weight:600; margin-bottom:12px; color:var(--text); font-size:14px;">Add Local Folder</div>
+              <div style="color:var(--muted); margin-bottom:4px;">Folder Path <span style="color:var(--red);">*</span></div>
+              <div style="background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:8px 12px; display:flex; justify-content:space-between; margin-bottom:10px;">
+                <code style="color:var(--green); font-size:11px;">/Users/me/projects/hssa/.devflow/config/templates/knowledge</code>
+                <span style="color:var(--blue); cursor:pointer; font-size:12px;">Browse</span>
+              </div>
+              <div style="color:var(--muted); margin-bottom:4px;">Name (optional)</div>
+              <div style="background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:8px 12px; margin-bottom:10px; color:var(--text); font-size:12px;">hssa 经验卡</div>
+              <label style="display:flex; align-items:center; gap:8px; margin-bottom:12px; cursor:pointer;">
+                <div style="width:14px; height:14px; border:1.5px solid var(--purple); border-radius:3px; background:rgba(183,148,244,.2); flex-shrink:0;"></div>
+                <span style="color:var(--muted);">Include subdirectories (recursive)</span>
+              </label>
+              <div style="background:rgba(246,173,85,.07); border:1px solid rgba(246,173,85,.25); border-radius:6px; padding:8px 12px; font-size:11px; color:var(--amber); margin-bottom:12px;">
+                📁 This folder will be watched continuously — new files added here will be automatically indexed.
+              </div>
+              <div style="display:flex; gap:8px; justify-content:flex-end;">
+                <span style="padding:6px 16px; border:1px solid var(--border); border-radius:6px; cursor:pointer; color:var(--muted); font-size:12px;">Cancel</span>
+                <span style="padding:6px 16px; background:var(--purple); color:#0d1117; border-radius:6px; cursor:pointer; font-weight:700; font-size:12px;">Add Folder</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="callout tip" style="margin-top:10px;">
+          <div class="callout-icon">💡</div>
+          <div class="callout-body">不想手动输路径？点 <strong>Browse</strong> 用系统文件选择器选文件夹。添加后 Kiro Crew 每 5 分钟自动扫描，有新经验卡会自动索引。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>在对话里用 @kb 搜索</h3>
+        <p>索引完成（一般 2-3 分钟）后，在任意对话输入框输入 <code>@kb</code> 后跟关键词：</p>
+        <div class="ui">
+          <div style="padding:14px 20px; display:flex; flex-direction:column; gap:8px;">
+            <div class="bubble user">@kb Dialog 崩溃</div>
+            <div class="bubble agent" style="background:rgba(183,148,244,.06); border-color:rgba(183,148,244,.25);">
+              <strong style="color:var(--purple);">Knowledge Results · "Dialog 崩溃"</strong><br><br>
+              <div style="background:var(--bg3); border-radius:6px; padding:8px 12px; margin-bottom:6px; font-size:12px;">
+                <span style="color:var(--red); font-weight:600;">[CRITICAL]</span> KB-027 · Dialog show() 崩溃（匹配度 94%）<br>
+                <span style="color:var(--muted);">根因：super.show(manager,tag) 在 FM committed 后调用</span>
+              </div>
+              <div style="background:var(--bg3); border-radius:6px; padding:8px 12px; font-size:12px;">
+                <span style="color:var(--red); font-weight:600;">[CRITICAL]</span> KB-043 · 授权弹窗被绕过（匹配度 81%）<br>
+                <span style="color:var(--muted);">根因：fm==null 时降级执行受保护操作</span>
+              </div>
+              <div style="font-size:11px; color:var(--muted); margin-top:8px;">👆 点击注入到对话上下文</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TIPS ══ -->
+<hr class="div">
+<div class="wrap section" id="tips">
+  <div class="eyebrow">常见问题</div>
+  <h2>小白容易遇到的<em>问题和解决</em></h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">Q</div>
+      <div class="step-body">
+        <h3>说了 devflow start，AI 说「我不知道这个命令」</h3>
+        <p>Skill 没有加载。检查步骤：</p>
+        <pre><code style="background:transparent;padding:0;color:var(--text); font-size:12px;"><span class="c"># 1. 确认 Skill 文件存在</span>
+ls ~/.kiro/crew/skills/devflow/SKILL.md
+
+<span class="c"># 如果文件不存在，重新安装</span>
+git clone https://github.com/lyxiinnaha/devflow.git devflow-tmp \
+  && bash devflow-tmp/install.sh --platform kirocrew \
+  && rm -rf devflow-tmp
+
+<span class="c"># 2. 重启 Kiro Crew</span></code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">Q</div>
+      <div class="step-body">
+        <h3>AI 找不到 .devflow/commands/ 文件</h3>
+        <p>Kiro Crew 需要知道项目在哪里。在对话里说：</p>
+        <div class="ui">
+          <div style="padding:10px 16px;">
+            <div class="bubble user">我的项目路径是 /Users/me/projects/hssa</div>
+          </div>
+        </div>
+        <p style="font-size:13px; color:var(--muted);">或者在 <strong>Settings → Chat → Workspace</strong> 里设置默认工作目录。</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">Q</div>
+      <div class="step-body">
+        <h3>工具审批弹框太烦，能不能不弹？</h3>
+        <p>对常用操作点 <strong>Trust</strong>（而不是 Approve），以后这类操作自动批准。或者在 Settings → Chat → <strong>Default to Autopilot Mode</strong> 开启全自动（所有操作自动批准，谨慎使用）。</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">Q</div>
+      <div class="step-body">
+        <h3>Task Runner 中途失败了怎么办</h3>
+        <p>在对话里说：</p>
+        <div class="ui">
+          <div style="padding:10px 16px;">
+            <div class="bubble user">任务中途失败了，帮我从 T-04 继续</div>
+          </div>
+        </div>
+        <p style="font-size:13px; color:var(--muted);">或者重新 <code>run tasks.md</code>，Task Runner 会自动跳过已完成的任务。</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">Q</div>
+      <div class="step-body">
+        <h3>关闭 App 再打开，之前的对话还在吗</h3>
+        <p>在。Kiro Crew 的所有对话、记忆、任务状态都持久化在本地 <code>~/.kiro/crew/</code>，关闭 App 不会丢失。重新打开后找到对应会话点进去即可继续。</p>
+        <p style="font-size:13px; color:var(--muted);">DevFlow 的工作项进度也存在项目目录的 <code>.devflow/work-items/</code>，同样跨会话保留。</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">Q</div>
+      <div class="step-body">
+        <h3>多个需求同时进行怎么管理</h3>
+        <p>每个需求开一个 Kiro Crew 对话标签，用 <code>devflow switch</code> 切换焦点：</p>
+        <div class="ui">
+          <div style="padding:10px 16px; display:flex; flex-direction:column; gap:6px;">
+            <div class="bubble user">devflow list</div>
+            <div class="bubble agent">
+              活跃工作项（2 个）：<br>
+              🔄 20260826-ShareOrderAuth &nbsp;coding（当前）<br>
+              ⏸ 20260820-ConditionalOrder &nbsp;designing<br>
+            </div>
+            <div class="bubble user">devflow switch</div>
+            <div class="bubble agent">切换到 20260820-ConditionalOrder，恢复设计阶段上下文...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CHEATSHEET ══ -->
+<hr class="div">
+<div class="wrap section">
+  <div class="eyebrow">速查</div>
+  <h2>最常用的<em>操作汇总</em></h2>
+  <div class="grid2" style="gap:16px;">
+    <div>
+      <h4 style="margin-bottom:10px; color:var(--muted); font-size:12px; letter-spacing:.8px; text-transform:uppercase;">开发主线</h4>
+      <table>
+        <tr><th>输入</th><th>效果</th></tr>
+        <tr><td><code>devflow start 需求名</code></td><td>创建工作项</td></tr>
+        <tr><td><code>devflow analyze</code></td><td>贴材料 → 需求分析</td></tr>
+        <tr><td><code>devflow design</code></td><td>技术方案 + 爆炸半径</td></tr>
+        <tr><td><code>devflow plan</code></td><td>拆任务 + 注入经验卡</td></tr>
+        <tr><td><code>devflow code</code></td><td>对话里逐步编码</td></tr>
+        <tr><td><code>run tasks.md</code></td><td>Task Runner 无人值守</td></tr>
+        <tr><td><code>devflow review</code></td><td>代码审查</td></tr>
+        <tr><td><code>devflow retrospect</code></td><td>复盘入库</td></tr>
+      </table>
+    </div>
+    <div>
+      <h4 style="margin-bottom:10px; color:var(--muted); font-size:12px; letter-spacing:.8px; text-transform:uppercase;">日常操作</h4>
+      <table>
+        <tr><th>输入</th><th>效果</th></tr>
+        <tr><td><code>devflow continue</code></td><td>新会话恢复上次进度</td></tr>
+        <tr><td><code>devflow fix 问题描述</code></td><td>四阶段根因修复</td></tr>
+        <tr><td><code>devflow quick 简单需求</code></td><td>小改动一条命令</td></tr>
+        <tr><td><code>devflow list</code></td><td>查看所有工作项</td></tr>
+        <tr><td><code>devflow switch</code></td><td>切换工作项</td></tr>
+        <tr><td><code>devflow knowledge check</code></td><td>知识库质量报告</td></tr>
+        <tr><td><code>@kb 关键词</code></td><td>搜索知识库（需先添加文件夹）</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>DevFlow v3.8.0 × Kiro Crew 0.3.0 · 入门手册 · 2026-08-27</p>
+  <p style="margin-top:6px;">遇到问题先看「常见问题」，还不行在团队群里问 👋</p>
+</footer>
+
+</body>
+</html>
