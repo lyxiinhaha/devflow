@@ -236,12 +236,30 @@
   <h2>安装 <em>Kiro Crew</em> 和 DevFlow</h2>
 
   <h3 style="margin-bottom:16px; margin-top:8px;">1-A　安装 Kiro Crew</h3>
-  <p>如果还没有安装 Kiro Crew，在终端运行一行命令：</p>
-  <pre><code style="background:transparent;padding:0;color:var(--text);">curl -fsSL https://download.crew.kiro.dev/cli.sh | sh</code></pre>
+  <p>Mac 用户直接下载桌面 App，安装后双击启动，会自动在后台启动 Gateway：</p>
 
-  <p>安装完成后启动 Gateway，打开浏览器访问控制台：</p>
-  <pre><code style="background:transparent;padding:0;color:var(--text);">kirocrew service start          <span class="c"># 后台启动 Gateway</span>
-<span class="c"># 浏览器打开：</span>http://localhost:5476</code></pre>
+  <div class="grid2" style="gap:12px; margin-bottom:20px;">
+    <div class="card blue" style="margin-bottom:0;">
+      <h3>Mac App（推荐）</h3>
+      <p style="font-size:14px; margin-bottom:10px;">下载 <strong>KiroCrew.dmg</strong>，安装到 <code>/Applications/KiroCrew.app</code>，双击启动。自带 Gateway，无需额外命令。</p>
+      <a href="https://download.crew.kiro.dev/desktop/stable/latest/KiroCrew.dmg" style="color:var(--blue); font-size:13px;">↓ 下载 Stable 版（macOS）</a>
+    </div>
+    <div class="card" style="margin-bottom:0;">
+      <h3>命令行安装</h3>
+      <p style="font-size:14px; margin-bottom:10px;">无桌面 App 时用：</p>
+      <pre style="margin:0;"><code style="background:transparent;padding:0;color:var(--text);font-size:12px;">curl -fsSL https://download.crew.kiro.dev/cli.sh | sh
+kirocrew gateway</code></pre>
+    </div>
+  </div>
+
+  <p>启动后浏览器访问控制台（Mac App 会自动打开）：</p>
+  <pre><code style="background:transparent;padding:0;color:var(--text);">http://localhost:5476</code></pre>
+
+  <div class="callout info">
+    <div class="callout-icon">ℹ️</div>
+    <div class="callout-body">首次启动会引导你用 Kiro 账号登录（扫码 / device code，无需密码）。<br>
+    登录完成后控制台就能用了。需要安装 <strong>kiro-cli</strong> 才能跑 AI 会话，控制台首页有引导安装步骤。</div>
+  </div>
 
   <div class="ui-mock" style="margin-bottom:24px;">
     <div class="ui-mock-bar">
@@ -778,69 +796,141 @@
 <hr class="section-divider">
 <div class="wrap section" id="knowledge">
   <div class="eyebrow">知识库查询</div>
-  <h2>用自然语言<em>查历史踩坑</em></h2>
-  <p>把经验卡目录加入 Kiro Crew 的 Knowledge Library 后，可以用自然语言搜索，比 tag 匹配更灵活。</p>
+  <h2>Kiro Crew <em>Knowledge Library</em> 实际操作</h2>
+  <p>Kiro Crew Mac App 有独立的 <strong>Knowledge</strong> 页面（左侧导航栏书本图标）。把经验卡目录加进去后，聊天里用 <code>@kb</code> 触发搜索，比 DevFlow 的 tag 匹配更灵活——支持关键词 + 图谱遍历 + 向量三路融合。</p>
 
   <div class="steps">
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <h3>把知识库目录添加到 Knowledge Library</h3>
-        <p style="font-size:14px;">打开 Kiro Crew 控制台，进入 <strong>Overview → Knowledge</strong> 标签，点击「+ Add Folder」：</p>
+        <h3>打开 Knowledge 页面，添加文件夹</h3>
+        <p style="font-size:14px;">左侧导航点击 <strong>Knowledge</strong>（书本图标）→ 右上角 <strong>Add Source</strong> → 选 <strong>Local Folder</strong>：</p>
         <div class="ui-mock">
-          <div class="ui-mock-bar"><span>Kiro Crew — Knowledge Library</span></div>
+          <div class="ui-mock-bar">
+            <div class="ui-mock-dot" style="background:#fc8181;"></div>
+            <div class="ui-mock-dot" style="background:#f6ad55;"></div>
+            <div class="ui-mock-dot" style="background:#68d391;"></div>
+            <span style="margin-left:8px;">Kiro Crew — Knowledge Library</span>
+          </div>
           <div class="ui-mock-content" style="font-size:13px;">
-            <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-              <span style="color:var(--text); font-weight:600;">知识库文件夹</span>
-              <span style="color:var(--blue); cursor:pointer;">+ Add Folder</span>
+            <!-- 顶部工具栏 -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <div style="display:flex; gap:8px;">
+                <span style="background:rgba(183,148,244,.15); color:var(--purple); padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600;">Sources</span>
+                <span style="color:var(--muted); padding:4px 12px; font-size:12px;">Items</span>
+                <span style="color:var(--muted); padding:4px 12px; font-size:12px;">Graph</span>
+              </div>
+              <span style="background:var(--purple); color:#0d1117; padding:5px 14px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">Add Source ▾</span>
             </div>
-            <div style="background:var(--bg3); border-radius:6px; padding:10px 14px;">
-              <div style="color:var(--muted); font-size:12px; margin-bottom:4px;">路径</div>
-              <code style="font-size:12px; color:var(--green);">/Users/me/projects/hssa/.devflow/config/templates/knowledge/</code>
+            <!-- Add Source 下拉 -->
+            <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:6px; margin-bottom:16px; width:160px;">
+              <div style="padding:8px 12px; font-size:12px; color:var(--muted);">Upload Files</div>
+              <div style="padding:8px 12px; font-size:12px; background:rgba(183,148,244,.12); color:var(--purple); border-radius:5px; font-weight:600;">📁 Local Folder</div>
             </div>
-            <div style="margin-top:10px; font-size:12px; color:var(--muted);">✅ 正在索引：bug-experience-cards.csv · project-rules.md · knowledge-usage.jsonl</div>
+            <!-- 添加文件夹弹窗 -->
+            <div style="background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:16px; font-size:12px;">
+              <div style="font-weight:600; margin-bottom:12px; color:var(--text);">Add Local Folder</div>
+              <div style="color:var(--muted); margin-bottom:4px;">Folder Path</div>
+              <div style="background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:8px 12px; display:flex; justify-content:space-between; margin-bottom:10px;">
+                <code style="color:var(--green); font-size:11px;">/Users/me/projects/hssa/.devflow/config/templates/knowledge</code>
+                <span style="color:var(--blue); cursor:pointer;">Browse</span>
+              </div>
+              <div style="color:var(--muted); margin-bottom:4px;">Name (optional)</div>
+              <div style="background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:8px 12px; margin-bottom:10px; color:var(--muted); font-size:11px;">hssa 经验卡</div>
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                <div style="width:14px; height:14px; border:1.5px solid var(--purple); border-radius:3px; background:rgba(183,148,244,.2);"></div>
+                <span style="color:var(--muted);">Include subdirectories (recursive)</span>
+              </div>
+              <div style="background:rgba(246,173,85,.08); border:1px solid rgba(246,173,85,.3); border-radius:6px; padding:8px 12px; font-size:11px; color:var(--amber); margin-bottom:12px;">
+                📁 This folder will be watched continuously. New files added to it will be automatically ingested.
+              </div>
+              <div style="display:flex; gap:8px; justify-content:flex-end;">
+                <span style="padding:6px 16px; border:1px solid var(--border); border-radius:6px; cursor:pointer; color:var(--muted);">Cancel</span>
+                <span style="padding:6px 16px; background:var(--purple); color:#0d1117; border-radius:6px; cursor:pointer; font-weight:700;">Add Folder</span>
+              </div>
+            </div>
           </div>
         </div>
-        <p style="font-size:13px; color:var(--muted); margin-top:8px;">Kiro Crew 会对这个目录里的文件做 LLM 实体提取 + 向量索引，支持关键词、图谱遍历、语义三路融合检索。</p>
+        <div class="callout tip" style="margin-top:12px;">
+          <div class="callout-icon">💡</div>
+          <div class="callout-body">点 <strong>Browse</strong> 可以用系统文件选择器选文件夹，不用手动输路径。添加后 Kiro Crew 每 5 分钟自动扫描一次，有新文件自动索引。</div>
+        </div>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <h3>用自然语言查询</h3>
+        <h3>等待索引完成</h3>
+        <p style="font-size:14px;">添加后回到 Sources 列表，可以看到索引进度：</p>
         <div class="ui-mock">
-          <div class="chat" style="padding:12px 16px;">
-            <div><div class="bubble user">我们项目里有没有关于 Dialog 崩溃的经验？</div></div>
-            <div><div class="bubble agent">
-              从知识库找到 2 条相关经验：<br><br>
-              <strong>KB-027</strong> · CRITICAL · Dialog show() 崩溃<br>
-              根因：super.show(manager, tag) 在 FM 已提交后调用<br>
-              解法：showAllowingStateLoss()<br>
-              <span style="color:var(--muted); font-size:12px;">📄 来源：bug-experience-cards.csv 第 27 行</span><br><br>
-              <strong>KB-043</strong> · CRITICAL · 合规授权弹窗被绕过<br>
-              根因：fm == null 时降级执行受保护操作<br>
-              <span style="color:var(--muted); font-size:12px;">📄 来源：bug-experience-cards.csv 第 43 行</span>
-            </div></div>
+          <div class="ui-mock-content" style="font-size:13px;">
+            <div style="background:var(--bg3); border-radius:8px; padding:12px 16px; margin-bottom:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div>
+                  <span style="color:var(--text); font-weight:600;">hssa 经验卡</span>
+                  <span style="margin-left:8px; font-size:11px; color:var(--muted);">local_folder</span>
+                </div>
+                <span style="background:rgba(104,211,145,.15); color:var(--green); padding:2px 8px; border-radius:10px; font-size:11px;">Watching</span>
+              </div>
+              <div style="font-size:12px; color:var(--muted);">
+                📄 3 files indexed · 42 chunks embedded · Last sync: just now
+              </div>
+              <div style="font-size:11px; color:var(--muted); margin-top:4px;">
+                bug-experience-cards.csv · project-rules.md · knowledge-usage.jsonl
+              </div>
+            </div>
           </div>
         </div>
+        <p style="font-size:13px; color:var(--muted); margin-top:8px;">索引完成后文件内容就可以搜索了。Kiro Crew 用 Claude Haiku 提取实体关系，同时做向量嵌入，首次索引需要几分钟。</p>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <h3>管理知识库健康状态</h3>
+        <h3>在对话里用 @kb 搜索知识库</h3>
+        <p style="font-size:14px;">在聊天输入框输入 <code>@kb</code>（或 <code>/kb</code>），后面跟查询词，Kiro Crew 弹出搜索结果供你选择注入到对话：</p>
+        <div class="ui-mock">
+          <div class="chat" style="padding:12px 16px;">
+            <div><div class="bubble user">@kb Dialog 崩溃</div></div>
+            <div><div class="bubble agent" style="background:rgba(183,148,244,.08); border-color:rgba(183,148,244,.3);">
+              <strong style="color:var(--purple);">Knowledge Results for "Dialog 崩溃"</strong><br><br>
+              <div style="background:var(--bg3); border-radius:6px; padding:8px 12px; margin-bottom:8px; font-size:12px;">
+                <span style="color:var(--red); font-weight:600;">[CRITICAL]</span> KB-027 · Dialog show() 崩溃<br>
+                <span style="color:var(--muted);">root_cause: super.show(manager,tag) 在 FM committed 后调用...</span><br>
+                <span style="color:var(--muted); font-size:11px;">📄 bug-experience-cards.csv lines 27-28 · score 0.94</span>
+              </div>
+              <div style="background:var(--bg3); border-radius:6px; padding:8px 12px; font-size:12px;">
+                <span style="color:var(--red); font-weight:600;">[CRITICAL]</span> KB-043 · 合规授权弹窗被绕过<br>
+                <span style="color:var(--muted);">root_cause: fm==null 时降级执行受保护操作...</span><br>
+                <span style="color:var(--muted); font-size:11px;">📄 bug-experience-cards.csv lines 43-44 · score 0.81</span>
+              </div>
+              <br>
+              <span style="color:var(--muted); font-size:11px;">点击条目注入到对话 · 1,240 tokens</span>
+            </div></div>
+          </div>
+        </div>
+        <div class="callout info" style="margin-top:12px;">
+          <div class="callout-icon">ℹ️</div>
+          <div class="callout-body">点击搜索结果，相关内容会注入到当前对话上下文，AI 就能基于这些经验卡回答问题。<strong>不需要 devflow 命令，直接在 Kiro Crew 原生界面用就行。</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>（可选）在 devflow 会话里查询经验卡</h3>
+        <p style="font-size:14px;">也可以继续用 DevFlow 的知识库命令，两套可以并存：</p>
         <div class="ui-mock">
           <div class="chat" style="padding:12px 16px;">
             <div><div class="bubble user">devflow knowledge check</div></div>
             <div><div class="bubble agent">
               <strong>知识库健康报告</strong><br>
-              总计：48 张 · 健康：45 张 · 问题：3 张<br><br>
+              总计：48 张 · 高价值卡：6 张 · 待观察：3 张 · 沉睡：2 张<br><br>
               🏆 高价值卡（召回≥3次，有效率≥60%）：KB-027 KB-030 KB-043<br>
-              👀 待观察卡（有效率&lt;30%）：KB-015 → 建议复查描述<br>
-              💤 沉睡卡（90天零召回）：KB-008 → 建议归档<br><br>
-              整体有效率：74%（35次召回中26次 applied）<br><br>
+              整体有效率：74%<br><br>
               蒸馏建议：tag=dialog 有 5 张卡可蒸馏<br>
               → devflow knowledge distill tag=dialog
             </div></div>
