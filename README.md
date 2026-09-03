@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/DevFlow-3.8.0-63b3ed?style=for-the-badge&labelColor=0d1829" alt="DevFlow" />
+  <img src="https://img.shields.io/badge/DevFlow-3.9.0-63b3ed?style=for-the-badge&labelColor=0d1829" alt="DevFlow" />
 </p>
 
 <h1 align="center">DevFlow</h1>
@@ -8,7 +8,7 @@
 <p align="center"><em style="font-family: 'PingFang SC', serif; font-size: 1.2em; color: #718096;">代码知图，研发有闭环</em></p>
 
 <p align="center">
-  <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/version-3.8.0-63b3ed?style=flat-square" alt="version"></a>
+  <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/version-3.9.0-63b3ed?style=flat-square" alt="version"></a>
   <a href="#codegraph-的角色"><img src="https://img.shields.io/badge/requires-CodeGraph%20MCP-f6ad55?style=flat-square" alt="requires CodeGraph"></a>
   <a href="#工作流"><img src="https://img.shields.io/badge/SDLC-8%20阶段全覆盖-68d391?style=flat-square" alt="SDLC"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-68d391?style=flat-square" alt="license"></a>
@@ -90,6 +90,7 @@
 |------|------|
 | **SDLC 全闭环** | 8 个阶段，20 个命令，从需求收集到经验入库，没有断点 |
 | **CodeGraph 深度融合** | 7 个关键节点强制调用图谱，爆炸半径评估、根因追踪、接口反查 |
+| **Figma 三阶段集成** | analyze 读取节点建索引 → design 主动补全所有 UI 场景 → code 重读节点写代码，100% 还原设计稿 |
 | **状态机驱动** | 每个工作项有明确状态，变更触发回退，防止遗漏 |
 | **经验自动入库** | `retrospect` 将每次需求/Bug 提炼为经验卡，`plan` 自动召回，项目越用越聪明 |
 | **安全分级门禁** | CRITICAL 变更强制确认，90 分准入门禁，review CRITICAL 阻断合并 |
@@ -183,9 +184,9 @@ refactor → review → retrospect
 | 命令 | 说明 |
 |------|------|
 | `devflow start` | 创建工作项，支持 `epic` 类型和 `--epic {id}` 子工作项 |
-| `devflow analyze` | 贴入 PRD / 截图 / Figma / YApi 链接，AI 边接收边解析，歧义自动四分类 |
+| `devflow analyze` | 贴入 PRD / 截图 / Figma / YApi 链接，AI 边接收边解析，歧义自动四分类；Figma 节点自动读取并建 node-id 索引 |
 | `devflow quick` | `devflow quick 登录按钮改为「登录」` — 小需求一条命令，AI 自动判断路径 |
-| `devflow design` | 爆炸半径评估 + 技术方案（时序图 / 接口签名 / 验收清单） |
+| `devflow design` | 爆炸半径评估 + 技术方案；主动索要缺失的 Figma 场景链接，在 design.md 顶部建完整节点索引表 |
 | `devflow estimate` | 三点置信区间估算，可同步 Meegle 排期 |
 | `devflow plan` | 拆解为原子任务，≥ 8 个任务自动提示切片模式 |
 
@@ -193,7 +194,7 @@ refactor → review → retrospect
 
 | 命令 | 说明 |
 |------|------|
-| `devflow code` | 按任务逐项编码，修改已有文件前强制阅读原逻辑，完成后编译验证 |
+| `devflow code` | 按任务逐项编码；实现 UI 任务前强制重读 Figma 节点（DT token / RTL / 尺寸以最新读取为准），修改已有文件前强制阅读原逻辑，完成后编译验证 |
 | `devflow checklist` | 生成验收清单：进入路径、Mock 数据、逐条 AC 检查点、回归验证表 |
 | `devflow review` | 专项 Skill 或通用四维度审查，CRITICAL 阻断合并，APPROVED 后触发完成门禁 |
 | `devflow retrospect` | 提炼经验卡入库，关闭工作项，完成 SDLC 闭环 |
@@ -225,7 +226,7 @@ refactor → review → retrospect
 |------|------------|
 | **Meegle（飞书项目）** | `devflow fix` 直接读取 issue，工作项状态自动同步飞书 |
 | **YApi / Apifox** | `analyze` / `design` 自动反查接口定义，无需手动粘贴链接 |
-| **Figma** | `analyze` 收到 Figma 链接时自动读取设计稿 |
+| **Figma Desktop MCP** | `analyze` 读取节点并建索引 → `design` 补全所有 UI 场景节点索引表 → `code` 重读节点确保 100% 还原，颜色用 DT token，不 hardcode |
 | **专项 Review Skill** | `review` 使用项目定制规范，比通用规范更精准 |
 
 ---
