@@ -73,15 +73,16 @@ description: DevFlow 需求分析阶段。支持两种模式：（1）Intake Mod
 
 识别规则：URL 包含 `figma.com/design/` 或 `figma.com/file/`
 
-1. **立即读取**：优先使用 **Figma Desktop MCP**（`figma` 插件，已全局安装）读取节点内容
+从 URL 提取 `nodeId`（`node-id` 参数，格式 `18982-4143`）。
+
+1. **立即读取**：优先使用 **Figma Desktop MCP**（`figma-desktop` 插件）读取节点内容
 
    ```
-   get_figma_data(fileKey, nodeId)     # 读取节点结构和属性
-   get_screenshot(fileKey, nodeId)     # 获取视觉截图（辅助理解布局）
-   get_metadata(fileKey)               # 获取文件级元数据
+   mcp__figma-desktop__get_design_context(nodeId)   # 读取节点结构、样式规格、组件树
+   mcp__figma-desktop__get_screenshot(nodeId)        # 获取视觉截图（辅助目视确认）
    ```
 
-   从 URL 解析 `fileKey`（路径第三段）和 `nodeId`（`node-id` 参数）
+   > ⚠️ 工具名为 `figma-desktop`，不是旧版 `get_figma_data(fileKey, nodeId)`。AI 没有持久记忆，设计信息**必须写进文件**，不能依赖"已读过"的记忆。
 
 2. **提取并记录**：
    - 页面层级（页面、弹窗、Tab、底部面板）
@@ -90,21 +91,37 @@ description: DevFlow 需求分析阶段。支持两种模式：（1）Intake Mod
    - 所有文案（按钮、标题、提示语、占位符）
    - 条件展示逻辑（哪些元素在什么条件下出现）
    - 布局约束（安全区域、键盘顶起、横竖屏）
+   - 颜色 DT token（禁止 hardcode hex，必须用 DT token 名称）
+   - 字号 / 字重 / 行高 / 圆角 / 间距
 
-3. **实时写入 `spec/requirement.md`** 的「UI 交互规范」章节
+3. **实时写入 `spec/requirement.md`** 的「UI 交互规范」章节，同时追加节点记录到 **Figma 节点清单**（如不存在则创建）：
+
+   ```markdown
+   ## Figma 节点清单（design 阶段将扩展为完整索引）
+
+   | 需求条目 | 场景描述 | node-id | 备注 |
+   |---------|---------|---------|------|
+   | F1 Timeline | 收起态 | 18981-8504 | 核心参考 |
+   | F2 弹窗 | 正常态 | 18982-4143 | 核心参考 |
+   ```
+
+   - `需求条目`：对应 requirement.md 中的 F1/F2/F3 编号
+   - `备注`：`核心参考` / `状态-正常` / `状态-异常` / `结构参考` / `图标/颜色`
 
 4. **与已有文字内容交叉核验**：
    - Figma 中有但文字需求未提及的元素 → 即时追问是否在本期范围
    - 文字需求提及但 Figma 中不存在的页面 → 即时追问
+   - PRD 描述与 Figma 不一致 → 以 **Figma 为准**，记录差异到 `open-issues.md`
 
 **回复格式：**
 ```
-🔍 读取 Figma 中...
-📥 #N 已解析
-  页面：{页面清单}
+🔍 读取 Figma 节点 {nodeId}...
+📥 #N 已解析 → node-id: {nodeId}
+  场景：{对应需求条目}
   状态：{交互状态清单}
   文案：{关键文案}
-  [⚠️ {交叉核验发现的问题，即时追问}]
+  颜色 token：{DT token 名称列表}
+  [⚠️ {与 PRD 不一致处，记录到 open-issues.md}]
 ```
 
 **Figma Desktop MCP 不可用时（降级顺序）：**
@@ -116,7 +133,7 @@ description: DevFlow 需求分析阶段。支持两种模式：（1）Intake Mod
 2. **均不可用**：记录链接，标注「待手动核验」，不阻塞流程：
    ```
    📥 #N Figma 链接已记录（MCP 不可用，分析阶段待手动核验）
-     链接：{URL}
+     链接：{URL}  node-id：{nodeId}
    ```
 
 ---

@@ -42,36 +42,64 @@ description: DevFlow 技术设计阶段。读取 spec/requirement.md（含 Figma
 
 ## 执行步骤
 
-### 1. 读取需求上下文
+### 1. 读取需求上下文 + Figma 节点完整性补全
 
-从 `spec/requirement.md` 中提取（**不重复读取 Figma 或接口文档**，analyze 阶段已完成）：
-
-- 所有功能点列表
-- UI 交互规范（来自 Figma 的页面层级、组件清单、状态机、文案）
-- 接口依赖（来自 Apifox/YApi 的接口路径、字段定义、枚举值）
-- 现状背景核验结论（涉及模块、需新增 vs 改造的部分）
+从 `spec/requirement.md` 中提取：
+- 所有功能点列表（F1/F2/F3 编号）
+- UI 交互规范（来自 analyze 阶段已读取的 Figma 节点）
+- 已有的 **Figma 节点清单**（analyze 阶段写入的 node-id 记录）
+- 接口依赖（字段定义、枚举值）
 - 验收标准
 
-若 `spec/requirement.md` 中 UI 交互规范或接口依赖章节为空/标注「待核验」，补充读取：
-- Figma：优先 Figma Desktop MCP（`get_figma_data` / `get_screenshot`），降级 Framelink MCP
+#### UI / 样式改动检查 + Figma 节点完整性补全
+
+扫描功能需求，若包含前端样式改动信号（页面/布局/组件/样式/交互/颜色/字体/间距/图标），执行以下步骤：
+
+**步骤 A：检查现有节点是否覆盖所有 UI 场景**
+
+读取 requirement.md 中「Figma 节点清单」，逐一检查：
+- 每个有 UI 改动的功能点（F1/F2…）是否至少有一个对应节点
+- 有多种状态的组件（正常 / 异常 / 空 / 加载 / 边缘场景）是否每种状态都有独立节点
+- **边缘场景/异常状态优先级 ≥ 正常状态**（PRD 描述通常不准确，Figma 才是准确的）
+
+**步骤 B：主动向开发/PM 索要缺失的 Figma 链接**
+
+对每个缺失节点的场景，明确告知缺少什么，不能靠推断或参考相似场景实现：
+
+```
+⚠️ 以下 UI 场景缺少 Figma 节点，无法保证还原度，请提供链接：
+   · F3 双申请边缘场景（一个已确认 / 一个已取消）的 Figma 链接
+   · F4 错误状态（接口失败时的 UI）的 Figma 链接
+   格式：https://www.figma.com/design/...?node-id=XXXXX
+```
+
+收到链接后立即用 **Figma Desktop MCP** 读取：
+```
+mcp__figma-desktop__get_design_context(nodeId)
+mcp__figma-desktop__get_screenshot(nodeId)
+```
+> ⚠️ 工具名为 `figma-desktop`，不是旧版 `get_figma_data(fileKey, nodeId)`
+
+**步骤 C：在 design.md 顶部建立完整节点索引表**
+
+将所有节点（来自 analyze 阶段 + 本阶段新增）汇总到 `spec/design.md` **最顶部**（在所有其他内容之前）：
+
+```markdown
+## Figma 节点索引（编码时必须通过 figma-desktop 重新读取，不得依赖记忆）
+
+| 功能 | 场景/组件 | node-id | 备注 |
+|------|----------|---------|------|
+| F1 Timeline | 收起态 | 18981-8504 | 核心参考 |
+| F1 Timeline | 展开-正常 | 18982-4138 | 核心参考 |
+| F1 Timeline | 展开-异常 | 18982-4200 | 状态-异常 |
+| F3 双申请 | 一确认一取消 | 18982-9901 | 边缘场景 |
+```
+
+> **备注格式**：`核心参考` / `状态-正常` / `状态-异常` / `结构参考` / `图标/颜色` / `边缘场景`
+
+确认无样式变更时跳过，在 design.md 中注明「本需求无 UI 改动，无 Figma 节点索引」。
+
 - 接口：优先 YApi WebFetch，降级 Apifox MCP
-
-#### UI / 样式改动检查
-
-扫描功能需求，若包含以下任一信号（页面/布局/组件/样式/交互/动画/颜色/字体/间距/图标），视为涉及前端样式改动：
-
-- `spec/requirement.md` 的「UI 交互规范」章节不为空 → 直接使用
-- 章节为空或标注「待核验」，且 `artifacts/` 中无截图 → **立即追问**：
-
-```
-⚠️ 发现前端样式改动，但未找到 Figma 设计稿。
-   请提供以下任一信息后继续设计：
-   · Figma 链接（推荐）：https://www.figma.com/design/...
-   · 设计稿截图（粘贴到对话）
-   · 若沿用现有样式无变动，请确认「无样式变更」
-```
-
-收到 Figma 链接后立即用 Figma Desktop MCP 读取，补充到设计文档「UI 规范」节；收到截图则保存到 `artifacts/` 并提取可见信息；确认无样式变更则跳过。
 
 ---
 

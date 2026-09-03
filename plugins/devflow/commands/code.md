@@ -188,7 +188,28 @@ devflow-cg impact  <涉及符号>
 - HIGH / CRITICAL → **强制暂停**，等待用户确认后才能继续
 - 用户拒绝确认 → 标记任务为「等待确认」，跳过该任务
 
-**d) 编码实现**
+**d) Figma 节点重新读取（UI 实现任务必须执行）**
+
+若当前任务涉及 UI 实现（View / 布局 / 样式 / 组件），在写任何 UI 代码前：
+
+1. 读取 `spec/design.md` 顶部的「Figma 节点索引」表，找到当前任务对应的 node-id
+2. 用 **Figma Desktop MCP** 重新读取（**不能依赖 analyze/design 阶段的记忆**）：
+   ```
+   mcp__figma-desktop__get_design_context({nodeId})   # 获取最新样式规格
+   mcp__figma-desktop__get_screenshot({nodeId})        # 用于目视确认
+   ```
+3. 基于**读取结果**写代码，重点：
+   - 颜色：使用 DT token 名称，**禁止 hardcode hex**
+   - 字号 / 字重 / 行高 / 圆角 / 间距：以读取结果为准
+   - 图标资源：使用 DT 图标名称，不自行猜测
+   - RTL 适配：布局方向属性用 `start/end`，禁止 `left/right`
+4. 若读取结果与 spec 中记录有差异 → **以读取结果为准**，同时更新 spec/design.md 中对应节点的描述
+
+无 UI 改动的纯逻辑任务（如接口调用、数据处理、状态管理）跳过此步骤。
+
+---
+
+**e) 编码实现**
 
 **改动前必读原逻辑（Understand Before Touch）**
 
