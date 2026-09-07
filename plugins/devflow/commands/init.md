@@ -764,7 +764,7 @@ meegle --version
            "hooks": [
              {
                "type": "command",
-               "command": ".devflow/hooks/devflow-audit.sh"
+               "command": "bash -c 'D=$(git rev-parse --git-common-dir 2>/dev/null); [[ \"$D\" == \".git\" ]] && R=$(git rev-parse --show-toplevel) || R=$(cd \"$D/..\" && pwd); exec \"$R/.devflow/hooks/devflow-audit.sh\"'"
              }
            ]
          }
@@ -775,7 +775,7 @@ meegle --version
            "hooks": [
              {
                "type": "command",
-               "command": ".devflow/hooks/devflow-state-guard.sh"
+               "command": "bash -c 'D=$(git rev-parse --git-common-dir 2>/dev/null); [[ \"$D\" == \".git\" ]] && R=$(git rev-parse --show-toplevel) || R=$(cd \"$D/..\" && pwd); exec \"$R/.devflow/hooks/devflow-state-guard.sh\"'"
              }
            ]
          }
