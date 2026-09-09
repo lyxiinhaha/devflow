@@ -1,19 +1,23 @@
 #!/bin/bash
 # DevFlow PreToolUse 状态守卫 hook
-# 拦截非法状态写入，并在合法跃迁前写入 checkpoint
-# 环境变量由 Claude Code 注入：TOOL_NAME, TOOL_INPUT
+# Claude Code 通过 stdin 传入 JSON，格式：{"tool_name":"...","tool_input":{...},"session_id":"..."}
 
 DEVFLOW_DIR=".devflow"
 AUDIT_LOG="$DEVFLOW_DIR/audit-log.jsonl"
-
-# 只拦截写操作
-if [[ "$TOOL_NAME" != "Write" && "$TOOL_NAME" != "Edit" ]]; then exit 0; fi
 
 # 检查 jq 是否可用
 if ! command -v jq &>/dev/null; then
   echo "devflow-state-guard: jq not found, skipping" >&2
   exit 0
 fi
+
+# 从 stdin 读取 JSON（Claude Code hooks 规范）
+INPUT=$(cat)
+TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""')
+TOOL_INPUT_RAW=$(echo "$INPUT" | jq -c '.tool_input // {}')
+
+# 只拦截写操作
+if [[ "$TOOL_NAME" != "Write" && "$TOOL_NAME" != "Edit" ]]; then exit 0; fi
 
 # 未初始化时静默放行
 if [[ ! -f "$DEVFLOW_DIR/workspace.json" ]]; then exit 0; fi
@@ -28,7 +32,7 @@ STATUS=$(jq -r '.status // ""' "$META_FILE" 2>/dev/null)
 WORK_ITEM_TYPE=$(jq -r '.type // ""' "$META_FILE" 2>/dev/null)
 
 # 提取目标文件路径
-TARGET=$(echo "${TOOL_INPUT:-{}}" | jq -r '.file_path // .path // ""' 2>/dev/null)
+TARGET=$(echo "$TOOL_INPUT_RAW" | jq -r '.file_path // .path // ""' 2>/dev/null)
 
 # 只检查 .devflow/work-items/ 下的文件
 if ! echo "$TARGET" | grep -q "work-items/$WORK_ITEM/"; then exit 0; fi
@@ -64,7 +68,7 @@ esac
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
 if ! echo "$REL_PATH" | grep -qE "^($ALLOWED)$"; then
-  # 记录拦截事件（用 jq -n 避免注入）
+  # 记录拦截事件
   jq -n \
     --arg ts "$TS" \
     --arg tool "$TOOL_NAME" \
@@ -75,7 +79,7 @@ if ! echo "$REL_PATH" | grep -qE "^($ALLOWED)$"; then
 
   echo "⛔ DevFlow 状态拦截：当前状态 [$STATUS] 不允许写入 $(basename "$TARGET")"
   echo "   合法写入目标：$ALLOWED"
-  exit 1
+  exit 2
 fi
 
 # 允许写入前写 checkpoint

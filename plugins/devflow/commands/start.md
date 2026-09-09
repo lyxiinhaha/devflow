@@ -1,11 +1,16 @@
 ---
 name: devflow-start
-description: DevFlow 创建新工作项。支持 Feature / Bug / Tech 类型，初始化状态机，可选同步到 Meegle。当用户说「开始新需求」「创建工作项」「新建需求」「devflow start」或描述了一个新的功能/任务需要开始时触发。
+description: DevFlow 创建新工作项。支持 Feature / Bug / Tech 类型，初始化状态机，默认建立隔离 worktree，可选同步到 Meegle。当用户说「开始新需求」「创建工作项」「新建需求」「devflow start」或描述了一个新的功能/任务需要开始时触发。
 ---
 
 # devflow start — 创建新工作项
 
-**用途：** 创建新的 Feature / Bug / Tech / Refactor 工作项，初始化状态机，建立标准目录结构，然后进入**需求收集模式（Intake Mode）**，边接收需求边即时解析，可选同步到 Meegle。
+**用途：** 创建新的 Feature / Bug / Tech / Refactor 工作项，初始化状态机，建立标准目录结构，**默认立即创建隔离 worktree（多任务安全隔离）**，然后进入**需求收集模式（Intake Mode）**，边接收需求边即时解析，可选同步到 Meegle。
+
+> **为什么 worktree 是默认的？**
+> 并发开发多个需求时，主分支与功能分支混用会导致改动污染、状态混乱。
+> worktree 将每个工作项的文件系统完全隔离，`devflow switch` 切换工作项时零成本无冲突。
+> 确实不需要隔离时（单任务、快速原型）可传入 `noworktree` 跳过。
 
 ---
 
@@ -21,12 +26,14 @@ description: DevFlow 创建新工作项。支持 Feature / Bug / Tech 类型，�
 通过 `$ARGUMENTS` 传入，格式：
 - `{类型} {标题} {描述}` — 例：`feature 用户头像上传 支持裁剪和预览`
 - 直接描述，AI 推断类型并生成标题
-- 可附加 `worktree` 标志：工作项创建后立即从当前分支建立隔离 worktree，跳过等到编码阶段再建的等待
+- 可附加 `noworktree` 标志跳过 worktree（默认**会创建** worktree）
 
 ```
-devflow start feature 用户头像上传           ← 默认，不建 worktree
-devflow start feature 用户头像上传 worktree  ← 创建工作项并立即建 worktree
+devflow start feature 用户头像上传             ← 默认，立即建 worktree（推荐）
+devflow start feature 用户头像上传 noworktree  ← 跳过 worktree，在主工作区编码
 ```
+
+> **多任务并行时强烈建议使用默认行为（不传 noworktree）。**
 
 ---
 
@@ -72,7 +79,7 @@ devflow start feature 用户头像上传 worktree  ← 创建工作项并立即�
 - `slug`：英文驼峰，如 `UserAvatarUpload`
 - `title`：中文简短标题
 - 生成 ID：`{YYYYMMDD}-{slug}`
-- `useWorktree`：`$ARGUMENTS` 中含 `worktree` 关键字则为 `true`，否则 `false`
+- `useWorktree`：`$ARGUMENTS` 中**不含** `noworktree` 关键字则为 `true`（默认建 worktree）；含 `noworktree` 则为 `false`
 - `epicId`：`$ARGUMENTS` 中含 `--epic {id}` 参数时提取；用于声明当前工作项是某 Epic 的子工作项
 
 **Epic 类型特殊处理：**
@@ -126,9 +133,9 @@ devflow start feature 用户头像上传 worktree  ← 创建工作项并立即�
 
 `epicId` 有值时：同时更新 Epic 工作项的 `meta.json.childWorkItems` 数组，追加当前子工作项 ID。
 
-### 4.5. 创建 Worktree（仅 `worktree` 参数启用时）
+### 4.5. 创建 Worktree（`noworktree` 参数时跳过，默认执行）
 
-`useWorktree` 为 `false` 时跳过此步骤。
+`useWorktree` 为 `false`（传入了 `noworktree`）时跳过此步骤。
 
 **规则与 `devflow code` 的 worktree 创建完全一致：**
 
@@ -179,7 +186,8 @@ Worktree 路径写入 `meta.json`，同时注册到 `workspace.json.activeWorkIt
 ```
 ✅ 工作项已创建：{YYYYMMDD}-{slug}
   类型：{type}  安全分级：{L0|L1|L2}  Meegle：{ID|未同步}
-  Worktree：.worktrees/{slug}（分支 feature/{YYYYMMDD}-{slug}）  ← 仅 worktree 参数时显示
+  Worktree：.worktrees/{slug}（分支 feature/{YYYYMMDD}-{slug}）  ← useWorktree=true 时显示
+  ⚠️  未创建 worktree（noworktree 参数）——多任务并行时注意分支污染风险  ← useWorktree=false 时显示
 
 📋 已进入需求收集模式
   现在请逐段发送需求内容，每段收到后立即解析：
