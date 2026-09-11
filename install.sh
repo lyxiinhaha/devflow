@@ -17,7 +17,7 @@ set -e
 
 # ── 常量 ──────────────────────────────────────────────────────────────────────
 
-DEVFLOW_VERSION="3.4.0"
+DEVFLOW_VERSION="3.5.0"
 GITHUB_REPO="lyxiinhaha/devflow"
 RAW_BASE="https://raw.githubusercontent.com/${GITHUB_REPO}/main"
 
@@ -153,6 +153,11 @@ ASSETS_KNOWLEDGE_MANIFEST="
 plugins/devflow/assets/templates/knowledge/bug-experience-cards.csv
 "
 
+ASSETS_HOOKS_MANIFEST="
+plugins/devflow/assets/hooks/devflow-state-guard.sh
+plugins/devflow/assets/hooks/devflow-audit.sh
+"
+
 # ── 标题 ──────────────────────────────────────────────────────────────────────
 
 echo ""
@@ -199,6 +204,13 @@ if [[ "$UPDATE_MODE" == true ]]; then
   copy_files_from_manifest "$ASSETS_TEMPLATES_MANIFEST" "${ASSETS_DST}/templates"
   copy_files_from_manifest "$ASSETS_KNOWLEDGE_MANIFEST" "${ASSETS_DST}/templates/knowledge"
   step "配置模板已更新"
+
+  # 更新 hooks 脚本
+  HOOKS_DIR="${TARGET_DIR}/.devflow/hooks"
+  mkdir -p "$HOOKS_DIR"
+  copy_files_from_manifest "$ASSETS_HOOKS_MANIFEST" "$HOOKS_DIR"
+  chmod +x "$HOOKS_DIR"/*.sh 2>/dev/null || true
+  step "Hooks 脚本已更新（${HOOKS_DIR}）"
 
   # 更新适配器（cursor 和 kiro 支持无损更新）
   if [[ "$INSTALLED_PLATFORM" == "cursor" ]]; then
@@ -337,6 +349,19 @@ else
 fi
 step "配置模板 → .devflow/config/"
 
+# ── Step 3.5：安装 hooks 脚本 ──────────────────────────────────────────────────
+
+HOOKS_DIR="${TARGET_DIR}/.devflow/hooks"
+mkdir -p "$HOOKS_DIR"
+
+if [[ "$LOCAL_MODE" == true ]]; then
+  cp "${DEVFLOW_ROOT}/plugins/devflow/assets/hooks/"*.sh "$HOOKS_DIR/"
+else
+  copy_files_from_manifest "$ASSETS_HOOKS_MANIFEST" "$HOOKS_DIR"
+fi
+chmod +x "$HOOKS_DIR"/*.sh 2>/dev/null || true
+step "Hooks 脚本 → .devflow/hooks/"
+
 # ── Step 4：初始化 workspace.json ─────────────────────────────────────────────
 
 WORKSPACE="${TARGET_DIR}/.devflow/workspace.json"
@@ -392,6 +417,63 @@ case $PLATFORM in
     fi
     echo ""
     warn "平台适配器已跳过（插件机制自动处理）"
+
+    # 写入 .claude/settings.json hooks 配置
+    CLAUDE_SETTINGS="${TARGET_DIR}/.claude/settings.json"
+    mkdir -p "${TARGET_DIR}/.claude"
+    if [[ ! -f "$CLAUDE_SETTINGS" ]]; then
+      echo '{}' > "$CLAUDE_SETTINGS"
+    fi
+    python3 - "$CLAUDE_SETTINGS" <<'PYEOF'
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    d = json.load(f)
+
+hooks_cfg = {
+    "PreToolUse": [
+        {
+            "matcher": "Write|Edit",
+            "hooks": [
+                {
+                    "type": "command",
+                    "command": "bash .devflow/hooks/devflow-state-guard.sh"
+                }
+            ]
+        }
+    ],
+    "PostToolUse": [
+        {
+            "matcher": "Write|Edit|Bash",
+            "hooks": [
+                {
+                    "type": "command",
+                    "command": "bash .devflow/hooks/devflow-audit.sh"
+                }
+            ]
+        }
+    ]
+}
+
+# 仅当尚未配置 devflow hooks 时写入，避免覆盖用户自定义 hooks
+existing = d.get("hooks", {})
+pre = existing.get("PreToolUse", [])
+already_installed = any(
+    h.get("type") == "command" and "devflow-state-guard" in h.get("command", "")
+    for entry in pre
+    for h in entry.get("hooks", [])
+)
+if not already_installed:
+    pre.extend(hooks_cfg["PreToolUse"])
+    existing["PreToolUse"] = pre
+    post = existing.get("PostToolUse", [])
+    post.extend(hooks_cfg["PostToolUse"])
+    existing["PostToolUse"] = post
+    d["hooks"] = existing
+    with open(path, "w") as f:
+        json.dump(d, f, indent=2, ensure_ascii=False)
+PYEOF
+    step ".claude/settings.json hooks 已配置（state-guard + audit）"
     ;;
   cursor)
     install_adapter_file "adapters/cursor/devflow.mdc" "${TARGET_DIR}/.cursor/rules/devflow.mdc"
