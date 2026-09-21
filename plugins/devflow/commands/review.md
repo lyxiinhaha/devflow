@@ -1,11 +1,11 @@
 ---
 name: devflow-review
-description: DevFlow 代码审查阶段。优先委托项目配置的专项 review skill（由 devflow init 配置，写入 workspace.json.reviewSkills），找不到时使用通用四维度审查。验证 CodeGraph 影响面一致性，可更新 Meegle 工作项状态。当用户说「代码审查」「review」「devflow review」或编码完成后需要审查代码质量时触发。
+description: DevFlow 代码审查阶段。优先委托项目配置的专项 review skill（由 devflow init 配置，写入 workspace.json.reviewSkills），找不到时使用通用五维度审查（含 ponytail 精简度维度）。验证 CodeGraph 影响面一致性，可更新 Meegle 工作项状态。当用户说「代码审查」「review」「devflow review」或编码完成后需要审查代码质量时触发。
 ---
 
 # devflow review — 代码审查
 
-**用途：** 优先委托项目配置的专项 review skill 执行深度审查；找不到时降级到通用四维度审查。
+**用途：** 优先委托项目配置的专项 review skill 执行深度审查；找不到时降级到通用五维度审查（正确性四维 + ponytail 精简度维）。
 
 ---
 
@@ -88,7 +88,7 @@ description: DevFlow 代码审查阶段。优先委托项目配置的专项 revi
 
 ---
 
-### 2B. 未找到专项 skill → 通用四维度审查
+### 2B. 未找到专项 skill → 通用五维度审查
 
 **❶ 退步检查（Regression Check）——必须第一个执行**
 
@@ -149,6 +149,46 @@ description: DevFlow 代码审查阶段。优先委托项目配置的专项 revi
 **反模式扫描**
 读取 `bug-experience-cards.csv`，扫描本次提交代码是否命中已知高风险反模式。
 
+**❺ 精简度审查（Ponytail Lean Check）——过度设计扫描**
+
+> 此维度**只查过度设计，不查正确性**。与 ❶-❸ 正交：正确但臃肿的代码在此维度发现，正确性问题仍在 ❶-❸ 发现。
+
+对 diff 新增行逆向走 ponytail 7 阶梯：
+1. 这段代码需要存在吗？（YAGNI）
+2. 代码库已有实现，是否重复造轮子？
+3. 标准库是否已提供？
+4. 平台原生能力是否已满足？
+5. 已安装的依赖是否已解决？
+6. 能否缩减为一行？
+7. 是当前任务要求的最小实现吗？
+
+每条发现格式（一行一条）：
+
+```
+L<行号>: <tag> <what to cut>. <replacement>
+```
+
+| Tag      | 判断标准 |
+|----------|---------|
+| `delete` | 死代码、推测性功能、任务未要求的特性 |
+| `stdlib` | 重新实现了标准库已有的功能 |
+| `native` | 引入外部依赖，而平台原生能力已足够 |
+| `yagni`  | 抽象/扩展点只有一个实现，无第二使用方 |
+| `shrink` | 相同逻辑可用更少行数表达 |
+
+末尾汇报：**可删减净行数**。无过度设计时输出 `Lean already.`
+
+升级规则（精简度发现升级为 🟡 Warning）：
+- 单次可删减 ≥ 20 行
+- 出现 `yagni` 且任务/需求文档未提及该抽象
+- 出现 `delete`（新增的明显死代码）
+
+**ponytail: 注释债务追踪**
+
+扫描 diff 新增行中的 `ponytail:` 注释（格式：`// ponytail: <ceiling>. upgrade: <trigger>`）。每处标注说明开发者主动做了精简决策并留下了升级路径。在报告中单独列出：
+- 无 `upgrade:` 标注的 → 🟡 Warning（无触发条件的债务会悄然腐烂）
+- 有 `upgrade:` 标注的 → 🟢 Info（已知债务，有追踪路径）
+
 ---
 
 ### 3. CRITICAL 阻断门禁
@@ -185,10 +225,13 @@ devflow-cg impact <涉及符号>
 - **Critical** 🔴: {n 条，必须修复后才能合并}
 - **Warning** 🟡: {n 条，建议修复}
 - **Info** 🟢: {n 条，可选优化}
+- **Ponytail Lean** 🔵: {n 条，可删减净 X 行 | Lean already.}
 
 详情：
   `{file}:{line}` 🔴 {问题描述}
   `{file}:{line}` 🟡 {问题描述}
+  L{line}: {tag} {what to cut}. {replacement}   ← Ponytail 发现
+  `{file}:{line}` 🟢 ponytail: {ceiling}. upgrade: {trigger}  ← 债务标注
 
 - **影响面验证**: {一致 | 扩大（需确认）}
 - **反模式命中**: {无 | n 处}
@@ -318,6 +361,7 @@ meegle comment add --work-item-id <id> \
 - Critical 🔴: {n}
 - Warning  🟡: {n}
 - Info     🟢: {n}
+- Ponytail 🔵: {n 条，净可删减 X 行 | Lean already.}
 - 影响面验证: {一致 | 扩大（需确认）}
 - Worktree: {feature/YYYYMMDD-slug → 等待选择合并方式 | 无 worktree}
 
