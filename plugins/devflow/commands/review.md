@@ -1,11 +1,11 @@
 ---
 name: devflow-review
-description: DevFlow 代码审查阶段。优先委托项目配置的专项 review skill（由 devflow init 配置，写入 workspace.json.reviewSkills），找不到时使用通用五维度审查（含 ponytail 精简度维度）。验证 CodeGraph 影响面一致性，可更新 Meegle 工作项状态。当用户说「代码审查」「review」「devflow review」或编码完成后需要审查代码质量时触发。
+description: DevFlow 代码审查阶段。优先委托项目配置的专项 review skill（由 devflow init 配置，写入 workspace.json.reviewSkills），找不到时使用通用四维度审查。两条路径均在末尾执行 2C 通用后置精简度审查（Ponytail Lean Pass），可通过 workspace.json ponytailLean:false 或 skill.meta.md disables:[ponytail-lean] 关闭。验证 CodeGraph 影响面一致性，可更新 Meegle 工作项状态。当用户说「代码审查」「review」「devflow review」或编码完成后需要审查代码质量时触发。
 ---
 
 # devflow review — 代码审查
 
-**用途：** 优先委托项目配置的专项 review skill 执行深度审查；找不到时降级到通用五维度审查（正确性四维 + ponytail 精简度维）。
+**用途：** 优先委托项目配置的专项 review skill 执行深度审查；找不到时降级到通用四维度审查。两条路径均在末尾执行 **2C 通用后置精简度审查（Ponytail Lean Pass）**。
 
 ---
 
@@ -68,7 +68,7 @@ description: DevFlow 代码审查阶段。优先委托项目配置的专项 revi
 2. 提取 `core_checklist` 作为主要审查清单
 3. 提取 `domain_hit_rules`，扫描 diff 命中哪些领域规则，逐条加载
 4. 按上述 checklist 逐条审查，输出分级报告（🔴 / 🟡 / 🟢）
-5. 审查结束后跳至步骤 4（影响面验证）
+5. 审查结束后跳至步骤 **2C**（通用后置精简度审查）
 
 **第二优先级：通用路径扫描（`reviewSkills` 为空或无匹配时）**
 
@@ -82,13 +82,13 @@ description: DevFlow 代码审查阶段。优先委托项目配置的专项 revi
 
 找到匹配后，同样执行上述 1-5 步。
 
-**两种方式都未找到匹配 → 降级到步骤 2B 通用四维度审查。**
+**两种方式都未找到匹配 → 降级到步骤 2B 通用五维度审查（执行完毕后进入步骤 2C）。**
 
 > 如需配置专项 review skill，执行 `devflow init` 并选择"配置 Review Skill"。生成的规范文件在 `.ai/skills/devflow-review-{技术栈}/skill.meta.md`，可直接编辑自定义。
 
 ---
 
-### 2B. 未找到专项 skill → 通用五维度审查
+### 2B. 未找到专项 skill → 通用四维度审查
 
 **❶ 退步检查（Regression Check）——必须第一个执行**
 
@@ -149,11 +149,26 @@ description: DevFlow 代码审查阶段。优先委托项目配置的专项 revi
 **反模式扫描**
 读取 `bug-experience-cards.csv`，扫描本次提交代码是否命中已知高风险反模式。
 
-**❺ 精简度审查（Ponytail Lean Check）——过度设计扫描**
+---
 
-> 此维度**只查过度设计，不直接查正确性**。但 ❺ 与 ❶ 存在交叉风险：看起来"可删"的代码，可能正是 ❶ 退步检查所保护的安全兜底（边界校验、异常捕获、竞态防护）。
->
-> **执行顺序约束**：❺ 必须在 ❶ 之后执行。对于 ❺ 发现的每条 `delete` 或 `yagni` 候选，必须先回答：❶ 退步检查是否已评估过这段代码？若 ❶ 确认该代码有安全兜底职责，❺ 的"删除建议"自动升级为 🔴 CRITICAL（不可删）。
+### 2C. 通用后置精简度审查（Ponytail Lean Pass）
+
+**两条路径都执行此步骤**——专项 skill 路径（步骤 1）和通用审查路径（步骤 2B）执行完毕后均进入此处。
+
+**跳过条件（满足任一即跳过，直接进入步骤 3）：**
+- `workspace.json` 设置了 `"ponytailLean": false`，或
+- 命中的专项 skill 的 `skill.meta.md` 中声明了 `disables: [ponytail-lean]`（表示该 skill 已内置精简度检查，避免重复输出）
+
+**❶ 退步检查依赖——分路处理：**
+
+| 来自哪条路径 | `delete` / `yagni` 候选的处理方式 |
+|------------|----------------------------------|
+| 步骤 2B（通用审查） | ❶ 已完成，可直接对照 ❶ 结果判断 |
+| 步骤 1（专项 skill） | 无法确认 ❶ 是否覆盖，每条 `delete`/`yagni` 候选追加标注：⚠️ 需人工确认该代码无安全兜底职责 |
+
+> 若 ❶ 确认（或人工确认）该代码有安全兜底职责，❺ 的"删除建议"自动升级为 🔴 CRITICAL（不可删）。
+
+**精简度扫描**
 
 对 diff 新增行逆向走 ponytail 7 阶梯：
 1. 这段代码需要存在吗？（YAGNI）
@@ -172,24 +187,24 @@ L<行号>: <tag> <what to cut>. <replacement>
 
 | Tag      | 判断标准 | 风险 |
 |----------|---------|------|
-| `delete` | 死代码、推测性功能、任务未要求的特性 | ⚠️ 需先过 ❶ 退步检查——边界保护/异常兜底不可删 |
-| `stdlib` | 重新实现了标准库已有的功能 | 低（但需确认自定义实现是否有特殊 edge case 要求） |
-| `native` | 引入外部依赖，而平台原生能力已足够 | 低（但需确认原生特性的平台版本覆盖范围） |
-| `yagni`  | 抽象/扩展点只有一个实现，无第二使用方 | ⚠️ 需确认：是否为可测性（mock）或团队 API 契约而存在 |
+| `delete` | 死代码、推测性功能、任务未要求的特性 | ⚠️ 见上方分路处理——安全兜底不可删 |
+| `stdlib` | 重新实现了标准库已有的功能 | 低（确认自定义实现无特殊 edge case 要求） |
+| `native` | 引入外部依赖，而平台原生能力已足够 | 低（确认原生特性的平台版本覆盖范围） |
+| `yagni`  | 抽象/扩展点只有一个实现，无第二使用方 | ⚠️ 确认：是否为可测性（mock）或团队 API 契约而存在 |
 | `shrink` | 相同逻辑可用更少行数表达 | 低（确认可读性不降级即可） |
 
 末尾汇报：**可删减净行数**。无过度设计时输出 `Lean already.`
 
-升级规则（精简度发现升级为 🟡 Warning）：
+升级为 🟡 Warning 的条件：
 - 单次可删减 ≥ 20 行
 - 出现 `yagni` 且任务/需求文档未提及该抽象
 - 出现 `delete`（新增的明显死代码）
 
 **ponytail: 注释债务追踪**
 
-扫描 diff 新增行中的 `ponytail:` 注释（格式：`// ponytail: <ceiling>. upgrade: <trigger>`）。每处标注说明开发者主动做了精简决策并留下了升级路径。在报告中单独列出：
-- 无 `upgrade:` 标注的 → 🟡 Warning（无触发条件的债务会悄然腐烂）
-- 有 `upgrade:` 标注的 → 🟢 Info（已知债务，有追踪路径）
+扫描 diff 新增行中的 `ponytail:` 注释（格式：`// ponytail: <ceiling>. upgrade: <trigger>`）：
+- 无 `upgrade:` 标注 → 🟡 Warning（无触发条件的债务会悄然腐烂）
+- 有 `upgrade:` 标注 → 🟢 Info（已知债务，有追踪路径）
 
 ---
 
