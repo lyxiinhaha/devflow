@@ -102,14 +102,14 @@ meegle comment list --work-item-id <id>                       # 获取全部评�
 ## Step 2：根因分析（四阶段 CodeGraph 法）
 
 所有 CodeGraph 调用通过 `devflow-cg` 脚本执行（自动路由 + 新鲜度检查，不占 LLM Token）：
-- 阶段一/三（定位符号）：`devflow-cg explore "<query>"`
-- 阶段二（爆炸半径）：`devflow-cg impact <symbol>`（脚本自动在壳工程 root 执行全局查询）
+- 阶段一/三（定位符号）：`bash .devflow/tools/devflow-cg.sh explore "<query>"`
+- 阶段二（爆炸半径）：`bash .devflow/tools/devflow-cg.sh impact <symbol>`（脚本自动在壳工程 root 执行全局查询）
 
 CodeGraph 已预先索引全部符号和调用关系，一次查询即可返回相关符号的源码、调用路径和影响链，比 grep/find 更精准高效。
 
 ### 阶段一：定位入口符号
 ```
-devflow-cg explore "<关键类名、方法名或自然语言描述问题>"
+bash .devflow/tools/devflow-cg.sh explore "<关键类名、方法名或自然语言描述问题>"
 ```
 - query 可以是自然语言（如"条件单列表触发条件文案生成"）或符号名
 - 返回结果包含相关符号的逐行源码、文件路径、符号间调用关系
@@ -117,7 +117,7 @@ devflow-cg explore "<关键类名、方法名或自然语言描述问题>"
 
 ### 阶段二：追踪调用链（爆炸半径门禁）
 ```
-devflow-cg explore "<根因方法名> 调用方 影响"
+bash .devflow/tools/devflow-cg.sh explore "<根因方法名> 调用方 影响"
 ```
 
 | 直接调用方 | 风险等级 | 行为 |
@@ -147,7 +147,7 @@ devflow-cg explore "<根因方法名> 调用方 影响"
 - **修复策略**：最小改动，只修当前 bug 所需内容，不引入新抽象、新依赖
 - **修复后影响面验证**：
   ```
-  devflow-cg explore "<修改后符号> 影响"
+  bash .devflow/tools/devflow-cg.sh explore "<修改后符号> 影响"
   ```
   强制断言：影响面不得扩大。若扩大，报错并要求修改方案后重新验证。
 
@@ -155,7 +155,7 @@ CodeGraph 不可用时：降级 grep/find + Read 手动搜索，分析文件中�
 
 ### CodeGraph 调用统计
 
-Step 2 全部执行完成后，统计本次实际执行的 CG 查询次数（每次 `devflow-cg explore` 或 `devflow-cg impact` 调用各计 1）：
+Step 2 全部执行完成后，统计本次实际执行的 CG 查询次数（每次 `bash .devflow/tools/devflow-cg.sh explore` 或 `bash .devflow/tools/devflow-cg.sh impact` 调用各计 1）：
 
 1. 读取 `.devflow/workspace.json` 的 `stats` 字段（若字段不存在则初始化为 `{ "totalCgQueries": 0, "totalCgQueriesSaved": 0, "lastUpdated": null }`）
 2. `totalCgQueries += 本次查询次数`
@@ -196,7 +196,7 @@ CodeGraph 不可用（降级为 grep/read）时：`cgQueriesThisRun = 0`，不�
 **修复原则：**
 - 最小改动，只修当前 bug 所需内容
 - 不引入新抽象、新依赖
-- 遵守项目代码规范（`CLAUDE.md` / `AGENTS.md`）
+- 遵守项目代码规范（`AGENTS.md` / `CLAUDE.md` / `.kiro/steering/`）
 - **修复完成后不执行 `git commit`**
 
 修复后：

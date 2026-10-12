@@ -4,7 +4,7 @@
 </p>
 
 <h1 align="center">DevFlow × Kiro</h1>
-<p align="center">给 Kiro 补上完整研发闭环——从需求分析到经验入库，20 个命令覆盖 SDLC 全流程</p>
+<p align="center">给 Kiro 补上完整研发闭环——从需求分析到经验入库，25 个命令覆盖 SDLC 全流程</p>
 
 <br/>
 
@@ -23,15 +23,25 @@ Kiro 的 Spec 记录了意图，但回答不了「这个函数改了会影响谁
 
 ## 安装
 
+Kiro CLI 的完整前置条件、兼容矩阵、25 个命令速查、可选 MCP 与 CI 用法见 [Kiro CLI 安装与使用手册](./docs/kiro-cli-guide.md)。
+
 在**项目根目录**运行：
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh) --platform kiro
 ```
 
-脚本自动完成：命令文件安装 → Steering File 写入 `.kiro/steering/devflow.md` → `.gitignore` 更新。
+脚本自动完成：命令文件安装 → Steering File 写入 `.kiro/steering/devflow.md` → Kiro CLI 斜杠命令写入 `.kiro/prompts/` → `.gitignore` 更新。
 
-安装后在 Kiro 中运行一次初始化（每个项目只需一次）：
+安装后，在 Kiro CLI V3 中输入 `/` 即可看到 DevFlow 命令，例如：
+
+```text
+/devflow-init
+/devflow-start <需求描述>
+/devflow-fix <问题描述或 issue URL>
+```
+
+也可以继续使用原有的自然语言形式。在 Kiro 中运行一次初始化（每个项目只需一次）：
 
 ```
 devflow init
@@ -82,12 +92,14 @@ devflow continue   # 新对话 / 重开 Kiro 后，读取 Checkpoint 恢复上�
 
 **Steering File 自动加载**：安装后 `.kiro/steering/devflow.md` 带有 `inclusion: always`，每次对话无需手动引入。
 
+**Kiro CLI 斜杠命令**：安装脚本会为 `.devflow/commands/` 中的每个命令生成 `.kiro/prompts/devflow-<命令>.md` 入口。Kiro CLI V3 会自动发现这些项目级 Prompt；输入 `/` 可浏览，命令后的内容会通过 `$ARGUMENTS` 原样传入。若当前会话使用旧引擎，请通过 `kiro-cli chat --v3` 启动。
+
 **CodeGraph MCP（推荐）**：在 Kiro MCP 配置中添加后，`design` / `fix` / `review` 的分析精度显著提升。`devflow init` 会自动引导配置，也可以手动添加：
 
 ```json
 {
   "mcpServers": {
-    "codegraph": { "command": "codegraph", "args": ["mcp"] }
+    "codegraph": { "type": "stdio", "command": "codegraph", "args": ["serve", "--mcp"] }
   }
 }
 ```

@@ -78,7 +78,7 @@ devflow quick 接入优惠券列表接口 https://yapi.example.com/...
 执行以下分析，**全部收集后一次性输出**（不逐段打断）：
 
 1. 从描述提取改动点、涉及模块
-2. `devflow-cg explore "<模块名 关键词>"` 查现有实现和影响面
+2. `bash .devflow/tools/devflow-cg.sh explore "<模块名 关键词>"` 查现有实现和影响面
 3. 检查是否需要新增/修改接口（无则跳过 YApi 搜索）
 4. 统计 CodeGraph 影响符号数量，**判断路径**
 

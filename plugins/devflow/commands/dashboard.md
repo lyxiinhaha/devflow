@@ -52,11 +52,11 @@ devflow dashboard --sheet      # 终端看板 + 更新飞书多维表格
 
 ### 3. 对每个活跃工作项执行风险扫描
 
-调用 `devflow-risk-scanner` skill，针对每个活跃工作项扫描三类风险，收集结果：
+读取 `.devflow/tools/devflow-risk-scanner.md`，针对每个活跃工作项扫描三类风险，收集结果：
 - 每个工作项的最高风险等级（无风险为 ✓）
 - 全局风险汇总：HIGH 数量、MEDIUM 数量及分类标注
 
-skill 已定义于 `plugins/devflow/skills/devflow-risk-scanner/index.md`。
+扫描规范随项目安装在 `.devflow/tools/devflow-risk-scanner.md`。
 扫描结果按工作项收集：最高风险等级（🔴 HIGH / 🟡 MEDIUM / ✓ 无风险）和风险类型描述（延期 / 冲突 / 高影响），用于步骤 5 的活跃工作项行和步骤 5 风险汇总渲染。
 
 ### 4. 识别待办看板条目

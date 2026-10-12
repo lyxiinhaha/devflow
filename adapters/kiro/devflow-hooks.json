@@ -1,0 +1,29 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "devflow-state-guard",
+      "description": "在写入 DevFlow 工作项文档前校验状态机并创建 checkpoint",
+      "trigger": "PreToolUse",
+      "matcher": "write",
+      "action": {
+        "type": "command",
+        "command": "bash .devflow/hooks/devflow-state-guard.sh"
+      },
+      "timeout": 30,
+      "enabled": true
+    },
+    {
+      "name": "devflow-audit",
+      "description": "审计 Kiro CLI 的文件写入和 Shell 操作",
+      "trigger": "PostToolUse",
+      "matcher": "^(fs_write|fs_append|str_replace|delete_file|code|execute_bash|execute_pwsh)$",
+      "action": {
+        "type": "command",
+        "command": "bash .devflow/hooks/devflow-audit.sh"
+      },
+      "timeout": 30,
+      "enabled": true
+    }
+  ]
+}

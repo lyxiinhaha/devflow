@@ -45,7 +45,7 @@ description: DevFlow 任务拆解阶段。将技术设计拆解为原子任务�
 
 ### 1.5 风险扫描（主动预警）
 
-加载并执行 `devflow-risk-scanner` skill 逻辑，针对当前工作项完成三类扫描：延期风险、高风险变更、依赖阻塞。
+读取并执行 `.devflow/tools/devflow-risk-scanner.md` 中的逻辑，针对当前工作项完成三类扫描：延期风险、高风险变更、依赖阻塞。
 
 有风险时输出警告块（见 devflow-risk-scanner 输出格式规范），无风险时静默，不影响后续任务拆解步骤。
 
@@ -67,7 +67,7 @@ description: DevFlow 任务拆解阶段。将技术设计拆解为原子任务�
 {
   "ts": "{ISO时间戳，如 2026-08-19T10:23:01Z}",
   "card_id": "{命中卡片的 ID，如 KB-003}",
-  "work_item": "{workspace.json.currentWorkItem}",
+  "work_item": "{workspace.json.focus，兼容回退 currentWorkItem}",
   "recalled_by": "plan",
   "outcome": "unknown",
   "outcome_ts": null,

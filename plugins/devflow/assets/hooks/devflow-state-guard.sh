@@ -1,6 +1,6 @@
 #!/bin/bash
 # DevFlow PreToolUse 状态守卫 hook
-# Claude Code 通过 stdin 传入 JSON，格式：{"tool_name":"...","tool_input":{...},"session_id":"..."}
+# Claude Code 与 Kiro CLI V3 均通过 stdin 传入 Hook 事件 JSON。
 
 DEVFLOW_DIR=".devflow"
 AUDIT_LOG="$DEVFLOW_DIR/audit-log.jsonl"
@@ -11,18 +11,21 @@ if ! command -v jq &>/dev/null; then
   exit 0
 fi
 
-# 从 stdin 读取 JSON（Claude Code hooks 规范）
+# 从 stdin 读取 JSON（兼容 Claude Code / Kiro CLI V3）
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""')
 TOOL_INPUT_RAW=$(echo "$INPUT" | jq -c '.tool_input // {}')
 
 # 只拦截写操作
-if [[ "$TOOL_NAME" != "Write" && "$TOOL_NAME" != "Edit" ]]; then exit 0; fi
+case "$TOOL_NAME" in
+  Write|Edit|fs_write|fs_append|str_replace|delete_file|code) ;;
+  *) exit 0 ;;
+esac
 
 # 未初始化时静默放行
 if [[ ! -f "$DEVFLOW_DIR/workspace.json" ]]; then exit 0; fi
 
-WORK_ITEM=$(jq -r '.currentWorkItem // ""' "$DEVFLOW_DIR/workspace.json" 2>/dev/null)
+WORK_ITEM=$(jq -r '.focus // .currentWorkItem // ""' "$DEVFLOW_DIR/workspace.json" 2>/dev/null)
 if [[ -z "$WORK_ITEM" || "$WORK_ITEM" == "null" ]]; then exit 0; fi
 
 META_FILE="$DEVFLOW_DIR/work-items/$WORK_ITEM/meta.json"
@@ -77,8 +80,8 @@ if ! echo "$REL_PATH" | grep -qE "^($ALLOWED)$"; then
     '{"ts":$ts,"tool":$tool,"blocked":true,"reason":$reason,"workItem":$workItem}' \
     >> "$AUDIT_LOG"
 
-  echo "⛔ DevFlow 状态拦截：当前状态 [$STATUS] 不允许写入 $(basename "$TARGET")"
-  echo "   合法写入目标：$ALLOWED"
+  echo "⛔ DevFlow 状态拦截：当前状态 [$STATUS] 不允许写入 $(basename "$TARGET")" >&2
+  echo "   合法写入目标：$ALLOWED" >&2
   exit 2
 fi
 

@@ -127,7 +127,7 @@ devflow start 用户头像上传 支持裁剪和预览
 |------|---------|------|
 | **Claude Code** | 官方插件（`claude plugins install devflow`） | ✅ 完整支持 |
 | **Cursor** | `.cursor/rules/devflow.mdc` | ✅ 完整支持 · [使用手册](./README-Cursor.md) |
-| **Kiro** | `.kiro/steering/devflow.md` | ✅ 完整支持 · [使用手册](./README-Kiro.md) |
+| **Kiro IDE / CLI V3** | `.kiro/agents/` + `.kiro/prompts/` + `.kiro/hooks/` | ✅ 25 个斜杠命令 · [使用手册](./docs/kiro-cli-guide.md) |
 | **Codex**（OpenAI） | `AGENTS.md` | ✅ 完整支持 |
 | **OpenCode** | `OPENCODE.md` | ✅ 完整支持 |
 | **Gemini CLI** | `GEMINI.md` | ✅ 完整支持 |

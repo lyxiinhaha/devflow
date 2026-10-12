@@ -78,6 +78,8 @@ description: DevFlow 代码审查阶段。优先委托项目配置的专项 revi
 {项目根}/.ai/skills/
 {项目根}/.claude/skills/
 ~/.claude/skills/
+{项目根}/.kiro/skills/
+~/.kiro/skills/
 ```
 
 找到匹配后，同样执行上述 1-5 步。
@@ -221,7 +223,7 @@ L<行号>: <tag> <what to cut>. <replacement>
 ### 4. CodeGraph 影响面一致性验证
 
 ```bash
-devflow-cg impact <涉及符号>
+bash .devflow/tools/devflow-cg.sh impact <涉及符号>
 ```
 
 将实际影响面与 `spec/design.md` 中「CodeGraph 爆炸半径评估」章节对比：
@@ -307,7 +309,7 @@ Q4 回归义务
 
 ### 7. Worktree 合并与 MR（审查通过时）
 
-若 `meta.json.worktree` 存在（编码阶段在 worktree 中进行），审查通过（Status: APPROVED）后，按 `finishing-a-development-branch` skill 的流程处理：
+若 `meta.json.worktree` 存在（编码阶段在 worktree 中进行），审查通过（Status: APPROVED）后，优先按可用的 `finishing-a-development-branch` skill 流程处理；Kiro CLI 未安装该 skill 时，使用下方等价的 Git 分支收尾流程：
 
 ```
 实现已完成，代码审查通过。请选择后续操作：

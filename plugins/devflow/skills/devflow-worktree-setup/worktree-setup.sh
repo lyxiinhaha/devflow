@@ -42,6 +42,13 @@ echo "  主工程：$PROJECT_ROOT"
 echo "  Worktree：$WORKTREE_ABS"
 echo ""
 
+# DevFlow 的状态、命令与运行时工具保存在主工作区的本地 .devflow/ 中。
+# Worktree 内建立软链后，所有命令仍可使用稳定的 .devflow/... 相对路径。
+if [[ -d "$PROJECT_ROOT/.devflow" && ! -e "$WORKTREE_ABS/.devflow" ]]; then
+  ln -s "$PROJECT_ROOT/.devflow" "$WORKTREE_ABS/.devflow"
+  ok "软链：.devflow → $PROJECT_ROOT/.devflow"
+fi
+
 # ── 检测项目类型 ──────────────────────────────────────
 detect_project_type() {
   # iOS：有 .xcodeproj / .xcworkspace / Podfile

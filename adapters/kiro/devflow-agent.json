@@ -1,0 +1,17 @@
+{
+  "name": "devflow",
+  "description": "DevFlow 全流程研发 Agent，支持需求、设计、编码、审查、修复、复盘和项目度量",
+  "prompt": "file://../steering/devflow.md",
+  "tools": ["*"],
+  "includeMcpJson": true,
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_read",
+        "match": ["**"],
+        "effect": "allow"
+      }
+    ]
+  },
+  "welcomeMessage": "DevFlow 已就绪。输入 / 可查看全部 devflow-* 命令。"
+}

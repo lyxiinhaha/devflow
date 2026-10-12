@@ -79,7 +79,7 @@ git check-ignore -q .worktrees
 git worktree add .worktrees/{slug} -b feature/{YYYYMMDD}-{slug}
 
 # 自动初始化 worktree 环境（软链本地文件、iOS 执行 pod install）
-bash <devflow-skill-dir>/devflow-worktree-setup/worktree-setup.sh .worktrees/{slug}
+bash .devflow/tools/worktree-setup.sh .worktrees/{slug}
 ```
 
 脚本自动处理：
@@ -109,7 +109,7 @@ Worktree 路径写入 `meta.json`，同时注册到 `workspace.json.activeWorkIt
 
 ### 1.5 风险扫描（主动预警）
 
-加载并执行 `devflow-risk-scanner` skill 逻辑，针对当前工作项完成三类扫描：延期风险、高风险变更、依赖阻塞。
+读取并执行 `.devflow/tools/devflow-risk-scanner.md` 中的逻辑，针对当前工作项完成三类扫描：延期风险、高风险变更、依赖阻塞。
 
 有风险时输出警告块（见 devflow-risk-scanner 输出格式规范），无风险时静默，不影响后续编码步骤。
 
@@ -135,7 +135,7 @@ Worktree 路径写入 `meta.json`，同时注册到 `workspace.json.activeWorkIt
 ### 4. CodeGraph 主动预警
 
 ```bash
-devflow-cg status   # 检查索引新鲜度，pod update / submodule 更新后自动提示重建
+bash .devflow/tools/devflow-cg.sh status   # 检查索引新鲜度，pod update / submodule 更新后自动提示重建
 ```
 
 若编码期间检测到其他分支/协作者引入了对当前修改符号的新调用，**必须主动提示用户重新评估影响面**，不得静默继续。
@@ -165,7 +165,7 @@ devflow-cg status   # 检查索引新鲜度，pod update / submodule 更新后�
 
 第 2 级的 CodeGraph 探查方式：从任务的 `Description` 和 `Files` 中提取关键词（类名、方法名、功能动词、业务实体），执行：
 ```bash
-devflow-cg explore "<关键词 空格分隔>"
+bash .devflow/tools/devflow-cg.sh explore "<关键词 空格分隔>"
 # 或 MCP 工具
 codegraph_explore("<关键词 空格分隔>")
 ```
@@ -202,8 +202,8 @@ codegraph_explore("<关键词 空格分隔>")
 `sharedWith` 为空时完全静默，跳过此步骤。
 标注 `⚠️ [CodeGraph 前置检查]` → 必须执行：
 ```bash
-devflow-cg explore <涉及符号>
-devflow-cg impact  <涉及符号>
+bash .devflow/tools/devflow-cg.sh explore <涉及符号>
+bash .devflow/tools/devflow-cg.sh impact  <涉及符号>
 ```
 - HIGH / CRITICAL → **强制暂停**，等待用户确认后才能继续
 - 用户拒绝确认 → 标记任务为「等待确认」，跳过该任务

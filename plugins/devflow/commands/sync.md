@@ -33,7 +33,11 @@ description: DevFlow 团队 AI 文件同步。将 devflow 插件包中的团队�
 
 ### 2. 定位同步脚本
 
-脚本随插件存放在 `skills/devflow-sync/sync-ai-files.sh`（相对于本 skill 所在目录）。
+先读取 `.devflow/.devflow-install.json` 判断平台：
+
+- Kiro CLI：优先执行安装脚本的 `--update` 流程，同步 Agent、Prompts、Hooks、命令与运行时工具。
+- 存在团队 `ai-files/` 源目录：再执行 `.devflow/tools/sync-ai-files.sh` 同步公共 Skills/Agents。
+- 不存在团队 `ai-files/`：明确输出“无团队 AI 文件源，已仅更新 DevFlow”，不得报错中断。
 
 若无法定位脚本，提示用户重新安装 devflow 插件：
 ```
@@ -44,7 +48,11 @@ description: DevFlow 团队 AI 文件同步。将 devflow 插件包中的团队�
 ### 3. 调用同步脚本
 
 ```bash
-bash <devflow-sync-skill-dir>/sync-ai-files.sh <target-project-root>
+# Kiro CLI / 通用 DevFlow 更新
+bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/install.sh) --update --dir <target-project-root>
+
+# 仅在团队 ai-files 源可定位时执行
+bash .devflow/tools/sync-ai-files.sh <target-project-root>
 ```
 
 ### 4. 验证同步结果

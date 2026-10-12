@@ -113,10 +113,10 @@ devflow start feature 用户头像上传 noworktree  ← 跳过 worktree，在�
 ### 4. 更新 workspace.json
 
 ```json
-{ "currentWorkItem": "{YYYYMMDD}-{slug}" }
+{ "focus": "{YYYYMMDD}-{slug}", "currentWorkItem": "{YYYYMMDD}-{slug}" }
 ```
 
-同时将新工作项追加到 `activeWorkItems`，含以下字段：
+`focus` 是当前规范字段，`currentWorkItem` 作为旧版本兼容别名同步写入。同时将新工作项追加到 `activeWorkItems`，含以下字段：
 
 ```json
 {
@@ -150,7 +150,7 @@ git check-ignore -q .worktrees || (echo '.worktrees/' >> .gitignore && git add .
 git worktree add .worktrees/{slug} -b feature/{YYYYMMDD}-{slug}
 
 # 自动初始化 worktree 环境（软链 local.properties / iOS pod install）
-bash <devflow-skill-dir>/devflow-worktree-setup/worktree-setup.sh .worktrees/{slug}
+bash .devflow/tools/worktree-setup.sh .worktrees/{slug}
 ```
 
 Worktree 路径写入 `meta.json`，同时注册到 `workspace.json.activeWorkItems`：

@@ -34,7 +34,7 @@ devflow audit {workItemId}       # 指定工作项摘要
 
 ### 1. 确定目标工作项
 
-- 未传入 workItemId：读取 `workspace.json.currentWorkItem`
+- 未传入 workItemId：优先读取 `workspace.json.focus`，兼容回退到 `currentWorkItem`
 - 传入 workItemId：直接使用
 
 工作项不存在时输出：
@@ -42,7 +42,7 @@ devflow audit {workItemId}       # 指定工作项摘要
 ✗ 工作项 {id} 不存在，请检查 ID 是否正确。
 ```
 
-`currentWorkItem` 字段不存在或为 null 时，提示：「当前无活跃工作项，请传入 workItemId 参数。」
+两个焦点字段均不存在或为 null 时，提示：「当前无活跃工作项，请传入 workItemId 参数。」
 
 ### 2. 读取数据源
 

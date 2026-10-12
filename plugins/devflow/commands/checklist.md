@@ -111,7 +111,7 @@ description: DevFlow 生成真机验收清单。基于当前工作项的需求�
 ```
 
 识别方式：
-- 从 `devflow-cg impact <涉及符号>` 的结果中找出被影响的现有模块
+- 从 `bash .devflow/tools/devflow-cg.sh impact <涉及符号>` 的结果中找出被影响的现有模块
 - 结合 `bug-experience-cards.csv` 中该模块的历史 Bug，判断回归风险点
 
 ### 6. 输出清单文件

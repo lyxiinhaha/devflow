@@ -133,8 +133,8 @@ mcp__figma-desktop__get_screenshot(nodeId)
 
 所有 CodeGraph 调用通过 `devflow-cg` 脚本执行（自动路由 + 新鲜度检查，不占 LLM Token）：
 ```bash
-devflow-cg explore "<模块名 类名>"   # 现有结构分析
-devflow-cg impact <symbol>           # 爆炸半径评估
+bash .devflow/tools/devflow-cg.sh explore "<模块名 类名>"   # 现有结构分析
+bash .devflow/tools/devflow-cg.sh impact <symbol>           # 爆炸半径评估
 ```
 
 #### 3.1 现有代码结构分析
@@ -153,8 +153,8 @@ codegraph_explore("<模块名 类名 接口名>")
 
 对每个**拟修改的核心符号**执行：
 ```bash
-devflow-cg impact <symbol>
-devflow-cg explore <symbol>
+bash .devflow/tools/devflow-cg.sh impact <symbol>
+bash .devflow/tools/devflow-cg.sh explore <symbol>
 ```
 
 | 直接调用方数量 | 风险等级 | 行为 |
@@ -172,7 +172,7 @@ devflow-cg explore <symbol>
 
 #### 3.4 CodeGraph 调用统计
 
-Step 3 全部执行完成后，统计本次实际执行的 CG 查询次数（每次 `devflow-cg explore` 或 `devflow-cg impact` 调用各计 1）：
+Step 3 全部执行完成后，统计本次实际执行的 CG 查询次数（每次 `bash .devflow/tools/devflow-cg.sh explore` 或 `bash .devflow/tools/devflow-cg.sh impact` 调用各计 1）：
 
 1. 读取 `.devflow/workspace.json` 的 `stats` 字段（若字段不存在则初始化为 `{ "totalCgQueries": 0, "totalCgQueriesSaved": 0, "lastUpdated": null }`）
 2. `totalCgQueries += 本次查询次数`

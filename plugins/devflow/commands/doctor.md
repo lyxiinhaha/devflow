@@ -32,13 +32,15 @@ devflow doctor --quick  # 仅检查 🔴 必须修复项，跳过 🟡 建议修
 | CodeGraph 已安装 | 执行 `codegraph --version`，命令不存在则标记失败 | `npm install -g @colbymchenry/codegraph` |
 | `bug-experience-cards.csv` 存在 | 检查 `.devflow/config/templates/knowledge/bug-experience-cards.csv` | `devflow init` |
 | `knowledge-usage.jsonl` 存在 | 检查 `.devflow/config/templates/knowledge/knowledge-usage.jsonl` | `devflow init` |
+| 运行时工具完整 | 检查 `.devflow/tools/devflow-cg.sh`、`worktree-setup.sh`、`devflow-risk-scanner.md` | 重新运行安装脚本或 `--update` |
 
 ### 🟡 建议修复（影响体验但不阻塞）
 
 | 检查项 | 检测方式 | 修复建议 |
 |--------|---------|---------|
 | Hook 脚本存在且可执行 | 检查 `.devflow/hooks/devflow-audit.sh` 存在且有执行权限 | 重新执行 `devflow init` |
-| Hook 已注册到 settings.json | 读取 `.claude/settings.json`，检查 `hooks.PostToolUse` 和 `hooks.PreToolUse` 字段 | 重新执行 `devflow init`（Claude Code 平台） |
+| Hook 已注册 | Claude Code 检查 `.claude/settings.json`；Kiro CLI 检查 `.kiro/hooks/devflow.json` 的 `PreToolUse` / `PostToolUse` | 重新运行对应平台安装脚本 |
+| Kiro CLI Agent 完整（Kiro 平台） | 检查 `.kiro/agents/devflow.json`、`.kiro/prompts/devflow-init.md` 和 `.kiro/settings/mcp.json` | 使用 `--platform kiro` 重新安装 |
 | Meegle 已授权 | 执行 `meegle auth status`，命令不存在或未授权则标记警告 | `meegle auth login` |
 | YApi 可达（若已配置） | 读取 `workspace.json.integrations.yapiHost`；若存在，执行 `curl -s --max-time 3 https://{yapiHost}/api/user/status`，失败则警告 | 检查 yapiHost 配置或网络连接 |
 | CodeGraph 索引新鲜 | 若 `.codegraph/codegraph.db` 存在，比较其 mtime 与 `workspace.json.codegraph.roots` 下文件的最新 mtime；db 比源文件旧超过 24 小时则警告 | `codegraph index` |
@@ -96,5 +98,5 @@ DevFlow Doctor — 环境诊断
 
 ## 前置条件
 
-- 在项目根目录执行（需要能访问 `.devflow/`、`.claude/` 等目录）
+- 在项目根目录执行（需要能访问 `.devflow/` 与当前平台配置目录，如 `.kiro/`、`.claude/`）
 - 无其他前置依赖，即使 DevFlow 未初始化也可运行（这是诊断命令的核心价值）

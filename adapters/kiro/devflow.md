@@ -32,11 +32,21 @@ inclusion: always
 | `devflow change` / 需求变更 | `.devflow/commands/change.md` |
 | `devflow knowledge` / 知识库 | `.devflow/commands/knowledge.md` |
 | `devflow sync` / 同步文件 | `.devflow/commands/sync.md` |
+| `devflow doctor` / 环境诊断 | `.devflow/commands/doctor.md` |
+| `devflow tour` / 新手向导 | `.devflow/commands/tour.md` |
+| `devflow audit` / 审计日志 | `.devflow/commands/audit.md` |
+| `devflow dashboard` / 进度看板 | `.devflow/commands/dashboard.md` |
+| `devflow metrics` / 效能度量 | `.devflow/commands/metrics.md` |
+
+在 Kiro CLI V3 中，上述命令同时以 `/devflow-<command>` 暴露，例如 `/devflow-start`。斜杠命令的参数视为对应命令文件中的 `$ARGUMENTS`。
 
 ## 工具使用规则
 
-- **CodeGraph MCP**：已安装时优先通过 `codegraph_explore` / `codegraph_impact` / `codegraph_trace` 查询代码结构；未安装时降级为 Kiro 内置代码索引
-- **Meegle / Figma / YApi**：可选，配置方式见 `.devflow/workspace.json`；未配置时对应步骤跳过，不阻断流程
+- **代码理解**：优先使用 CodeGraph MCP 或 `.devflow/tools/devflow-cg.sh`；不可用时降级为 Kiro CLI `code`、`grep_search`、`read_file`
+- **WebFetch**：命令文件中的 WebFetch 在 Kiro CLI 中对应 `web_fetch`
+- **Meegle / Figma / 飞书**：依赖项目配置的 MCP server 或对应 CLI；不可用时按可选集成跳过，不阻断核心流程
+- **YApi / Apifox**：优先使用 `web_fetch`，需要认证时由用户提供凭证或配置对应 MCP
+- **Hooks**：Kiro CLI V3 自动加载 `.kiro/hooks/devflow.json`，提供状态守卫和审计日志
 
 ## 工作区状态
 

@@ -259,7 +259,7 @@ get_api_detail(apiId)
 提取所有页面名、模块名、接口名，通过 `devflow-cg` 脚本执行（自动处理单根/多根路由，不占 LLM Token）：
 
 ```bash
-devflow-cg explore "<提取的名词 空格分隔>"
+bash .devflow/tools/devflow-cg.sh explore "<提取的名词 空格分隔>"
 ```
 
 识别出现有模块后，**主动反查该模块关联的接口**：

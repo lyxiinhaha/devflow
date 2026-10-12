@@ -667,15 +667,16 @@ codegraph --version
 
 - **已安装**：按步骤 2b 确定的索引策略执行 `codegraph init`（各根目录依次执行）。
   - 源码文件 > 500 个的根目录：后台运行，不阻塞后续流程。
-  - 执行 `codegraph install` 注册 MCP（仅需执行一次）。
+  - Kiro CLI 平台：确认 `.kiro/settings/mcp.json` 已包含 `codegraph`，启动参数为 `codegraph serve --mcp`；安装脚本已无损生成该配置。
+  - 其他受 `codegraph install` 支持的平台：执行 `codegraph install` 注册 MCP（仅需执行一次）。
   - 执行 `codegraph status` 验证。
 - **未安装**：`npm install -g @colbymchenry/codegraph`，安装后同上。
 - **用户明确跳过**：不执行任何 CodeGraph 命令。
 - **安全禁令**：不得修改 `AGENTS.md`、`CLAUDE.md`、`GEMINI.md` 已有内容（只能追加 CodeGraph 维护规则）。
 
-### 4. 生成 CodeGraph 多根目录查询规则（CLAUDE.md 注入）
+### 4. 生成 CodeGraph 多根目录查询规则（平台规则注入）
 
-**多仓库或多根索引场景的关键步骤。** 将查询规则写入当前项目的 `CLAUDE.md`（若不存在则创建），让后续所有 AI 会话都知道如何跨仓查询。单根单仓库可跳过本步。
+**多仓库或多根索引场景的关键步骤。** Kiro 平台将查询规则追加到 `.kiro/steering/devflow.md`；Claude Code 追加到 `CLAUDE.md`；其他平台追加到其项目级规则文件。只追加 DevFlow 标记块，不覆盖已有内容。单根单仓库可跳过本步。
 
 ```markdown
 ## CodeGraph 多根目录查询规则
@@ -715,6 +716,7 @@ meegle --version
 初始化 `workspace.json`（合并步骤 2 生成的 techStack / codegraph / reviewSkills 配置）：
 ```json
 {
+  "focus": null,
   "currentWorkItem": null,
   "meegle": {
     "projectKey": null,
@@ -739,9 +741,9 @@ meegle --version
 }
 ```
 
-### 6.5 安装 Hook（仅 Claude Code 平台）
+### 6.5 安装 Hook（Claude Code / Kiro CLI V3）
 
-检测当前平台（通过以下方式检测（按优先级）：① `CLAUDE_CODE` 环境变量存在 → Claude Code 平台；② 环境变量不存在时，读取 `workspace.json.platform` 字段是否为 `claude-code`；③ 均无法判断时，默认视为非 Claude Code 平台）：
+检测当前平台（按优先级）：① `CLAUDE_CODE` 环境变量存在 → Claude Code；② `.kiro/agents/devflow.json` 或 `.kiro/hooks/devflow.json` 存在 → Kiro CLI V3；③ 读取 `.devflow/.devflow-install.json.platform`；④ 无法判断时视为其他平台。
 
 **Claude Code 平台：**
 
@@ -794,7 +796,17 @@ meegle --version
    硬约束模式（Claude Code + hook 已安装）
    ```
 
-**非 Claude Code 平台（Cursor / Codex / Gemini / OpenCode 等）：**
+**Kiro CLI V3 平台：**
+
+1. 确认 `.devflow/hooks/devflow-audit.sh` 与 `.devflow/hooks/devflow-state-guard.sh` 存在且可执行；缺失时提示重新运行 DevFlow 安装脚本。
+2. 确认 `.kiro/hooks/devflow.json` 存在，且包含 `PreToolUse` 状态守卫与 `PostToolUse` 审计 Hook。Kiro CLI V3 会在会话启动时自动加载，无需写入全局配置。
+3. 在 `devflow-profile.md` 末尾追加：
+   ```
+   ## 约束模式
+   硬约束模式（Kiro CLI V3 + workspace hook 已安装）
+   ```
+
+**其他平台（Cursor / Codex / Gemini / OpenCode 等）：**
 
 跳过 hook 安装，在 `devflow-profile.md` 末尾追加：
 ```
@@ -893,7 +905,7 @@ devflow audit 仍可用，但 audit-log.jsonl 为空，仅展示 progress.md 决
   索引策略：{单根 | 多根}
     {path1}：{已建立索引 | 后台执行中 | 已跳过}
     {path2}：{已建立索引 | 已跳过}（本地 Pod）
-  多根查询规则：{已写入 CLAUDE.md | 单根无需注入}
+  多根查询规则：{已写入当前平台规则文件 | 单根无需注入}
 
   ── 配置 ──────────────────────────────────────
   Meegle：{已连接（用户：xxx）| 未配置}

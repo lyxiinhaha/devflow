@@ -26,7 +26,7 @@ description: DevFlow 进度恢复。新会话或 /clear 后读取 Context Checkp
 
 ### 1.5 风险扫描（主动预警）
 
-加载并执行 `devflow-risk-scanner` skill 逻辑，针对当前焦点工作项完成三类扫描：延期风险、高风险变更、依赖阻塞。
+读取并执行 `.devflow/tools/devflow-risk-scanner.md` 中的逻辑，针对当前焦点工作项完成三类扫描：延期风险、高风险变更、依赖阻塞。
 
 有风险时输出警告块（见 devflow-risk-scanner 输出格式规范），无风险时静默，不影响后续步骤。
 
@@ -61,9 +61,9 @@ stat -f "%m" Podfile.lock vs stat -f "%m" .codegraph/codegraph.db
 ```
 
 发现过期时给出提醒（不阻塞流程）：
-- iOS：Podfile.lock 比 db 新 → `⚠️ 建议执行 devflow-cg index`
-- Android：submodule 有新 commit → `⚠️ 建议执行 devflow-cg index`
-- 本地 Pod 有变更 → `⚠️ 建议执行 devflow-cg sync`
+- iOS：Podfile.lock 比 db 新 → `⚠️ 建议执行 bash .devflow/tools/devflow-cg.sh index`
+- Android：submodule 有新 commit → `⚠️ 建议执行 bash .devflow/tools/devflow-cg.sh index`
+- 本地 Pod 有变更 → `⚠️ 建议执行 bash .devflow/tools/devflow-cg.sh sync`
 
 ### 4. 读取 Context Checkpoint 与中断检测（核心）
 

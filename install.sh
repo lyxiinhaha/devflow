@@ -91,6 +91,17 @@ read_source() {
   fi
 }
 
+install_adapter_file() {
+  local rel_path="$1"   # 相对仓库根的路径
+  local dest="$2"
+  mkdir -p "$(dirname "$dest")"
+  if [[ "$LOCAL_MODE" == true ]]; then
+    cp "${DEVFLOW_ROOT}/${rel_path}" "$dest"
+  else
+    download_file "$rel_path" "$dest"
+  fi
+}
+
 # 复制目录下所有文件（本地模式直接 cp，远程模式逐文件下载）
 # copy_dir <src_dir_relative> <dest_dir_absolute> [glob]
 copy_files_from_manifest() {
@@ -109,20 +120,86 @@ copy_files_from_manifest() {
   done <<< "$manifest"
 }
 
+# 为 Kiro CLI V3 生成项目级斜杠命令。
+# Kiro 会自动发现 .kiro/prompts/*.md，并将文件名注册为 /<name>。
+install_kiro_prompts() {
+  local prompts_dir="${TARGET_DIR}/.kiro/prompts"
+  local command_file command_name prompt_file count=0
+
+  mkdir -p "$prompts_dir"
+  for command_file in "${TARGET_DIR}/.devflow/commands/"*.md; do
+    [[ -f "$command_file" ]] || continue
+    command_name="$(basename "$command_file" .md)"
+    [[ "$command_name" == "README" ]] && continue
+    prompt_file="${prompts_dir}/devflow-${command_name}.md"
+    printf '%s\n' \
+      "执行 DevFlow 的 \`${command_name}\` 命令。" \
+      "" \
+      "请读取 \`.devflow/commands/${command_name}.md\`，严格按照其中的完整指令执行。" \
+      "将下面的内容作为用户传给命令的原始参数；若为空，则按命令文件中的无参数流程执行：" \
+      "" \
+      '$ARGUMENTS' > "$prompt_file"
+    count=$((count + 1))
+  done
+
+  step "Kiro CLI 斜杠命令 → .kiro/prompts/（${count} 个）"
+}
+
+# 安装 Kiro CLI V3 的 Agent、Hooks，并无损合并 CodeGraph MCP 配置。
+install_kiro_cli_adapter() {
+  install_adapter_file "adapters/kiro/devflow.md" "${TARGET_DIR}/.kiro/steering/devflow.md"
+  install_adapter_file "adapters/kiro/devflow-agent.json" "${TARGET_DIR}/.kiro/agents/devflow.json"
+  install_adapter_file "adapters/kiro/devflow-hooks.json" "${TARGET_DIR}/.kiro/hooks/devflow.json"
+  install_kiro_prompts
+
+  local mcp_file="${TARGET_DIR}/.kiro/settings/mcp.json"
+  mkdir -p "$(dirname "$mcp_file")"
+  python3 - "$mcp_file" <<'PYEOF'
+import json, os, sys
+
+path = sys.argv[1]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path, encoding="utf-8") as fh:
+            data = json.load(fh)
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"警告：无法解析 {path}，已跳过 CodeGraph MCP 配置：{exc}", file=sys.stderr)
+        raise SystemExit(0)
+
+servers = data.setdefault("mcpServers", {})
+existing = servers.get("codegraph")
+recommended = {"type": "stdio", "command": "codegraph", "args": ["serve", "--mcp"]}
+if existing is None or existing == {"command": "codegraph", "args": ["mcp"]}:
+    servers["codegraph"] = recommended
+with open(path, "w", encoding="utf-8") as fh:
+    json.dump(data, fh, indent=2, ensure_ascii=False)
+    fh.write("\n")
+PYEOF
+
+  step "Kiro CLI Agent → .kiro/agents/devflow.json"
+  step "Kiro CLI Hooks → .kiro/hooks/devflow.json"
+  step "Kiro MCP 配置 → .kiro/settings/mcp.json（无损合并）"
+}
+
 # ── 文件清单（远程模式用，与仓库目录结构严格对应）──────────────────────────────
 
 COMMANDS_MANIFEST="
 plugins/devflow/commands/analyze.md
+plugins/devflow/commands/audit.md
 plugins/devflow/commands/change.md
 plugins/devflow/commands/checklist.md
 plugins/devflow/commands/code.md
 plugins/devflow/commands/continue.md
+plugins/devflow/commands/dashboard.md
 plugins/devflow/commands/design.md
+plugins/devflow/commands/doctor.md
 plugins/devflow/commands/estimate.md
 plugins/devflow/commands/fix.md
 plugins/devflow/commands/init.md
 plugins/devflow/commands/knowledge.md
 plugins/devflow/commands/list.md
+plugins/devflow/commands/metrics.md
 plugins/devflow/commands/onboard.md
 plugins/devflow/commands/plan.md
 plugins/devflow/commands/quick.md
@@ -132,6 +209,7 @@ plugins/devflow/commands/review.md
 plugins/devflow/commands/start.md
 plugins/devflow/commands/switch.md
 plugins/devflow/commands/sync.md
+plugins/devflow/commands/tour.md
 "
 
 ASSETS_CONFIG_MANIFEST="
@@ -145,17 +223,26 @@ ASSETS_TEMPLATES_MANIFEST="
 plugins/devflow/assets/templates/design.tpl.md
 plugins/devflow/assets/templates/meta.tpl.json
 plugins/devflow/assets/templates/progress.tpl.md
+plugins/devflow/assets/templates/open-issues.tpl.md
 plugins/devflow/assets/templates/requirement.tpl.md
 plugins/devflow/assets/templates/tasks.tpl.md
 "
 
 ASSETS_KNOWLEDGE_MANIFEST="
 plugins/devflow/assets/templates/knowledge/bug-experience-cards.csv
+plugins/devflow/assets/templates/knowledge/knowledge-usage.jsonl
+plugins/devflow/assets/templates/knowledge/project-rules.tpl.md
 "
 
 ASSETS_HOOKS_MANIFEST="
 plugins/devflow/assets/hooks/devflow-state-guard.sh
 plugins/devflow/assets/hooks/devflow-audit.sh
+"
+
+RUNTIME_TOOLS_MANIFEST="
+plugins/devflow/skills/devflow-cg/devflow-cg.sh
+plugins/devflow/skills/devflow-worktree-setup/worktree-setup.sh
+plugins/devflow/skills/devflow-sync/sync-ai-files.sh
 "
 
 # ── 标题 ──────────────────────────────────────────────────────────────────────
@@ -203,6 +290,9 @@ if [[ "$UPDATE_MODE" == true ]]; then
   copy_files_from_manifest "$ASSETS_CONFIG_MANIFEST"   "$ASSETS_DST"
   copy_files_from_manifest "$ASSETS_TEMPLATES_MANIFEST" "${ASSETS_DST}/templates"
   copy_files_from_manifest "$ASSETS_KNOWLEDGE_MANIFEST" "${ASSETS_DST}/templates/knowledge"
+  if [[ ! -f "${ASSETS_DST}/templates/knowledge/project-rules.md" ]]; then
+    cp "${ASSETS_DST}/templates/knowledge/project-rules.tpl.md" "${ASSETS_DST}/templates/knowledge/project-rules.md"
+  fi
   step "配置模板已更新"
 
   # 更新 hooks 脚本
@@ -211,6 +301,17 @@ if [[ "$UPDATE_MODE" == true ]]; then
   copy_files_from_manifest "$ASSETS_HOOKS_MANIFEST" "$HOOKS_DIR"
   chmod +x "$HOOKS_DIR"/*.sh 2>/dev/null || true
   step "Hooks 脚本已更新（${HOOKS_DIR}）"
+
+  TOOLS_DIR="${TARGET_DIR}/.devflow/tools"
+  mkdir -p "$TOOLS_DIR"
+  copy_files_from_manifest "$RUNTIME_TOOLS_MANIFEST" "$TOOLS_DIR"
+  if [[ "$LOCAL_MODE" == true ]]; then
+    cp "${DEVFLOW_ROOT}/plugins/devflow/skills/devflow-risk-scanner/index.md" "$TOOLS_DIR/devflow-risk-scanner.md"
+  else
+    download_file "plugins/devflow/skills/devflow-risk-scanner/index.md" "$TOOLS_DIR/devflow-risk-scanner.md"
+  fi
+  chmod +x "$TOOLS_DIR"/*.sh 2>/dev/null || true
+  step "运行时工具已更新（${TOOLS_DIR}）"
 
   # 更新适配器（cursor 和 kiro 支持无损更新）
   if [[ "$INSTALLED_PLATFORM" == "cursor" ]]; then
@@ -224,15 +325,8 @@ if [[ "$UPDATE_MODE" == true ]]; then
     local_or_remote_copy
     step "Cursor Rules 已更新"
   elif [[ "$INSTALLED_PLATFORM" == "kiro" ]]; then
-    local_or_remote_copy() {
-      if [[ "$LOCAL_MODE" == true ]]; then
-        cp "${DEVFLOW_ROOT}/adapters/kiro/devflow.md" "${TARGET_DIR}/.kiro/steering/devflow.md"
-      else
-        download_file "adapters/kiro/devflow.md" "${TARGET_DIR}/.kiro/steering/devflow.md"
-      fi
-    }
-    local_or_remote_copy
-    step "Kiro Steering 已更新"
+    install_kiro_cli_adapter
+    step "Kiro IDE / CLI 适配器已更新"
   else
     warn "${INSTALLED_PLATFORM} 适配器为追加写入，跳过自动更新（如需更新请手动替换）"
   fi
@@ -242,7 +336,7 @@ if [[ "$UPDATE_MODE" == true ]]; then
 import json, sys, datetime
 f = sys.argv[1]
 with open(f) as fh: d = json.load(fh)
-d['updatedAt'] = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+d['updatedAt'] = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
 with open(f, 'w') as fh: json.dump(d, fh, indent=2, ensure_ascii=False)
 PYEOF
   step "安装记录已更新"
@@ -262,7 +356,7 @@ fi
 detect_platform() {
   # 按优先级自动检测已有配置
   [[ -d "${HOME}/.kiro/crew" ]] || command -v kirocrew &>/dev/null  && echo "kirocrew" && return
-  [[ -d "${TARGET_DIR}/.kiro" ]]                                    && echo "kiro"     && return
+  [[ -d "${TARGET_DIR}/.kiro" ]] || command -v kiro-cli &>/dev/null && echo "kiro"     && return
   [[ -d "${TARGET_DIR}/.cursor" ]]                                  && echo "cursor"   && return
   [[ -f "${TARGET_DIR}/AGENTS.md" ]]                                && echo "codex"    && return
   [[ -f "${TARGET_DIR}/OPENCODE.md" ]]                              && echo "opencode" && return
@@ -290,7 +384,7 @@ if [[ -z "$PLATFORM" ]]; then
     echo "  请选择 AI 平台："
     echo "    1) Claude Code（推荐）"
     echo "    2) Cursor"
-    echo "    3) Kiro（IDE）"
+    echo "    3) Kiro（IDE / CLI V3）"
     echo "    4) Kiro Crew（Agent 平台）"
     echo "    5) Codex（OpenAI）"
     echo "    6) OpenCode"
@@ -329,7 +423,8 @@ if [[ "$LOCAL_MODE" == true ]]; then
 else
   copy_files_from_manifest "$COMMANDS_MANIFEST" "$COMMANDS_DIR"
 fi
-step "命令文件 → .devflow/commands/ （20 个）"
+COMMAND_COUNT="$(find "$COMMANDS_DIR" -maxdepth 1 -type f -name '*.md' ! -name 'README.md' | wc -l | tr -d ' ')"
+step "命令文件 → .devflow/commands/（${COMMAND_COUNT} 个）"
 
 # ── Step 3：安装资源文件 ──────────────────────────────────────────────────────
 
@@ -347,6 +442,9 @@ else
   copy_files_from_manifest "$ASSETS_TEMPLATES_MANIFEST" "${ASSETS_DST}/templates"
   copy_files_from_manifest "$ASSETS_KNOWLEDGE_MANIFEST" "${ASSETS_DST}/templates/knowledge"
 fi
+if [[ ! -f "${ASSETS_DST}/templates/knowledge/project-rules.md" ]]; then
+  cp "${ASSETS_DST}/templates/knowledge/project-rules.tpl.md" "${ASSETS_DST}/templates/knowledge/project-rules.md"
+fi
 step "配置模板 → .devflow/config/"
 
 # ── Step 3.5：安装 hooks 脚本 ──────────────────────────────────────────────────
@@ -361,6 +459,19 @@ else
 fi
 chmod +x "$HOOKS_DIR"/*.sh 2>/dev/null || true
 step "Hooks 脚本 → .devflow/hooks/"
+
+# ── Step 3.6：安装命令依赖的运行时工具 ─────────────────────────────────────────
+
+TOOLS_DIR="${TARGET_DIR}/.devflow/tools"
+mkdir -p "$TOOLS_DIR"
+copy_files_from_manifest "$RUNTIME_TOOLS_MANIFEST" "$TOOLS_DIR"
+if [[ "$LOCAL_MODE" == true ]]; then
+  cp "${DEVFLOW_ROOT}/plugins/devflow/skills/devflow-risk-scanner/index.md" "$TOOLS_DIR/devflow-risk-scanner.md"
+else
+  download_file "plugins/devflow/skills/devflow-risk-scanner/index.md" "$TOOLS_DIR/devflow-risk-scanner.md"
+fi
+chmod +x "$TOOLS_DIR"/*.sh 2>/dev/null || true
+step "运行时工具 → .devflow/tools/"
 
 # ── Step 4：初始化 workspace.json ─────────────────────────────────────────────
 
@@ -380,17 +491,6 @@ fi
 
 echo ""
 echo "正在安装平台适配器..."
-
-install_adapter_file() {
-  local rel_path="$1"   # 相对仓库根的路径
-  local dest="$2"
-  mkdir -p "$(dirname "$dest")"
-  if [[ "$LOCAL_MODE" == true ]]; then
-    cp "${DEVFLOW_ROOT}/${rel_path}" "$dest"
-  else
-    download_file "$rel_path" "$dest"
-  fi
-}
 
 append_adapter_file() {
   local rel_path="$1"
@@ -480,7 +580,7 @@ PYEOF
     step "Cursor Rules → .cursor/rules/devflow.mdc"
     ;;
   kiro)
-    install_adapter_file "adapters/kiro/devflow.md" "${TARGET_DIR}/.kiro/steering/devflow.md"
+    install_kiro_cli_adapter
     step "Kiro Steering → .kiro/steering/devflow.md"
     ;;
   kirocrew)
@@ -624,10 +724,12 @@ if [[ "$PLATFORM" == "claude" ]]; then
   echo -e "  ${CYAN}2.${NC} 用 Claude Code 打开项目，输入："
   echo -e "     ${BOLD}devflow init${NC}"
 elif [[ "$PLATFORM" == "kiro" ]]; then
-  echo -e "  ${CYAN}1.${NC} 用 Kiro 打开项目，输入："
-  echo -e "     ${BOLD}devflow init${NC}"
+  echo -e "  ${CYAN}1.${NC} 在项目根目录启动 Kiro CLI V3："
+  echo -e "     ${BOLD}kiro-cli chat --v3 --agent devflow${NC}"
   echo ""
-  echo -e "  DevFlow Steering 文件已写入 ${BOLD}.kiro/steering/devflow.md${NC}，Kiro 会自动加载。"
+  echo -e "  ${CYAN}2.${NC} 输入 ${BOLD}/${NC} 查看命令，首次使用执行 ${BOLD}/devflow-init${NC}。"
+  echo ""
+  echo -e "  Kiro Agent、斜杠命令、Hooks 与 MCP 配置均已写入 ${BOLD}.kiro/${NC}。"
 elif [[ "$PLATFORM" == "kirocrew" ]]; then
   echo -e "  ${CYAN}1.${NC} 打开 Kiro Crew（http://localhost:5476），在任意会话中输入："
   echo -e "     ${BOLD}devflow init${NC}"

@@ -11,7 +11,7 @@ description: DevFlow 需求变更处理。状态机强制回退，重新执行 C
 
 ## 前置条件
 
-- 活跃工作项存在（`workspace.json` 中 `currentWorkItem` 有效）。
+- 活跃工作项存在（优先读取 `workspace.json.focus`，兼容回退到 `currentWorkItem`）。
 - 变更描述已提供（通过 `$ARGUMENTS`）。
 
 ---
