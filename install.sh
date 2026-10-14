@@ -596,6 +596,21 @@ PYEOF
   codex)
     append_adapter_file "adapters/codex/AGENTS.md" "${TARGET_DIR}/AGENTS.md"
     step "DevFlow 配置 → AGENTS.md"
+    # 安装 Codex Skills（$devflow-xxx 联想）
+    CODEX_SKILLS_DIR="${HOME}/.codex/skills"
+    DEVFLOW_SKILLS=( init start quick analyze design estimate plan code checklist review retrospect fix refactor onboard continue switch list change knowledge sync )
+    mkdir -p "$CODEX_SKILLS_DIR"
+    for CMD in "${DEVFLOW_SKILLS[@]}"; do
+      mkdir -p "$CODEX_SKILLS_DIR/devflow-${CMD}"
+      if [[ "$LOCAL_MODE" == true ]]; then
+        cp "${DEVFLOW_ROOT}/adapters/codex/skills/${CMD}/SKILL.md" \
+           "$CODEX_SKILLS_DIR/devflow-${CMD}/SKILL.md"
+      else
+        download_file "adapters/codex/skills/${CMD}/SKILL.md" \
+                      "$CODEX_SKILLS_DIR/devflow-${CMD}/SKILL.md"
+      fi
+    done
+    step "Codex Skills → ~/.codex/skills/devflow-{cmd}/ （20 个）"
     ;;
   opencode)
     append_adapter_file "adapters/opencode/OPENCODE.md" "${TARGET_DIR}/OPENCODE.md"
@@ -740,6 +755,14 @@ elif [[ "$PLATFORM" == "kirocrew" ]]; then
   echo -e "  ${CYAN}可选：把知识库加入 Kiro Crew Knowledge Library${NC}"
   echo -e "  在 Kiro Crew 控制台添加文件夹：${BOLD}.devflow/config/templates/knowledge/${NC}"
   echo -e "  这样可以用自然语言查询经验卡（如「有没有关于 Dialog 崩溃的经验？」）"
+elif [[ "$PLATFORM" == "codex" ]]; then
+  echo -e "  ${CYAN}1.${NC} 在项目目录启动 Codex，输入 ${BOLD}\$${NC} 可联想 devflow 命令："
+  echo -e "     ${BOLD}\$devflow-init${NC}  初始化项目"
+  echo -e "     ${BOLD}\$devflow-start <需求描述>${NC}  开始新需求"
+  echo -e "     ${BOLD}\$devflow-fix <问题描述>${NC}  修复 Bug"
+  echo ""
+  echo -e "  Skills 已安装到 ${BOLD}~/.codex/skills/devflow-{cmd}/${NC}（20 个命令）。"
+  echo -e "  也可以继续用自然语言：「devflow start 用户头像上传」。"
 else
   echo -e "  ${CYAN}1.${NC} 用 ${PLATFORM^} 打开项目，输入："
   echo -e "     ${BOLD}devflow init${NC}"
