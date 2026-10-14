@@ -123,7 +123,7 @@ DevFlow 的解法：
 在**项目根目录**下运行：
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/install.sh)
 ```
 
 脚本会自动检测到 Cursor 平台，交互式引导你完成：
@@ -184,7 +184,7 @@ DevFlow v3.3.0 — AI 研发工作流
 在项目目录执行一行命令：
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh) --update
+bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/install.sh) --update
 ```
 
 脚本会自动完成：
@@ -412,7 +412,7 @@ meegle auth login
 
 A：检查 `.devflow/commands/` 目录是否存在。如果没有，重新运行安装脚本：
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh) --platform cursor --dir .
+bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/install.sh) --platform cursor --dir .
 ```
 
 ---

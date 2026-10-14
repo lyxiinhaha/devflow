@@ -28,7 +28,7 @@ Kiro CLI 的完整前置条件、兼容矩阵、25 个命令速查、可选 MCP 
 在**项目根目录**运行：
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh) --platform kiro
+bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/install.sh) --platform kiro
 ```
 
 脚本自动完成：命令文件安装 → Steering File 写入 `.kiro/steering/devflow.md` → Kiro CLI 斜杠命令写入 `.kiro/prompts/` → `.gitignore` 更新。
@@ -47,7 +47,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/inst
 devflow init
 ```
 
-升级：`bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinnaha/devflow/main/install.sh) --update`
+升级：`bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/install.sh) --update`
 
 ---
 
