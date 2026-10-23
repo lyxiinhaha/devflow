@@ -128,17 +128,34 @@ devflow start 用户头像上传 支持裁剪和预览
 | **Claude Code** | 官方插件（`claude plugins install devflow`） | ✅ 完整支持 |
 | **Cursor** | `.cursor/rules/devflow.mdc` | ✅ 完整支持 · [使用手册](./README-Cursor.md) |
 | **Kiro IDE / CLI V3** | `.kiro/agents/` + `.kiro/prompts/` + `.kiro/hooks/` | ✅ 25 个斜杠命令 · [使用手册](./docs/kiro-cli-guide.md) |
-| **Codex**（OpenAI） | `AGENTS.md` | ✅ 完整支持 |
+| **Kiro Crew** | `~/.kiro/crew/skills/devflow/` | ✅ 完整支持 · [使用手册](./docs/kirocrew-getting-started.html) |
+| **Codex**（OpenAI） | `AGENTS.md` + `~/.codex/skills/devflow-*/` | ✅ 完整支持（`$devflow-` 命令联想） |
 | **OpenCode** | `OPENCODE.md` | ✅ 完整支持 |
 | **Gemini CLI** | `GEMINI.md` | ✅ 完整支持 |
 
-Cursor / Kiro / Codex / OpenCode / Gemini CLI 使用统一安装脚本：
+所有平台使用同一个安装脚本，`--yes` 自动检测平台并跳过交互：
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/install.sh)
+# 外网
+bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/install.sh) --yes
+
+# 内网（无外网访问）
+git clone http://gitlab.inzwc.com/hst-sa/app-team/devflow.git devflow-tmp \
+  && bash devflow-tmp/install.sh --yes \
+  && rm -rf devflow-tmp
+```
+
+安装完成后，如果项目还没有建立代码索引：
+
+```bash
+# 只需装一次，所有 AI 工具共用同一份索引
+npm install -g @colbymchenry/codegraph
+codegraph init
 ```
 
 升级：`bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/install.sh) --update`
+
+> 粘贴到 AI CLI 第一条消息即可自动安装的 bootstrap prompt 见 [BOOTSTRAP.md](./BOOTSTRAP.md)。
 
 ---
 
