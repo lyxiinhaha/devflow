@@ -43,6 +43,7 @@ TARGET_DIR="$(pwd)"
 PLATFORM=""
 UPDATE_MODE=false
 SKIP_WORKSPACE_QUESTIONS=false
+YES_MODE=false   # --yes：自动确认平台检测，跳过所有交互
 
 # ── 参数解析 ──────────────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
@@ -51,6 +52,7 @@ while [[ $# -gt 0 ]]; do
     --dir)      TARGET_DIR="$2"; shift 2 ;;
     --update)   UPDATE_MODE=true; shift ;;
     --skip-config) SKIP_WORKSPACE_QUESTIONS=true; shift ;;
+    --yes|-y)   YES_MODE=true; SKIP_WORKSPACE_QUESTIONS=true; shift ;;
     *) shift ;;
   esac
 done
@@ -371,16 +373,24 @@ if [[ -z "$PLATFORM" ]]; then
 
   if [[ -n "$DETECTED" ]]; then
     echo -e "  检测到平台：${GREEN}${BOLD}${DETECTED}${NC}"
-    read -rp "  使用此平台？[Y/n] " confirm
-    if [[ "$confirm" =~ ^[Nn]$ ]]; then
-      DETECTED=""
-    else
+    if [[ "$YES_MODE" == true ]]; then
       PLATFORM="$DETECTED"
+      echo ""
+    else
+      read -rp "  使用此平台？[Y/n] " confirm
+      if [[ "$confirm" =~ ^[Nn]$ ]]; then
+        DETECTED=""
+      else
+        PLATFORM="$DETECTED"
+      fi
+      echo ""
     fi
-    echo ""
   fi
 
   if [[ -z "$PLATFORM" ]]; then
+    if [[ "$YES_MODE" == true ]]; then
+      fatal "无法自动检测平台，请手动指定：--platform <claude|cursor|kiro|kirocrew|codex|opencode|gemini>"
+    fi
     echo "  请选择 AI 平台："
     echo "    1) Claude Code（推荐）"
     echo "    2) Cursor"
