@@ -1,63 +1,160 @@
 # DevFlow Bootstrap Prompts
 
-把对应的提示词粘贴到 AI CLI 的**第一条消息**，AI 会自动完成安装并准备好工作流。
+把对应平台的提示词粘贴到 AI CLI **第一条消息**，AI 会自动完成安装并在当前会话立即生效。
 
 ---
 
-## 外网版（GitHub）
+## OpenCode
 
-适用于 Codex、OpenCode、Gemini CLI、Kiro CLI 等任何支持执行 shell 的 AI CLI。
+```
+你现在需要完成以下任务，按顺序执行，每步完成后继续下一步，不要等待我确认：
 
-````
-请立刻在当前目录执行以下 shell 命令，不要跳过任何步骤，全部完成后告诉我结果：
+**步骤 1：安装 DevFlow**
+运行命令：
+bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/install.sh) --platform opencode --yes
 
-```bash
+如果无法访问 GitHub，改用内网：
+git clone http://gitlab.inzwc.com/hst-sa/app-team/devflow.git _df_tmp && bash _df_tmp/install.sh --platform opencode --yes && rm -rf _df_tmp
+
+**步骤 2：建立代码索引**
+检查 codegraph 是否可用（运行 `codegraph --version`）：
+- 可用 → 运行 `codegraph init`
+- 不可用 → 运行 `npm install -g @colbymchenry/codegraph && codegraph init`
+
+**步骤 3：初始化项目**
+运行：devflow init
+
+**步骤 4：激活工作流**
+安装完成后，读取 `OPENCODE.md` 文件，从现在起按其中的命令路由规则响应用户输入。
+
+全部完成后回复"✅ DevFlow 已就绪，可以开始工作了"，然后等待我的下一条指令。
+```
+
+---
+
+## Codex
+
+```
+你现在需要完成以下任务，按顺序执行，每步完成后继续下一步，不要等待我确认：
+
+**步骤 1：安装 DevFlow**
+运行命令：
+bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/install.sh) --platform codex --yes
+
+如果无法访问 GitHub，改用内网：
+git clone http://gitlab.inzwc.com/hst-sa/app-team/devflow.git _df_tmp && bash _df_tmp/install.sh --platform codex --yes && rm -rf _df_tmp
+
+**步骤 2：建立代码索引**
+检查 codegraph 是否可用（运行 `codegraph --version`）：
+- 可用 → 运行 `codegraph init`
+- 不可用 → 运行 `npm install -g @colbymchenry/codegraph && codegraph init`
+
+**步骤 3：初始化项目**
+运行：devflow init
+
+**步骤 4：激活工作流**
+安装完成后，读取 `AGENTS.md` 文件，从现在起按其中的命令路由规则响应用户输入。
+
+全部完成后回复"✅ DevFlow 已就绪，可以开始工作了"，然后等待我的下一条指令。
+```
+
+---
+
+## Gemini CLI
+
+```
+你现在需要完成以下任务，按顺序执行，每步完成后继续下一步，不要等待我确认：
+
+**步骤 1：安装 DevFlow**
+运行命令：
+bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/install.sh) --platform gemini --yes
+
+如果无法访问 GitHub，改用内网：
+git clone http://gitlab.inzwc.com/hst-sa/app-team/devflow.git _df_tmp && bash _df_tmp/install.sh --platform gemini --yes && rm -rf _df_tmp
+
+**步骤 2：建立代码索引**
+检查 codegraph 是否可用（运行 `codegraph --version`）：
+- 可用 → 运行 `codegraph init`
+- 不可用 → 运行 `npm install -g @colbymchenry/codegraph && codegraph init`
+
+**步骤 3：初始化项目**
+运行：devflow init
+
+**步骤 4：激活工作流**
+安装完成后，读取 `GEMINI.md` 文件，从现在起按其中的命令路由规则响应用户输入。
+
+全部完成后回复"✅ DevFlow 已就绪，可以开始工作了"，然后等待我的下一条指令。
+```
+
+---
+
+## Kiro CLI
+
+```
+你现在需要完成以下任务，按顺序执行，每步完成后继续下一步，不要等待我确认：
+
+**步骤 1：安装 DevFlow**
+运行命令：
+bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/install.sh) --platform kiro --yes
+
+如果无法访问 GitHub，改用内网：
+git clone http://gitlab.inzwc.com/hst-sa/app-team/devflow.git _df_tmp && bash _df_tmp/install.sh --platform kiro --yes && rm -rf _df_tmp
+
+**步骤 2：建立代码索引**
+检查 codegraph 是否可用（运行 `codegraph --version`）：
+- 可用 → 运行 `codegraph init`
+- 不可用 → 运行 `npm install -g @colbymchenry/codegraph && codegraph init`
+
+**步骤 3：初始化项目**
+运行：devflow init
+
+**步骤 4：激活工作流**
+安装完成后，读取 `.kiro/steering/devflow.md` 文件，从现在起按其中的命令路由规则响应用户输入。
+
+全部完成后回复"✅ DevFlow 已就绪，可以开始工作了"，然后等待我的下一条指令。
+```
+
+---
+
+## 通用版（不确定平台时使用）
+
+```
+你现在需要完成以下任务，按顺序执行，每步完成后继续下一步，不要等待我确认：
+
+**步骤 1：安装 DevFlow**
+运行命令：
 bash <(curl -fsSL https://raw.githubusercontent.com/lyxiinhaha/devflow/main/install.sh) --yes
+
+--yes 会自动检测当前平台（codex / opencode / gemini / kiro / cursor / claude）并跳过交互确认。
+如果无法访问 GitHub，改用内网：
+git clone http://gitlab.inzwc.com/hst-sa/app-team/devflow.git _df_tmp && bash _df_tmp/install.sh --yes && rm -rf _df_tmp
+
+**步骤 2：建立代码索引**
+检查 codegraph 是否可用（运行 `codegraph --version`）：
+- 可用 → 运行 `codegraph init`
+- 不可用 → 运行 `npm install -g @colbymchenry/codegraph && codegraph init`
+
+**步骤 3：初始化项目**
+运行：devflow init
+
+**步骤 4：激活工作流**
+安装完成后，按优先级查找并读取以下文件之一（取第一个存在的）：
+- OPENCODE.md
+- AGENTS.md
+- GEMINI.md
+- .kiro/steering/devflow.md
+- .cursor/rules/devflow.mdc
+
+从现在起按该文件中的命令路由规则响应用户输入。
+
+全部完成后回复"✅ DevFlow 已就绪，可以开始工作了"，然后等待我的下一条指令。
 ```
-
-`--yes` 会自动检测当前平台并跳过交互确认。安装完成后：
-1. 如果 `.codegraph/` 目录不存在，检查 `codegraph` 命令是否可用：
-   - 可用 → 运行 `codegraph init`
-   - 不可用 → 运行 `npm install -g @colbymchenry/codegraph && codegraph init`
-2. 运行 `devflow init` 完成项目初始化
-
-全部完成后告诉我，我们开始第一个需求。
-````
-
----
-
-## 内网版（GitLab，无外网访问）
-
-````
-请立刻在当前目录执行以下 shell 命令，不要跳过任何步骤，全部完成后告诉我结果：
-
-```bash
-git clone http://gitlab.inzwc.com/hst-sa/app-team/devflow.git devflow-tmp \
-  && bash devflow-tmp/install.sh --yes \
-  && rm -rf devflow-tmp
-```
-
-`--yes` 会自动检测当前平台并跳过交互确认。安装完成后：
-1. 如果 `.codegraph/` 目录不存在，检查 `codegraph` 命令是否可用：
-   - 可用 → 运行 `codegraph init`
-   - 不可用 → 运行 `npm install -g @colbymchenry/codegraph && codegraph init`
-2. 运行 `devflow init` 完成项目初始化
-
-全部完成后告诉我，我们开始第一个需求。
-````
 
 ---
 
 ## 说明
 
-**`--yes` 做了什么：**  
-自动检测平台（Codex / Kiro CLI / OpenCode / Gemini / Claude Code 等），跳过「使用此平台？」的交互确认，静默安装。检测顺序：kirocrew → kiro → cursor → codex → opencode → gemini → claude。
-
-**安装脚本自动完成：**
-- 20 个命令文件 → `.devflow/commands/`
-- 平台适配器（Steering File / AGENTS.md / Skills 等）
-- CodeGraph MCP 配置（对应工具的 mcp.json）
-- `.gitignore` 更新
-
-**CodeGraph：**  
-只需装一次（`npm install -g @colbymchenry/codegraph`），所有 AI 工具共用同一份项目索引（`.codegraph/`），不需要重装。
+- 每段提示词都是**自驱动的**：AI 读到后立刻执行安装、索引、初始化，完成后自动切换到 DevFlow 路由规则
+- 步骤 4 的"读取并激活"让当前会话立即生效，无需重启工具
+- CodeGraph 只需全局装一次（`npm install -g @colbymchenry/codegraph`），多个项目、多个工具共用同一个命令
+- 内网版将 GitHub URL 替换为 GitLab 地址即可，其余完全相同
