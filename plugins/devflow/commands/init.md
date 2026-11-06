@@ -741,6 +741,52 @@ meegle --version
 }
 ```
 
+### 6.1 知识库正本关联检测（跨 clone 共享）
+
+**背景**：同一仓库常被 clone 到多个本地目录（如主工作区 + 多个 worktree + 不同 IDE 的独立 clone）。若每个 clone 各自积累经验卡（`bug-experience-cards.csv`），知识会分散、互不可见。本步骤让 `init` 自动判断当前 clone 是否该接入一份跨 clone 共享的"知识库正本"。
+
+**正本约定路径**：`~/work/workflow/devflow-knowledge-store/<repo-name>/knowledge/bug-experience-cards.csv`
+
+`<repo-name>` 推断规则（任一成功即可，按顺序尝试）：
+1. `git remote get-url origin` 解析出的仓库名（去掉 `.git` 后缀，取路径最后一段）
+2. 当前目录名（`basename "$(pwd)"`）
+
+**执行逻辑**：
+
+```bash
+REPO_NAME="<按上述规则推断>"
+STORE_DIR="$HOME/work/workflow/devflow-knowledge-store/$REPO_NAME/knowledge"
+STORE_FILE="$STORE_DIR/bug-experience-cards.csv"
+LOCAL_FILE=".devflow/config/templates/knowledge/bug-experience-cards.csv"
+```
+
+1. **若 `$STORE_FILE` 已存在**（说明此仓库此前已有其他 clone 建立过正本）：
+   - 提示用户：
+     ```
+     检测到「<repo-name>」已有跨 clone 共享知识库正本：
+       <STORE_FILE>（现有 N 条经验卡）
+     是否将当前 clone 关联到该正本？（推荐：是）
+       是 → 当前 clone 的经验卡与其它已关联 clone 实时共享
+       否 → 当前 clone 使用独立骨架文件，经验不互通
+     ```
+   - 用户选"是"：将步骤 6 复制出的骨架 `$LOCAL_FILE`（若已有内容，先原样备份到 `$LOCAL_FILE.bak-<timestamp>`，不覆盖丢弃）替换为指向 `$STORE_FILE` 的软链接：
+     ```bash
+     mkdir -p "$(dirname "$LOCAL_FILE")"
+     [ -f "$LOCAL_FILE" ] && [ ! -L "$LOCAL_FILE" ] && mv "$LOCAL_FILE" "$LOCAL_FILE.bak-$(date +%Y%m%d%H%M%S)"
+     ln -sf "$STORE_FILE" "$LOCAL_FILE"
+     ```
+   - 用户选"否"：保留骨架文件，跳过本步骤，正常继续。
+
+2. **若 `$STORE_FILE` 不存在**（当前 clone 是该仓库第一次跑 init，或此前从未建立过共享正本）：
+   - 不自动创建正本，保持步骤 6 复制出的独立骨架文件原样。
+   - 不打断流程、不提示，直接继续后续步骤（避免对单 clone 场景造成多余打扰）。
+   - 用户后续若发现该仓库存在多个 clone 且想共享知识，可手动执行一次"升级为共享正本"：将当前骨架文件移动到 `$STORE_FILE`（`mkdir -p` 后 `mv`），再对当前及其它 clone 分别建软链接指向它。`devflow knowledge` 命令可在健康检查输出中附带一行提示该操作入口。
+
+**边界与安全**：
+- 本步骤只处理 `bug-experience-cards.csv` 这一跨 clone 共享价值最高的知识文件；`work-items/`、`metrics.jsonl`、`audit-log.jsonl` 等反映"当前 clone 工作状态"的文件不纳入共享，按 clone 独立存放。
+- 软链接目标路径固定在用户 `$HOME` 下的本地目录，不涉及网络同步；多台不同物理机器之间的知识同步超出本步骤范围，仍需用户自行用其惯用的同步方式（如纳入其知识库正本体系）处理。
+- 任何替换操作前必须先备份原文件（`mv` 而非 `rm`），不得无提示覆盖用户已积累的经验卡内容。
+
 ### 6.5 安装 Hook（Claude Code / Kiro CLI V3）
 
 检测当前平台（按优先级）：① `CLAUDE_CODE` 环境变量存在 → Claude Code；② `.kiro/agents/devflow.json` 或 `.kiro/hooks/devflow.json` 存在 → Kiro CLI V3；③ 读取 `.devflow/.devflow-install.json.platform`；④ 无法判断时视为其他平台。
@@ -911,6 +957,7 @@ devflow audit 仍可用，但 audit-log.jsonl 为空，仅展示 progress.md 决
   Meegle：{已连接（用户：xxx）| 未配置}
   安全分级：{L0 | L1 | L2}
   .gitignore：已更新
+  知识库：{已关联共享正本（N 条经验卡，与其它 clone 共享）| 独立骨架（未检测到跨 clone 正本）}
 
 现在可以使用 `devflow start` 创建第一个需求，或 `devflow fix` 修复 Bug。
 ```

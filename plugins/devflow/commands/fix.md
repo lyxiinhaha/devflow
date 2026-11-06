@@ -137,6 +137,27 @@ bash .devflow/tools/devflow-cg.sh explore "<根因方法名> 调用方 影响"
 - 摘录修改前的关键代码（上下文各 2-3 行）
 - 说明偏差量化（预期行为 vs 实际行为）
 
+### 阶段三.5：口径对齐检查（数值/日期/时区/格式化/主题类 Bug 强制）
+
+当根因涉及以下任一维度：数值格式化、涨跌幅基准、价格精度、成交量精度、日期格式、时区语义、主题样式或图表边界，必须在生成修复方案前核对生产/详情页的权威实现：
+
+1. 用 CodeGraph 或限定范围搜索查找权威实现：
+   ```bash
+   bash .devflow/tools/devflow-cg.sh explore "<指标/函数名> 生产 详情页"
+   ```
+   必要时补充搜索生产模块（例如 `quote/kchartbiz`、`KTimeKit`、`KFormatUtils`、`formatVolume`）。
+2. 找到权威实现时，优先复用或对齐，不得在 AIChat/局部组件中另起一套口径；在 Bug 清单「问题原因」中写明 `生产口径：<文件路径:行号>`，并说明当前实现与其偏差。
+3. 找不到既有权威实现时，必须明确记录「未找到既有权威实现，本次建立单一来源」，列出该来源的适用范围，并在 `retrospect` 中提示沉淀经验卡。
+4. 若需求/产品方向与既有实现冲突，暂停修复并先要求确认方向；不得把产品取舍变化误归因成代码缺陷。
+5. 若没有执行本检查，评分中的「根因定位质量」和「验证方案可执行性」不得给满分，并在分析结果中标注「口径未核对」。
+
+**最小输出（缺一不得进入修复模式）：**
+- 预期口径：<……>
+- 权威实现：<file:line / 未找到>
+- 当前实现：<file:line>
+- 偏差：<……>
+- 适用边界：<市场/周期/时区/主题等>
+
 ### 阶段四：生成原子修复方案
 
 针对每个根因代码点，生成一个**原子修复方案**：
@@ -281,6 +302,12 @@ Timber.d("[BUGFIX_<issue_id>] varName=%s", varValue)
 ## 问题原因
 
 <根因分析，定位到具体代码点，说明为何产生此 bug。包含代码证据和偏差量化（如有）。>
+
+**口径对齐检查（数值/日期/时区/格式化/主题/图表边界类必填）：**
+- 预期口径：<……>
+- 权威实现：<生产/详情页文件路径:行号，或“未找到既有权威实现”>
+- 当前实现与偏差：<文件路径:行号 + 差异>
+- 适用边界：<……>
 
 **根因文件**：`<file_path>:<line_number>`
 
@@ -503,16 +530,14 @@ meegle comment add --work-item-id <id> \
 [COMPLETE]   devflow fix — {ISO时间戳}
 ```
 
-**metrics.jsonl 写入（完成时）：**
-向 `.devflow/metrics.jsonl` 追加一条记录（若文件不存在则新建）：
+**metrics.jsonl 写入与回读（修复完成时）：**
+只有本次修复实际完成、编译验证通过且已获得用户人工验收，才能记录 `bug_fixed`；分析模式、待人工验证、评分不足或环境阻塞不得记录 `bug_fixed`，阻塞可记录 `bug_blocked` 并附原因。禁止补造历史事件或推算未知耗时。按 Step 6 验证并提交之后、Step 7 复盘之前执行此写入与回读，并确保本次 `progress.md` 的 `[COMPLETE]` 已记录。
+- 从本次工作项 `meta.json` 取得 ID；找不到时先按 Step 0 补建，仍无法建立则明确报告「指标未记录：工作项缺失」。
+- `durationMin` 仅在本次 `[START]`、`[COMPLETE]` 时间可计算时填数值，否则填 JSON `null`（不可写字符串 `"null"`）。
+- 只追加单行 JSON，回读最后一行确认可独立解析、`workItemId`、`event`、`ts` 与本次一致；失败则报告并停止宣称指标已落盘。
+
 ```json
-{
-  "ts": "{ISO时间戳}",
-  "workItemId": "{当前工作项ID，从 workspace.json.focus 读取}",
-  "event": "bug_fixed",
-  "severity": "{从 issue 详情提取的严重程度：critical/high/medium/low，未知时填 null}",
-  "durationMin": "{从本命令 [START] 到 [COMPLETE] 的分钟数，无法计算时填 null}"
-}
+{"ts":"{ISO时间戳}","workItemId":"{当前工作项ID}","event":"bug_fixed","severity":null,"durationMin":null}
 ```
 
 异常退出时（如评分 < 90）追加：
